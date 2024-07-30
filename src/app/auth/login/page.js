@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -13,64 +13,64 @@ import { useSession } from 'next-auth/react';
 
 
 let validationSchema = yup.object({
-    email: yup.string().email('Invalid email address').required('Email is required'),
-    password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters').max(32, 'Password must be at most 32 characters')
+  email: yup.string().email('Invalid email address').required('Email is required'),
+  password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters').max(32, 'Password must be at most 32 characters')
 });
 
 const Login = () => {
-    const router = useRouter();
-    const { setError, register, handleSubmit, formState: { errors } } = useForm({
-        resolver: yupResolver(validationSchema)
-    });
+  const router = useRouter();
+  const { setError, register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(validationSchema)
+  });
 
-    const handleFormSubmit = async (data) => {
-        try {
-            const res = await signIn('credentials', {
-                email: data.email,
-                password: data.password,
-                redirect: false,
-                callbackUrl: '/'
-            });
-            if (res?.error) {
-              toast.error('Invalid email or password', {
-                  position: "top-center",
-                  autoClose: 5000,
-                  hideProgressBar: false,
-                  closeOnClick: true,
-                  pauseOnHover: true,
-                  draggable: true,
-                  theme: "light",
-              });
-          } else {
-            toast.success('Login successful!', {
-                position: "top-center",
-                autoClose: 1000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                theme: "light",
-                transition: Bounce,
-            });
-            setTimeout(() => router.push('/'), 1000); // Redirect after the toast message
-        }
-      } catch (err) {
-          console.error('SignIn error:', err);
-          toast.error('Something went wrong. Please try again later.', {
-              position: "top-center",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              theme: "light",
-          });
+  const handleFormSubmit = async (data) => {
+    try {
+      const res = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+        callbackUrl: '/'
+      });
+      if (res?.error) {
+        toast.error('Invalid email or password', {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        });
+      } else {
+        toast.success('Login successful!', {
+          position: "top-center",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+          transition: Bounce,
+        });
+        setTimeout(() => router.push('/'), 1000); // Redirect after the toast message
       }
-    };
+    } catch (err) {
+      console.error('SignIn error:', err);
+      toast.error('Something went wrong. Please try again later.', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
+    }
+  };
 
-    return (
-      
-      <div className="flex h-screen overflow-hidden relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+  return (
+
+    <div className="flex h-screen overflow-hidden relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="flex flex-wrap items-center">
           <div className="hidden w-full xl:block xl:w-1/2">
@@ -201,7 +201,7 @@ const Login = () => {
               </span>
             </div>
           </div>
-          <ToastContainer /> 
+          <ToastContainer />
           <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
             <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
               <Image
@@ -225,52 +225,65 @@ const Login = () => {
               </h2>
 
               <form onSubmit={handleSubmit(handleFormSubmit)} autoComplete="off">
-                    <div className="mb-4">
-                        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            {...register('email')}
-                            className={classNames(
-                                'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500',
-                                { 'border-red-500': errors.email }
-                            )}
-                            aria-describedby="email-error"
-                        />
-                        {errors.email && (
-                            <div id="email-error" className='text-sm text-red-500 mt-1'>{errors.email.message}</div>
-                        )}
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            {...register('password')}
-                            className={classNames(
-                                'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500',
-                                { 'border-red-500': errors.password }
-                            )}
-                            aria-describedby="password-error"
-                        />
-                        {errors.password && (
-                            <div id="password-error" className='text-sm text-red-500 mt-1'>{errors.password.message}</div>
-                        )}
-                    </div>
-                    <button
-                        type="submit"
-                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                    >
-                        Login
-                    </button>
-                </form>
-                
+                <div className="mb-4">
+                  <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    {...register('email')}
+                    className={classNames(
+                      'w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary',
+                      { 'border-red-500': errors.email }
+                    )}
+                    aria-describedby="email-error"
+                  />
+                  {errors.email && (
+                    <div id="email-error" className='text-sm text-red-500 mt-1'>{errors.email.message}</div>
+                  )}
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                  <input
+                    placeholder='Enter your password'
+                    type="password"
+                    id="password"
+                    {...register('password')}
+                    className={classNames(
+                      'w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-white outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary',
+                      { 'border-red-500': errors.password }
+                    )}
+                    aria-describedby="password-error"
+                  />
+                  {errors.password && (
+                    <div id="password-error" className='text-sm text-red-500 mt-1'>{errors.password.message}</div>
+                  )}
+
+                </div>
+                <div className="mb-5">
+                  <button
+                    type="submit"
+                    className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
+                  >
+                    Login
+                  </button>
+                </div>
+                <div className="mt-6 text-center">
+                  <p>
+                    Don’t have any account?{" "}
+                    <Link href="/auth/signup" className="text-primary">
+                      Sign Up
+                    </Link>
+                  </p>
+                </div>
+              </form>
+
             </div>
           </div>
         </div>
       </div>
     </div>
-    );
+  );
 };
 
 export default Login;
