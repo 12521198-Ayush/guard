@@ -23,6 +23,8 @@
     "element-plus": "^2.7.7",
     "flatpickr": "^4.6.13",
     "formik": "^2.4.6",
+    "framer-motion": "^11.3.19",
+    "gsap": "^3.12.5",
     "jsonwebtoken": "^9.0.2",
     "jsvectormap": "^1.5.3",
     "loadash": "^1.0.0",

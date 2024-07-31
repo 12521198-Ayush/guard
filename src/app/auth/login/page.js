@@ -10,7 +10,7 @@ import Image from "next/image";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useSession } from 'next-auth/react';
-
+import LoginLayout from '@/components/Layouts/LoginLayout'
 
 let validationSchema = yup.object({
   email: yup.string().email('Invalid email address').required('Email is required'),
@@ -69,7 +69,7 @@ const Login = () => {
   };
 
   return (
-
+    <LoginLayout>
     <div className="flex h-screen overflow-hidden relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
       <div className="hide-scrollbar overflow-auto rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="hide-scrollbar overflow-auto flex flex-wrap items-center">
@@ -221,7 +221,7 @@ const Login = () => {
               <span className="mb-1.5 block font-medium"></span>
 
               <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
-                Login into Servizing
+                Servizing
               </h2>
 
               <form onSubmit={handleSubmit(handleFormSubmit)} autoComplete="off">
@@ -283,6 +283,7 @@ const Login = () => {
         </div>
       </div>
     </div>
+    </LoginLayout>
   );
 };
 
