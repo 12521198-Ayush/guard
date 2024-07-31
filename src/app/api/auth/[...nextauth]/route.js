@@ -77,7 +77,7 @@ const authOptions = {
             
             console.log("JWT callback - token before expiry check:", token); 
             console.log("User Object:", user); 
-            
+             
             if (Date.now() < token.expiresIn) {
                 return token;
             }

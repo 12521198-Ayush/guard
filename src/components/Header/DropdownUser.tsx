@@ -5,7 +5,9 @@ import { signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
 
 
+
 const DropdownUser = () => {
+
   const { data: session } = useSession();
 
   const [loading, setLoading] = useState(false);
@@ -33,8 +35,9 @@ const DropdownUser = () => {
       const logoutData = await logoutResponse.json();
 
       if (logoutResponse.ok && logoutData.data.acknowledged) {
+        // navigate("/auth/login");
         await signOut({ redirect: false });
-        window.location.href = '/auth/login';
+        window.location.href = '/auth/login'; 
       } else {
         throw new Error(logoutData.error || 'Logout failed');
       }

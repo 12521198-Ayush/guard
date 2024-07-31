@@ -71,9 +71,9 @@ const Login = () => {
   return (
 
     <div className="flex h-screen overflow-hidden relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="flex flex-wrap items-center">
-          <div className="hidden w-full xl:block xl:w-1/2">
+      <div className="hide-scrollbar overflow-auto rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        <div className="hide-scrollbar overflow-auto flex flex-wrap items-center">
+          <div className="hide-scrollbar overflow-auto hidden w-full xl:block xl:w-1/2">
             <div className="px-26 py-17.5 text-center">
               <div className="mb-5.5 inline-block">
               </div>
@@ -202,7 +202,7 @@ const Login = () => {
             </div>
           </div>
           <ToastContainer />
-          <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
+          <div className="hide-scrollbar overflow-auto w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
             <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
               <Image
                 className="hidden dark:block"
@@ -234,12 +234,12 @@ const Login = () => {
                     {...register('email')}
                     className={classNames(
                       'w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary',
-                      { 'border-red-500': errors.email }
+                      { 'border-red ': errors.email }
                     )}
                     aria-describedby="email-error"
                   />
                   {errors.email && (
-                    <div id="email-error" className='text-sm text-red-500 mt-1'>{errors.email.message}</div>
+                    <div id="email-error" className='text-sm text-red mt-1'>{errors.email.message}</div>
                   )}
                 </div>
                 <div className="mb-4">
@@ -250,13 +250,13 @@ const Login = () => {
                     id="password"
                     {...register('password')}
                     className={classNames(
-                      'w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-white outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary',
-                      { 'border-red-500': errors.password }
+                      'w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10  outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary',
+                      { 'border-red': errors.password }
                     )}
                     aria-describedby="password-error"
                   />
                   {errors.password && (
-                    <div id="password-error" className='text-sm text-red-500 mt-1'>{errors.password.message}</div>
+                    <div id="password-error" className='text-sm text-red mt-1'>{errors.password.message}</div>
                   )}
 
                 </div>
