@@ -5,7 +5,6 @@ import { signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
 
 
-
 const DropdownUser = () => {
 
   const { data: session } = useSession();
@@ -17,9 +16,12 @@ const DropdownUser = () => {
     setLoading(true);
 
     try {
+
       const response = await fetch('/api/auth/session');
       const session = await response.json();
+      const role = session.user as { email: string; name: string; role?: string };
 
+      
       if (!session || !session.refreshToken) {
         throw new Error('No refresh token found');
       }
@@ -37,7 +39,7 @@ const DropdownUser = () => {
       if (logoutResponse.ok && logoutData.data.acknowledged) {
         // navigate("/auth/login");
         await signOut({ redirect: false });
-        window.location.href = '/auth/login'; 
+        window.location.href = '/auth/login';
       } else {
         throw new Error(logoutData.error || 'Logout failed');
       }
@@ -78,7 +80,7 @@ const DropdownUser = () => {
     return () => document.removeEventListener("keydown", keyHandler);
   });
 
-  
+
   return (
     <div className="relative">
       <Link
@@ -89,7 +91,10 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-          {session?.user?.email || 'No email found'}
+            {session?.user?.email || ''}
+          </span>
+          <span>
+            {session?.user?.role || ''}
           </span>
         </span>
 
@@ -229,5 +234,6 @@ const DropdownUser = () => {
     </div>
   );
 };
+
 
 export default DropdownUser;

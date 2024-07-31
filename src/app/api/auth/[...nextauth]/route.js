@@ -114,34 +114,43 @@ const authOptions = {
         async session({ session, token }) {
             session.accessToken = token.accessToken;
             session.refreshToken = token.refreshToken;
-            session.user.email = token.email; // Add email to session user object
-
-            console.log(token);
+            session.user.email = token.email; 
+        
             if (session.accessToken) {
-                const url = process.env.NEXT_PUBLIC_API_URL + '/users/me';
+                const url = 'http://139.84.166.124:8060/order-service/create';
                 try {
-                    const userRes = await fetch(url, {
+                    const response = await fetch(url, {
                         method: "POST",
                         headers: {
-                            "Authorization": `Bearer ${token.accessToken}`
-                        }
+                            "Authorization": `Bearer ${token.accessToken}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            order_type: "user"
+                        })
                     });
-
-                    if (userRes.ok) {
-                        const userDetails = await userRes.json();
+        
+                    if (response.ok) {
+                        const responseData = await response.json();
                         session.user = {
-                            ...userDetails,
-                            name: `${userDetails.first_name} ${userDetails.last_name}`
+                            ...session.user,
+                            email: responseData.data.email,
+                            role: responseData.data.role,
                         };
                     } else {
-                        // console.error("Failed to fetch user details:", await userRes.text());
+                        console.error("Failed to fetch user details:", await response.text());
                     }
                 } catch (error) {
                     console.error("Error fetching user details:", error);
                 }
             }
+        
+            console.log("Session object:", session); 
+            console.log("----ends here----"); 
+            
             return session;
         }
+        
     },
 
     pages: {
