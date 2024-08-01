@@ -7,15 +7,14 @@ const secret = process.env.NEXTAUTH_SECRET;
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isLoginPage = pathname === '/auth/login';
-  const isRegisterPage = pathname === '/auth/register';
   const token = await getToken({ req, secret });
 
   if (token) {
-    if (isLoginPage || isRegisterPage) {
+    if (isLoginPage) {
       return NextResponse.redirect(new URL('/', req.url));
     }
   } else {
-    if (!isLoginPage && !isRegisterPage) {
+    if (!isLoginPage) {
       return NextResponse.redirect(new URL('/auth/login', req.url));
     }
   }

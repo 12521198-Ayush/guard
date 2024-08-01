@@ -6,10 +6,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { signIn } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 import classNames from 'classnames';
-import Image from "next/image";
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useSession } from 'next-auth/react';
 import LoginLayout from '@/components/Layouts/LoginLayout'
 
 let validationSchema = yup.object({
