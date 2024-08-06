@@ -6,9 +6,11 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { signIn } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 import classNames from 'classnames';
-import { ToastContainer, toast, Bounce } from 'react-toastify';
+import { message } from 'antd';
+import { ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import LoginLayout from '@/components/Layouts/LoginLayout'
+import LoginLayout from '@/components/Layouts/LoginLayout';
+import { useState } from 'react'; 
 
 let validationSchema = yup.object({
   email: yup.string().email('Invalid email address').required('Email is required'),
@@ -16,12 +18,14 @@ let validationSchema = yup.object({
 });
 
 const Login = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false); 
   const router = useRouter();
   const { setError, register, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(validationSchema)
   });
 
   const handleFormSubmit = async (data) => {
+    setIsSubmitting(true); 
     try {
       const res = await signIn('credentials', {
         email: data.email,
@@ -30,27 +34,10 @@ const Login = () => {
         callbackUrl: '/'
       });
       if (res?.error) {
-        toast.error('Invalid email or password', {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "light",
-        });
+        message.error('Invalid email or password');
       } else {
-        toast.success('Login successful!', {
-          position: "top-center",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "light",
-          transition: Bounce,
-        });
-        setTimeout(() => router.push('/'), 1000); // Redirect after the toast message
+        message.success('Login Success');
+        setTimeout(() => router.push('/'), 1000); 
       }
     } catch (err) {
       console.error('SignIn error:', err);
@@ -63,6 +50,8 @@ const Login = () => {
         draggable: true,
         theme: "light",
       });
+    } finally {
+      setTimeout(() => setIsSubmitting(false), 2000); 
     }
   };
 
@@ -196,7 +185,7 @@ const Login = () => {
                       fill="#1C2434"
                     />
                   </svg>
-                </span>
+                </span> 
               </div>
             </div>
             <ToastContainer />
@@ -232,7 +221,7 @@ const Login = () => {
                       {...register('email')}
                       className={classNames(
                         'w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary',
-                        { 'border-red ': errors.email }
+                        { 'border-red': errors.email }
                       )}
                       aria-describedby="email-error"
                     />
@@ -262,6 +251,7 @@ const Login = () => {
                     <button
                       type="submit"
                       className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
+                      disabled={isSubmitting} // Disable the button based on state
                     >
                       Login
                     </button>

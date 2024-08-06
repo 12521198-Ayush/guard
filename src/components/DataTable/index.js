@@ -5,12 +5,17 @@ import { Button, Popconfirm, Table, Form, Space, App, Input, message } from 'ant
 import { isEmpty } from 'lodash';
 import { SearchOutlined, UserAddOutlined } from '@ant-design/icons';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import 'react-toastify/dist/ReactToastify.css';
 
+const buttonStyle = {
+    backgroundColor: 'red', // Change to your desired color
+    borderColor: 'darkred', // Change to your desired color
+};
 
 const showMessage = () => {
     message.success('Saved');
-  };
+};
 
 const DataTable = () => {
     const [gridData, setGridData] = useState([]);
@@ -47,17 +52,18 @@ const DataTable = () => {
         const dataSource = [...modifiedData];
         const filterData = dataSource.filter((item) => item.id !== value.id);
         setGridData(filterData);
-        toast.info('Flat deleted Suceessfully!', {
-            position: "top-center",
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-            transition: Bounce,
-            });
+        message.success('Deleted');
+        // toast.success('Flat deleted Suceessfully!', {
+        //     position: "top-center",
+        //     autoClose: 2000,
+        //     hideProgressBar: false,
+        //     closeOnClick: true,
+        //     pauseOnHover: true,
+        //     draggable: true,
+        //     progress: undefined,
+        //     theme: "light",
+        //     transition: Bounce,
+        // });
     };
 
     const isEditing = (record) => {
@@ -149,8 +155,24 @@ const DataTable = () => {
                 const editable = isEditing(record);
                 return modifiedData.length >= 1 ? (
                     <Space>
+
+                        <Popconfirm
+                            icon={<QuestionCircleOutlined style={{
+                                color: 'red',
+                            }} />}
+                            title="Delete Flat"
+                            description="Are you sure to delete this?"
+                            onConfirm={() => handleDelete(record)}
+                            okType="default"
+                            onCancel={cancel}
+                            okText="Yes"
+                            cancelText="No"
+
+                        >
+                            <Button style={{ backgroundColor: 'red', color: 'white' }} disabled={editable}>Delete</Button>
+                        </Popconfirm>
                         {/* <Popconfirm title="Are you sure want to delete?" > */}
-                        <Button danger type='primary' onClick={() => handleDelete(record)} disabled={editable}>Delete</Button>
+                        {/* <Button danger type='primary' >Delete</Button> */}
                         {/* </Popconfirm> */}
                         {editable ? (
                             <span>

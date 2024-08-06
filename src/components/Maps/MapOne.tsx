@@ -40,9 +40,9 @@ const MapOne: React.FC = () => {
       },
     });
 
-    return () => {
-      mapOne.destroy();
-    };
+    // return () => {
+    //   mapOne.destroy();
+    // };
   }, []);
 
   return (
