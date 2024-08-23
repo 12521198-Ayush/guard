@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
-
 
 const DropdownUser = () => {
 
@@ -12,44 +11,39 @@ const DropdownUser = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSignOut = async () => {
-    setLoading(true);
+  const logout = useCallback(() => {
+    const accessToken = session?.user?.accessToken || undefined
 
-    try {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
+      method: "POST",
+      body: JSON.stringify({ accessToken })
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data)
+        /* send log to the Sentry if the endpoint fails
+        if (!data.success)
+            notifySentry("Could not log out!")
+        */
+      })
+      .catch(error => {
+        console.log(error)
+        /* send log to the Sentry if an error occurs
+        notifySentry(error)
+         */
+      })
+      .finally(async () => {
+        await signOut({ callbackUrl: `${window.location.origin}/login` })
+      })
+  }, [session])
 
-      const response = await fetch('/api/auth/session');
-      const session = await response.json();
-      const role = session.user as { email: string; name: string; role?: string };
-
-      
-      if (!session || !session.refreshToken) {
-        throw new Error('No refresh token found');
-      }
-
-      const logoutResponse = await fetch('http://139.84.166.124:8060/user-service/user/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token: session.refreshToken }),
-      });
-
-      const logoutData = await logoutResponse.json();
-
-      if (logoutResponse.ok && logoutData.data.acknowledged) {
-        // navigate("/auth/login");
-        await signOut({ redirect: false });
-        window.location.href = '/auth/login';
-      } else {
-        throw new Error(logoutData.error || 'Logout failed');
-      }
-    } catch (err) {
-      console.error('Error during sign out:', err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    console.log('session: ', session)
+    if (session?.error === "RefreshAccessTokenError") { // remember that error?
+      // force the user to log out if the session has RefreshAccessTokenError
+      logout()
     }
-  };
-
+  }, [session, logout])
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -209,7 +203,7 @@ const DropdownUser = () => {
             </Link>
           </li>
         </ul>
-        <button onClick={handleSignOut} className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+        <button onClick={logout} className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
           <svg
             className="fill-current"
             width="22"

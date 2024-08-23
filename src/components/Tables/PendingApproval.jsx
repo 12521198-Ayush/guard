@@ -29,7 +29,7 @@ const DataTable = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get("http://localhost/test/get-approval.php");
+            const response = await axios.get("http://localhost/getdata/data.php");
             setGridData(response.data);
             setFilteredData(response.data);
         } catch (error) {
@@ -84,14 +84,14 @@ const DataTable = () => {
 
     const edit = (record) => {
         form.setFieldsValue({
-            apartmentInfo: "",
+            apartment_info: "",
             name: "",
-            phoneNo: "",
+            phone_no: "",
             type: "",
-            requestType: "",
-            apartmentBillDue: "",
-            idUploaded: "",
-            creationDate: "",
+            request_type: "",
+            apartment_bill_due: "",
+            id_uploaded: "",
+            creation_date: "",
         });
         setEditRowKey(record.key);
     };
@@ -103,10 +103,10 @@ const DataTable = () => {
     const columns = [
         {
             title: "Apartment Info",
-            dataIndex: "apartmentInfo",
-            key: "apartmentInfo",
-            sorter: (a, b) => a.apartmentInfo.localeCompare(b.apartmentInfo),
-            sortOrder: sortedInfo.columnKey === 'apartmentInfo' && sortedInfo.order,
+            dataIndex: "apartment_info",
+            key: "apartment_info",
+            sorter: (a, b) => a.apartmentInfo.localeCompare(b.apartment_info),
+            sortOrder: sortedInfo.columnKey === 'apartment_info' && sortedInfo.order,
             editable: true,
         },
         {
@@ -118,10 +118,10 @@ const DataTable = () => {
         },
         {
             title: "Phone No",
-            dataIndex: "phoneNo",
-            key: "phoneNo",
-            sorter: (a, b) => a.phoneNo.localeCompare(b.phoneNo),
-            sortOrder: sortedInfo.columnKey === 'phoneNo' && sortedInfo.order,
+            dataIndex: "phone_no",
+            key: "phone_no",
+            sorter: (a, b) => a.phoneNo.localeCompare(b.phone_no),
+            sortOrder: sortedInfo.columnKey === 'phone_no' && sortedInfo.order,
         },
         {
             title: "Type",
@@ -132,31 +132,31 @@ const DataTable = () => {
         },
         {
             title: "Request Type",
-            dataIndex: "requestType",
-            key: "requestType",
-            sorter: (a, b) => a.requestType.localeCompare(b.requestType),
-            sortOrder: sortedInfo.columnKey === 'requestType' && sortedInfo.order,
+            dataIndex: "request_type",
+            key: "request_type",
+            sorter: (a, b) => a.requestType.localeCompare(b.request_type),
+            sortOrder: sortedInfo.columnKey === 'request_type' && sortedInfo.order,
         },
         {
             title: "Apartment Bill Due",
-            dataIndex: "apartmentBillDue",
-            key: "apartmentBillDue",
-            sorter: (a, b) => parseFloat(a.apartmentBillDue) - parseFloat(b.apartmentBillDue),
-            sortOrder: sortedInfo.columnKey === 'apartmentBillDue' && sortedInfo.order,
+            dataIndex: "apartment_bill_due",
+            key: "apartment_bill_due",
+            sorter: (a, b) => parseFloat(a.apartment_bill_due) - parseFloat(b.apartment_bill_due),
+            sortOrder: sortedInfo.columnKey === 'apartment_bill_due' && sortedInfo.order,
         },
         {
             title: "ID Uploaded",
-            dataIndex: "idUploaded",
-            key: "idUploaded",
-            sorter: (a, b) => new Date(a.idUploaded) - new Date(b.idUploaded),
-            sortOrder: sortedInfo.columnKey === 'idUploaded' && sortedInfo.order,
+            dataIndex: "id_uploaded",
+            key: "id_uploaded",
+            sorter: (a, b) => new Date(a.id_uploaded) - new Date(b.id_uploaded),
+            sortOrder: sortedInfo.columnKey === 'id_uploaded' && sortedInfo.order,
         },
         {
             title: "Creation Date",
-            dataIndex: "creationDate",
-            key: "creationDate",
-            sorter: (a, b) => new Date(a.creationDate) - new Date(b.creationDate),
-            sortOrder: sortedInfo.columnKey === 'creationDate' && sortedInfo.order,
+            dataIndex: "creation_date",
+            key: "creation_date",
+            sorter: (a, b) => new Date(a.creation_date) - new Date(b.creation_date),
+            sortOrder: sortedInfo.columnKey === 'creation_date' && sortedInfo.order,
         },
         {
             title: "Action",
