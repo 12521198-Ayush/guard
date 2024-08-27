@@ -39,16 +39,17 @@ async function refreshAccessToken(token) {
         console.log("The token has been refreshed successfully.")
         // get some data from the new access token such as exp (expiration time)
         console.log("Decoding token 2nd ... ")
-        const decodedAccessToken = JSON.parse(Buffer.from(data.accessToken.split(".")[1], "base64").toString())
-        console.log("Decoded token 2nd ... ")
+        const decodedAccessToken = JSON.parse(Buffer.from(data.data.accessToken.split(".")[1], "base64").toString())
+
+
         return {
             ...token,
-            accessToken: data.accessToken,
-            refreshToken: data.refreshToken ?? token.refreshToken,
-            idToken: data.idToken,
+            accessToken: data.data.accessToken,
+            refreshToken: data.data.refreshToken ?? token.refreshToken,
+            idToken: data.data.idToken,
             accessTokenExpires: decodedAccessToken["exp"] * 1000,
-            error: "",
-        }
+            error: "",
+        }
     } catch (error) {
         console.log(error)
         // return an error if somethings goes wrong
