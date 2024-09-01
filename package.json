@@ -16,10 +16,13 @@
     "@hookform/resolvers": "^3.9.0",
     "@mui/icons-material": "^5.16.4",
     "@mui/material": "^5.16.4",
+    "@radix-ui/react-avatar": "^1.1.0",
+    "@radix-ui/react-dropdown-menu": "^2.1.1",
     "antd": "^5.19.3",
     "apexcharts": "^3.45.2",
     "axios": "^1.7.2",
     "babel-plugin-import": "^1.13.8",
+    "class-variance-authority": "^0.7.0",
     "element-plus": "^2.7.7",
     "flatpickr": "^4.6.13",
     "formik": "^2.4.6",
@@ -29,6 +32,7 @@
     "jsvectormap": "^1.5.3",
     "loadash": "^1.0.0",
     "lodash": "^4.17.21",
+    "lucide-react": "^0.437.0",
     "next": "^14.2.5",
     "next-auth": "^5.0.0-beta.18",
     "react": "^18",
@@ -38,7 +42,9 @@
     "react-hook-form": "^7.52.1",
     "react-router-dom": "^6.25.1",
     "react-toastify": "^10.0.5",
-    "yup": "^1.4.0"
+    "tailwind-merge": "^2.5.2",
+    "yup": "^1.4.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.6",

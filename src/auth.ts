@@ -1,10 +1,10 @@
 import NextAuth from "next-auth"
 import { cookies, headers } from "next/headers"
-import type { NextAuthOptions } from "next-auth"
+import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PRIVATE_ROUTES as privateRoutes } from "@/constants/ROUTES"
-
 // @ts-ignore
+
 async function refreshAccessToken(token) { 
     // this is our refresh token method
     console.log("Now refreshing the expired token...")
@@ -76,7 +76,8 @@ export const config = {
                     type: "password",
                 },
             },
-            async authorize(credentials, req) {
+            async authorize(credentials, req):Promise<any> {
+                
                 const payload = {
                     email: credentials.email,
                     password: credentials.password,
@@ -233,6 +234,6 @@ export const config = {
         },
     },
     debug: process.env.NODE_ENV === "development",
-} satisfies NextAuthOptions;
+} satisfies NextAuthConfig;
 
 export const { auth, handlers } = NextAuth(config);

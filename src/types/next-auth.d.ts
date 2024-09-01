@@ -1,7 +1,7 @@
 import { DefaultSession } from "next-auth"
 
 declare module "next-auth" {
-    interface User {
+   export interface User {
         id: string
         email: string
         name: String
@@ -16,7 +16,7 @@ declare module "next-auth" {
     
     }
 
-    interface Session {
+   export interface Session {
         user: User & DefaultSession["user"]
         expires: string
         error: string

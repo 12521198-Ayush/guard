@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image"
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -207,16 +208,16 @@ export default function LoginPage() {
                         <ToastContainer />
                         <div className="hide-scrollbar overflow-auto w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
                             <div className="pl-9 w-full p-4 sm:p-12.5 xl:p-17.5">
-                                <img
+                                <Image
                                     className="pl-9 hidden dark:block"
-                                    src="https://wa.chatmybot.in/Shareablelinks/20166/388503/logo.png"
+                                    src={"/images/logo/logo.png"}
                                     alt="Logo"
                                     width={126}
                                     height={32}
                                 />
-                                <img
+                                <Image
                                     className="pl-9 dark:hidden"
-                                    src="https://wa.chatmybot.in/Shareablelinks/20166/388503/logo.png"
+                                    src={"/images/logo/logo.png"}
                                     alt="Logo"
                                     width={126}
                                     height={32}
@@ -240,7 +241,7 @@ export default function LoginPage() {
                                         <CardFooter className="flex flex-col">
                                             <LoginButton />
                                             <p className="mt-2 text-base text-center text-gray-700">
-                                                Don't have an account?
+                                                Don&apos;t have an account?
                                                 <Link href="/register" className="text-blue-600 hover:underline">&nbsp; Sign up</Link>
                                             </p>
 
