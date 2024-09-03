@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 
 const Profile = () => {
   return (
-    <DefaultLayout>
-      <div className="mx-auto max-w-242.5">
+   <>
+   <div className="mx-auto max-w-242.5">
         <Breadcrumb pageName="Profile" />
 
         <div className="overflow-hidden rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -309,7 +309,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
-    </DefaultLayout>
+   </>
   );
 };
 

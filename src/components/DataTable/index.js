@@ -1,21 +1,13 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { Button, Popconfirm, Table, Form, Space, App, Input, message } from 'antd';
+import { Button, Popconfirm, Table, Form, Space, Input, message, Grid } from 'antd';
 import { isEmpty } from 'lodash';
-import { SearchOutlined, UserAddOutlined } from '@ant-design/icons';
-import { ToastContainer, toast, Bounce } from 'react-toastify';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserAddOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
-const buttonStyle = {
-    backgroundColor: 'red', // Change to your desired color
-    borderColor: 'darkred', // Change to your desired color
-};
-
-const showMessage = () => {
-    message.success('Saved');
-};
+const { useBreakpoint } = Grid;
 
 const DataTable = () => {
     const [gridData, setGridData] = useState([]);
@@ -26,6 +18,8 @@ const DataTable = () => {
     const [searchText, setSearchText] = useState("");
     let [filteredData] = useState();
 
+    const screens = useBreakpoint();
+
     useEffect(() => {
         loadData();
     }, []);
@@ -35,7 +29,7 @@ const DataTable = () => {
         const response = await axios.get("https://jsonplaceholder.typicode.com/comments");
         setGridData(response.data);
         setLoading(false);
-    }
+    };
 
     const dateWithAge = gridData.map((item) => ({
         ...item,
@@ -53,26 +47,15 @@ const DataTable = () => {
         const filterData = dataSource.filter((item) => item.id !== value.id);
         setGridData(filterData);
         message.success('Deleted');
-        // toast.success('Flat deleted Suceessfully!', {
-        //     position: "top-center",
-        //     autoClose: 2000,
-        //     hideProgressBar: false,
-        //     closeOnClick: true,
-        //     pauseOnHover: true,
-        //     draggable: true,
-        //     progress: undefined,
-        //     theme: "light",
-        //     transition: Bounce,
-        // });
     };
 
     const isEditing = (record) => {
         return record.key === editRowKey;
-    }
+    };
 
     const cancel = () => {
         setEditRowKey("");
-    }
+    };
 
     const save = async (key) => {
         try {
@@ -92,7 +75,7 @@ const DataTable = () => {
         } catch (errInfo) {
             console.log('Validate Failed:', errInfo);
         }
-    }
+    };
 
     const edit = (record) => {
         form.setFieldsValue({
@@ -102,17 +85,40 @@ const DataTable = () => {
             ...record,
         });
         setEditRowKey(record.key);
-    }
+    };
 
     const handleChange = (...sorter) => {
         const { order, field } = sorter[2];
         setSortedInfo({ columnKey: field, order });
-    }
+    };
+
+    // Define the EditableCell component
+    const EditableCell = ({ editing, dataIndex, title, record, children, ...restProps }) => {
+        const input = <Input />;
+        return (
+            <td {...restProps}>
+                {editing ? (
+                    <Form.Item
+                        name={dataIndex}
+                        style={{ margin: 0 }}
+                        rules={[{
+                            required: true,
+                            message: `Please input some value in ${title}`
+                        }]}>
+                        {input}
+                    </Form.Item>
+                ) : (
+                    children
+                )}
+            </td>
+        );
+    };
 
     const columns = [
         {
             title: "ID",
-            dataIndex: "id"
+            dataIndex: "id",
+            responsive: ['md'],
         },
         {
             title: "Name",
@@ -121,7 +127,6 @@ const DataTable = () => {
             editable: true,
             sorter: (a, b) => a.name.length - b.name.length,
             sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
-
         },
         {
             title: "Email",
@@ -130,14 +135,16 @@ const DataTable = () => {
             editable: true,
             sorter: (a, b) => a.email.length - b.email.length,
             sortOrder: sortedInfo.columnKey === 'email' && sortedInfo.order,
+            responsive: ['sm'],
         },
         {
             title: "Age",
             dataIndex: "age",
             align: "center",
             editable: true,
-            sorter: (a, b) => a.age.length - b.age.length,
+            sorter: (a, b) => a.age - b.age,
             sortOrder: sortedInfo.columnKey === 'age' && sortedInfo.order,
+            responsive: ['lg'],
         },
         {
             title: "Message",
@@ -155,32 +162,23 @@ const DataTable = () => {
                 const editable = isEditing(record);
                 return modifiedData.length >= 1 ? (
                     <Space>
-
                         <Popconfirm
-                            icon={<QuestionCircleOutlined style={{
-                                color: 'red',
-                            }} />}
-                            title="Delete Flat"
+                            icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                            title="Delete"
                             description="Are you sure to delete this?"
                             onConfirm={() => handleDelete(record)}
                             okType="default"
                             onCancel={cancel}
                             okText="Yes"
                             cancelText="No"
-
                         >
                             <Button style={{ backgroundColor: 'red', color: 'white' }} disabled={editable}>Delete</Button>
                         </Popconfirm>
-                        {/* <Popconfirm title="Are you sure want to delete?" > */}
-                        {/* <Button danger type='primary' >Delete</Button> */}
-                        {/* </Popconfirm> */}
                         {editable ? (
-                            <span>
-                                <Space size="middle">
-                                    <Button onClick={() => { save(record.key); showMessage(); }}>Save</Button>
-                                    <Button onClick={cancel}>Cancel</Button>
-                                </Space>
-                            </span>
+                            <Space size="middle">
+                                <Button onClick={() => { save(record.key); message.success('Saved'); }}>Save</Button>
+                                <Button onClick={cancel}>Cancel</Button>
+                            </Space>
                         ) : (
                             <Button onClick={() => edit(record)}>
                                 Edit
@@ -188,8 +186,8 @@ const DataTable = () => {
                         )}
                     </Space>
                 ) : null;
-            }
-        }
+            },
+        },
     ];
 
     const mergedColumns = columns.map((col) => {
@@ -207,25 +205,6 @@ const DataTable = () => {
         };
     });
 
-    const EditableCell = ({ editing, dataIndex, title, record, children, ...restProps }) => {
-        const input = <Input />;
-        return (
-            <td {...restProps}>
-                {editing ? (
-                    <Form.Item
-                        name={dataIndex}
-                        style={{ margin: 0 }}
-                        rules={[{
-                            required: true,
-                            message: `Please input some value in ${title}`
-                        }]}>
-                        {input}
-                    </Form.Item>
-                ) : (children)}
-            </td>
-        );
-    };
-
     const reset = () => {
         setSortedInfo({});
         setSearchText("");
@@ -233,11 +212,11 @@ const DataTable = () => {
     };
 
     const handleSearch = (e) => {
-        setSearchText(e.target.value)
+        setSearchText(e.target.value);
         if (e.target.value === "") {
             loadData();
         }
-    }
+    };
 
     const globalSearch = () => {
         filteredData = modifiedData.filter((value) => {
@@ -251,24 +230,27 @@ const DataTable = () => {
     };
 
     return (
-        <div>
+        <div style={{ padding: screens.xs ? '10px' : '20px' }}>
             <ToastContainer />
-            <Space style={{ marginBottom: 16 }}>
+            <Space style={{ marginBottom: 16, flexWrap: 'wrap' }}>
                 <Input
                     placeholder='Enter Search Text'
                     onChange={handleSearch}
                     type='text'
                     allowClear
                     value={searchText}
+                    style={{ width: screens.xs ? '100%' : 'auto' }}
                 />
-                <Button onClick={globalSearch} icon={<SearchOutlined />}>
+                <Button onClick={globalSearch} icon={<SearchOutlined />} style={{ width: screens.xs ? '100%' : 'auto' }}>
                     Search
                 </Button>
-                <Button onClick={reset}>Reset</Button>
+                <Button onClick={reset} style={{ width: screens.xs ? '100%' : 'auto' }}>
+                    Reset
+                </Button>
                 <Link href="/flats-residents/add-flats">
-
-                    <UserAddOutlined />
-
+                    <Button icon={<UserAddOutlined />} style={{ width: screens.xs ? '100%' : 'auto' }}>
+                        Add New
+                    </Button>
                 </Link>
             </Space>
             <Form form={form} component={false}>
@@ -277,17 +259,18 @@ const DataTable = () => {
                     components={{
                         body: {
                             cell: EditableCell,
-                        }
+                        },
                     }}
                     dataSource={filteredData && filteredData.length ? filteredData : modifiedData}
                     bordered
                     loading={loading}
                     onChange={handleChange}
+                    pagination={{ pageSize: screens.xs ? 5 : 10 }}
+                    scroll={{ x: screens.xs ? 600 : undefined }}
                 />
             </Form>
         </div>
-    )
-}
+    );
+};
 
 export default DataTable;
-

@@ -5,20 +5,18 @@ import Link from 'next/link';
 
 
 const App: React.FC = () => (
-    <DefaultLayout>
         <Result
             status="404"
             title="404"
             subTitle="Sorry, the page you visited does not exist."
             extra={
                 <Link
-                    href="/"
+                    href="/dashboard"
                 >
                     <Button >Back Home</Button>
                 </Link>
             }
         />
-    </DefaultLayout>
 );
 
 export default App;

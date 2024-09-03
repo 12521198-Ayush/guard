@@ -115,6 +115,7 @@ export const config = {
                 const user = {
                     isAdmin: true, 
                     username: credentials.email,
+                    role: userData.data.role,
                     email: credentials.email,
                     name:"Gaurav Bansaaal", 
                     img:"/avatar.png",
@@ -161,12 +162,11 @@ export const config = {
                 token.id = user.id
                 token.accessToken = user.accessToken
                 token.refreshToken = user.refreshToken
-                token.role = "Unknown" // the user role
+                token.role = user.role // the user role
                 console.log("Decoding token 1st ... ")
                 const decodedAccessToken = JSON.parse(Buffer.from(user.accessToken.split(".")[1], "base64").toString())
                 console.log("Decoded token 1st ... ")
                 if (decodedAccessToken) {
-                    token.role = decodedAccessToken["role"] as string
                     token.email = decodedAccessToken["email"] as string
                     token.userId = decodedAccessToken["sub"] as string
                     token.societyList = decodedAccessToken["society_array"] as string[]
@@ -226,7 +226,7 @@ export const config = {
             } else if (pathname.startsWith("/login") || pathname.startsWith("/forgot-password") || pathname.startsWith("/signup")) {
                 const isLoggedIn = !!auth
                 if (isLoggedIn) {
-                    return Response.redirect(new URL("/", request.nextUrl))
+                    return Response.redirect(new URL("/dashboard", request.nextUrl))
                 }
                 return true
             }

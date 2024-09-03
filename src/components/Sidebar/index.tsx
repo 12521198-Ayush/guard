@@ -23,7 +23,6 @@ interface SidebarProps {
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const pathname = usePathname();
-
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
 
@@ -77,7 +76,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       {/* <!-- SIDEBAR HEADER --> */}
       <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
         <div className="text-white flex text-md justify-center items-center">
-          <Link href="/">
+          <Link href="/dashboard">
             <Image
               width={52}
               height={52}
@@ -125,8 +124,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
              {/* home menu */}
               <li>
                 <Link
-                  href="/"
-                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/" && "text-white"
+                  href="/dashboard"
+                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
                     }`}
                 >
                   <HomeSharpIcon />
@@ -185,7 +184,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           <li>
                             <Link
                               href="/society-management/pending-approvals"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/pending-approvals" && "text-white"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/society-management/pending-approvals" && "text-white"
                                 }`}
                             >
                               Pending Approvals
@@ -266,15 +265,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* flats and residents menu  */}
               <SidebarLinkGroup
                 activeCondition={
-                  pathname === "/flats-residents" || pathname.includes("/flats-residents")
+                  pathname === "/flats-residents" || pathname.includes("flats-residents")
                 }
               >
                 {(handleClick, open) => {
                   return (
                     <React.Fragment>
                       <Link
-                        href="/"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
+                        href="/flats-residents"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/flats-residents" ||
                           pathname.includes("flats-residents")) &&
                           "bg-graydark dark:bg-meta-4"
                           }`}

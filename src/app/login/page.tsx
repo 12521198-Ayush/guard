@@ -66,8 +66,8 @@ export default function LoginPage() {
                         router.push(callbackUrl as Route)
                     else
                         message.success('Login Success');
-                    setTimeout(() => router.push('/'), 1000);
-                    router.push("/")
+                    setTimeout(() => router.push('/dashboard'), 1000);
+                    
                 }
             })
     }
