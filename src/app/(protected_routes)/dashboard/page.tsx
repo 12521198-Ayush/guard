@@ -1,15 +1,9 @@
-'use client'
+import dynamic from 'next/dynamic';
 
-import ECommerce from "../../../components/Dashboard/E-commerce";
-import React from 'react';
+const ECommerce = dynamic(() => import("../../../components/Dashboard/E-commerce"), { ssr: false });
 
-const page = () => {
-  return (
-    <>
-       <ECommerce/>
-    </>
-    
-  )
-}
+const Page = () => {
+  return <ECommerce />;
+};
 
-export default page
+export default Page;

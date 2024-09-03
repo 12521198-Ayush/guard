@@ -10,6 +10,7 @@ import "@/css/satoshi.css";
 import "@/css/style.css";
 
 
+
 export default async function RootLayout({ children,
 }: {
   children: React.ReactNode
@@ -19,10 +20,10 @@ export default async function RootLayout({ children,
   return (
     <html lang="en">
       <body suppressHydrationWarning={true}>
-      <AuthProvider session={session}>
-        {children}
-      </AuthProvider>
-    </body>
+        <AuthProvider session={session}>
+          {children}
+        </AuthProvider>
+      </body>
     </html >
   );
 }
