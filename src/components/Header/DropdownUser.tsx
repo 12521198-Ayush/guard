@@ -20,14 +20,14 @@ const DropdownUser = () => {
     })
       .then(res => res.json())
       .then(data => {
-        console.log(data)
+        // // console.log(data)
         /* send log to the Sentry if the endpoint fails
         if (!data.success)
             notifySentry("Could not log out!")
         */
       })
       .catch(error => {
-        console.log(error)
+        // // console.log(error)
         /* send log to the Sentry if an error occurs
         notifySentry(error)
          */
@@ -38,7 +38,7 @@ const DropdownUser = () => {
   }, [session])
 
   useEffect(() => {
-    console.log('session: ', session)
+    // // console.log('session: ', session)
     if (session?.error === "RefreshAccessTokenError") { // remember that error?
       // force the user to log out if the session has RefreshAccessTokenError
       logout()
@@ -83,11 +83,11 @@ const DropdownUser = () => {
         className="flex items-center gap-4"
         href="#"
       >
-        <span className="hidden text-right lg:block">
+        {/* <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
             {session?.user?.name || ''}
           </span>
-        </span>
+        </span> */}
 
         <span className="h-12 w-12 rounded-full">
           <Image
@@ -127,6 +127,8 @@ const DropdownUser = () => {
         className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? "block" : "hidden"
           }`}
       >
+
+
         <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
           <li>
             <Link
@@ -150,10 +152,15 @@ const DropdownUser = () => {
                   fill=""
                 />
               </svg>
-              My Profile
+              {session?.user?.name || 'User'} 
+              <br></br>
+              (
+              {session?.user?.role || 'Role'}
+              )
+
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link
               href="#"
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
@@ -173,8 +180,8 @@ const DropdownUser = () => {
               </svg>
               My Contacts
             </Link>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <Link
               href="/settings"
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
@@ -198,7 +205,7 @@ const DropdownUser = () => {
               </svg>
               Account Settings
             </Link>
-          </li>
+          </li> */}
         </ul>
         <button onClick={logout} className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
           <svg
@@ -209,6 +216,7 @@ const DropdownUser = () => {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
+
             <path
               d="M15.5375 0.618744H11.6531C10.7594 0.618744 10.0031 1.37499 10.0031 2.26874V4.64062C10.0031 5.05312 10.3469 5.39687 10.7594 5.39687C11.1719 5.39687 11.55 5.05312 11.55 4.64062V2.23437C11.55 2.16562 11.5844 2.13124 11.6531 2.13124H15.5375C16.3625 2.13124 17.0156 2.78437 17.0156 3.60937V18.3562C17.0156 19.1812 16.3625 19.8344 15.5375 19.8344H11.6531C11.5844 19.8344 11.55 19.8 11.55 19.7312V17.3594C11.55 16.9469 11.2062 16.6031 10.7594 16.6031C10.3125 16.6031 10.0031 16.9469 10.0031 17.3594V19.7312C10.0031 20.625 10.7594 21.3812 11.6531 21.3812H15.5375C17.2219 21.3812 18.5625 20.0062 18.5625 18.3562V3.64374C18.5625 1.95937 17.1875 0.618744 15.5375 0.618744Z"
               fill=""
@@ -220,7 +228,9 @@ const DropdownUser = () => {
           </svg>
           Log Out
         </button>
+
       </div>
+
       {/* <!-- Dropdown End --> */}
     </div>
   );

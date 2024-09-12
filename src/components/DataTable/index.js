@@ -73,7 +73,7 @@ const DataTable = () => {
                 setEditRowKey("");
             }
         } catch (errInfo) {
-            console.log('Validate Failed:', errInfo);
+            // // console.log('Validate Failed:', errInfo);
         }
     };
 

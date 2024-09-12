@@ -25,7 +25,7 @@ export default function Page() {
       floor: formData.get('floor') as string,
       extensionNumber: formData.get('extensionNumber') as string,
     };
-    console.log(flatData);
+    // // console.log(flatData);
 
     toast.success('Flat added Successfully', {
       position: "top-center",

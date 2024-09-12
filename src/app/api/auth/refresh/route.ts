@@ -14,8 +14,8 @@ export async function POST(request: Request) {
     // // }
     // // const refreshToken = cookies().get(`${prefix}xxx.refresh-token`)?.value
 
-    // console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    // console.log(payload);
+    // // // console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    // // // console.log(payload);
     const prefix = process.env.NODE_ENV === "development" ? "__Dev-" : ""
     const refreshToken = cookies().get(`${prefix}xxx.refresh-token`)?.value
     const payload = {token: refreshToken};

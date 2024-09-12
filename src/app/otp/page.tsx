@@ -1,77 +1,69 @@
 'use client';
 
 import Link from "next/link";
-import Image from "next/image"
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button, Flex } from 'antd';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-//import { useFormStatus } from "react-dom";
+import { Input, Button } from 'antd';
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import LoginLayout from '@/components/Layouts/LoginLayout';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Route } from "next";
 import { message } from 'antd';
-import { signIn } from "next-auth/react"
-import { useSearchParams } from "next/navigation"
-import type { SignInResponse } from "next-auth/react";
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { createHash } from 'crypto';
+import { useState, FormEvent, ChangeEvent } from "react";
 import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/material.css'
-//import { authenticate } from "@/lib/actions/auth";
-import { useFormState, useFormStatus } from "react-dom";
-import { useState } from "react";
-import React, { FormEvent, ChangeEvent } from 'react';
-
+import 'react-phone-input-2/lib/material.css';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export default function LoginPage() {
-
     const router = useRouter();
     const searchParams = useSearchParams();
     const [errorMessage, setErrorMessage] = useState("");
-    const [phoneValue, setPhoneValue] = useState<string>('');
-    const [inputValue, setInputValue] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
+    const [otp, setOtp] = useState<string>('');
+    const [otpFieldVisible, setOtpFieldVisible] = useState<boolean>(false);
 
-    async function login(formData: FormData) {
-        const { username, password } = Object.fromEntries(formData);
+    async function login() {
         const callbackUrl = searchParams.get("callbackUrl");
+        handleClick();
 
+        // Call the signIn function with mobile_hash and otp_hash
         signIn("credentials", {
-            username: username,
-            password: password,
+            mobile: username,
+            otp: otp,
             redirect: false,
         })
-            .then((res: SignInResponse | undefined) => {
-                console.log("===== RES =======");
-                console.log(res);
-
+            .then((res) => {
                 if (!res) {
-                    alert("No response!");
                     setErrorMessage("No response!");
                     return;
                 }
                 if (!res.ok) {
                     setErrorMessage("Something went wrong!");
                 } else if (res.error) {
-                    console.log(res.error);
                     let errMessage = "";
                     if (res.error == "CallbackRouteError" || res.error == "CredentialsSignin") {
                         errMessage = "Could not login! Please check your credentials.";
-
+                        handleloginClick();
                         setErrorMessage(errMessage);
                     } else {
-                        if (username == '' || password == '') {
-                            message.error('Please enter your credentials');
+                        if (otp == '') {
+                            handleloginClick();
+                            message.error('Enter your OTP');
                         } else {
-                            message.error('Could not login! Please check your credentials');
-
+                            handleloginClick();
+                            message.error('Invalid OTP');
                         }
                         // errMessage = `Internal Server Error: ${res.error}`;
                         // setErrorMessage(errMessage);
                     }
                 } else {
                     if (callbackUrl) {
-                        router.push(callbackUrl as Route);
+                        router.push(callbackUrl);
                     } else {
+                        handleloginClick();
                         message.success('Login Success');
                         setTimeout(() => router.push('/dashboard'), 1000);
                     }
@@ -79,68 +71,101 @@ export default function LoginPage() {
             });
     }
 
-    const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setPassword(e.target.value); // Update the password state
-    };
-    // const handleusernameChange = (value: string, data: {}, event: ChangeEvent<HTMLInputElement>, formattedValue: string) => {
-    //     setusername(value);  // Update the state with the new phone number
-    // };
 
-    const handleusernameChange = (phone:string, country:any) => {
-        const reducedPhone = phone.replace(country.dialCode,'',);
+    const handleUsernameChange = (phone: string, country: any) => {
+        const reducedPhone = phone.replace(country.dialCode, '',);
         // console.log(reducedPhone);
         // console.log(country.dialCode);
         // console.log(country.dialCode + '-' + reducedPhone);
         const paddedCountryCode = country.dialCode.padStart(5, '0');
         const uname = paddedCountryCode + reducedPhone
-        setusername(uname);
+        setUsername(uname);
     };
 
-    const [password, setPassword] = useState<string>('');
-    const [username, setusername] = useState<string>('');
-
-
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        handleClick();
-
-        // Check whether we are using phone or email as the identifier
-
-        // Create FormData object
-        const formData = new FormData();
-
-        // Append email or phone number (use 'email' for email and phone number)
-        formData.append('username', username);  // Ensure you're using 'email' as expected by next-auth
-
-        // Append password from state
-        formData.append('password', password);
-        console.log(formData);
-
-
-
-
-        // Call the login function with formData
-        await login(formData);
+    const handleOtpChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setOtp(e.target.value);
     };
 
     const [isDisabled, setIsDisabled] = useState(false);
+    const [isloginDisabled, setIsloginDisabled] = useState(false);
     const handleClick = () => {
         setIsDisabled(true); // Disable the button
 
-        // Re-enable the button after 5 seconds (5000 milliseconds)
         setTimeout(() => {
             setIsDisabled(false);
-        }, 5000);
+        }, 10000);
+    };
+    const handleloginClick = () => {
+        setIsloginDisabled(true); // Disable the button
+
+        setTimeout(() => {
+            setIsloginDisabled(false);
+        }, 4000);
     };
 
-    const LoginviaOTP = () => {
-        router.push('/otp');
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+        // const uname = findAndPadCountryCode(username) || '';
+        // console.log('```````````````````')
+        // console.log(uname)
+        const hashedUsername = createHash('md5').update(username).digest('hex');
+        const payload = {
+            mobile_hash: hashedUsername
+        };
+        // Continue with the rest of the logic
+
+        try {
+            const res = await fetch(`http://139.84.166.124:8060/user-service/admin/login/otp_challenge`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const userData = await res.json();
+
+            if (!res.ok) {
+                if (username == '') {
+                    message.error('Please enter your number');
+                }
+                else if (res.status === 401) {
+                    message.error('Your number is not registered');
+                } else {
+                    message.error('Error sending OTP');
+                }
+                throw new Error(userData.error?.message || 'An error occurred');
+            } else {
+                handleClick();
+                message.success('OTP sent');
+                setOtpFieldVisible(true);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+    };
+
+    const LoginviaPass = () => {
+        router.push('/login');
     }
 
+    // const findAndPadCountryCode = (phoneNumber: any) => {
+    //     const phoneNumberParsed = parsePhoneNumberFromString(phoneNumber);
+
+    //     if (phoneNumberParsed) {
+    //         let countryCode = phoneNumberParsed.countryCallingCode;
+
+    //         // Pad the country code with leading zeros to make it 5 digits
+    //         const paddedCountryCode = countryCode.padStart(5, '0');
+
+    //         return paddedCountryCode;
+    //     }
+
+    // };
+
     return (
-
         <LoginLayout>
-
             <div className="flex h-screen overflow-hidden relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
                 <div className="hide-scrollbar overflow-auto rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <div className="hide-scrollbar overflow-auto flex flex-wrap items-center">
@@ -290,73 +315,112 @@ export default function LoginPage() {
                                     width={126}
                                     height={32}
                                 />
-                                <span className="mb-1.5 block font-medium"></span>
-
                                 <h2 className="pl-9 mb-5 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
                                     SERVIZING
                                 </h2>
 
-                                <form onSubmit={handleSubmit}>
-                                    <div className="mb-4">
+
+                                <div className="mb-4">
+                                    <CardContent className="grid gap-4">
+                                        <PhoneInput
+                                            country={'in'}
+                                            onChange={handleUsernameChange}
+                                            inputStyle={{ width: '100%' }}
+                                            enableSearch={true}
+                                            //enableLongNumbers={true}
+                                            containerClass="w-full rounded-lg border border-stroke bg-transparent dark:border-form-strokedark dark:bg-form-input"
+                                            inputClass="w-full py-4 pl-6 pr-20 text-black outline-none focus:border-primary focus-visible:shadow-none dark:text-white dark:focus:border-primary"
+                                        />
 
 
-                                        <CardContent className="grid gap-4">
 
-                                            <PhoneInput
-                                                country={'in'}
-                                                value={phoneValue}
-                                                onChange={handleusernameChange}
-                                                inputStyle={{ width: '100%' }}
-                                                enableSearch={true}
-                                                enableLongNumbers={true}
-
-                                                containerClass="w-full rounded-lg border border-stroke bg-transparent dark:border-form-strokedark dark:bg-form-input"
-                                                inputClass="w-full py-4 pl-6 pr-20 text-black outline-none focus:border-primary focus-visible:shadow-none dark:text-white dark:focus:border-primary"
+                                        {otpFieldVisible && (
+                                            <Input
+                                                id="otp"
+                                                placeholder="Enter OTP"
+                                                type="text"
+                                                value={otp}
+                                                onChange={handleOtpChange}
+                                                className="w-full py-4 px-6 text-black outline-none focus:border-primary focus-visible:shadow-none dark:text-white"
                                             />
+                                            // <div className="p-4">
+                                            //     <OtpInputWithButton
+                                            //         otp={otp}
+                                            //         handleOtpChange={handleOtpChange}
+                                            //         handleButtonClick={handleSubmit}
+                                            //     />
+                                            // </div>
+                                        )}
+                                    </CardContent>
 
-
-                                            <input
-                                                type="password"
-                                                placeholder="Password"
-                                                name="password"
-                                                value={password}
-                                                onChange={handlePasswordChange}
-                                                className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                                            />
-                                        </CardContent>
-                                        <CardFooter className="flex flex-col">
+                                    <CardFooter className="flex flex-col">
+                                        {otpFieldVisible ? <>
                                             <button
-                                                type="submit"
-                                                className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-2 text-white transition hover:bg-opacity-90"
-                                                disabled={isDisabled}
-                                            // Disable the button based on state
-                                            >
+                                                onClick={login}
+                                                disabled={isloginDisabled}
+                                                className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-2 text-white transition hover:bg-opacity-90">
                                                 Login
                                             </button>
-                                            <div>or</div>
-
-                                            <Button onClick={LoginviaOTP}>
-                                                Login via OTP
+                                            <div>&nbsp;</div>
+                                            <Button
+                                                style={{
+                                                    backgroundColor: isDisabled ? 'pink' : 'white',
+                                                    color: isDisabled ? 'white' : 'black'
+                                                }}
+                                                disabled={isDisabled}
+                                                onClick={handleSubmit}
+                                            >
+                                                Re-send OTP
                                             </Button>
-                                            <p className="mt-2 text-base text-center text-gray-700">
-                                                Don&apos;t have an account?
-                                                <Link href="/register" className="text-blue-600 hover:underline">&nbsp; click here</Link>
-                                            </p>
 
-                                            {errorMessage && (
-                                                <><p className="text-sm text-red-500">{errorMessage}</p>
-                                                </>
-                                            )}
-                                        </CardFooter>
-                                    </div>
 
-                                </form>
+                                        </>
+                                            :
+
+                                            <button
+                                                onClick={handleSubmit}
+                                                className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-2 text-white transition hover:bg-opacity-90"
+                                                disabled={isDisabled}
+                                            >
+                                                Send OTP
+                                            </button>
+                                            // <Button
+                                            //     style={{
+                                            //         backgroundColor: isDisabled ? 'pink' : 'Blue',
+                                            //         color: isDisabled ? 'white' : 'white',
+                                            //         width: '500px',
+                                            //         height: '45px'
+                                            //     }}
+                                            //     disabled={isDisabled}
+                                            //     onClick={handleSubmit}
+                                            // >
+                                            //     Send OTP
+                                            // </Button>
+
+                                        }
+
+                                        <div>or</div>
+
+                                        <Button onClick={LoginviaPass}>
+                                            Login via Password
+                                        </Button>
+
+                                        <p className="mt-2 text-base text-center text-gray-700">
+                                            Don&apos;t have an account?
+                                            <Link href="/register" className="text-blue-600 hover:underline">&nbsp; click here</Link>
+                                        </p>
+
+                                        {errorMessage && (
+                                            <p className="text-sm text-red-500">{errorMessage}</p>
+                                        )}
+                                    </CardFooter>
+                                </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
-            </div >
-        </LoginLayout >
+            </div>
+        </LoginLayout>
     )
 }
-

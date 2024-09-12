@@ -3,14 +3,14 @@ import { cookies } from "next/headers"
 export async function POST(request: Request) {
     const body = await request.json()
 
-    console.log("Calling LogOff API.");
+    // // console.log("Calling LogOff API.");
 
     const prefix = process.env.NODE_ENV === "development" ? "__Dev-" : ""
     const refreshToken = cookies().get(`${prefix}xxx.refresh-token`)?.value
     const data = {token: refreshToken};
-    console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-    console.log(data);
-    console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    // // console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    // // console.log(data);
+    // // console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 
     const res = await fetch(
         `${process.env.API_BASE_URL}/user-service/user/logout`,
