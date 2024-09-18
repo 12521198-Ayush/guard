@@ -27,7 +27,7 @@ export default function LoginPage() {
 
     async function login() {
         const callbackUrl = searchParams.get("callbackUrl");
-        handleClick();
+       
 
         // Call the signIn function with mobile_hash and otp_hash
         signIn("credentials", {
@@ -100,7 +100,7 @@ export default function LoginPage() {
 
         setTimeout(() => {
             setIsloginDisabled(false);
-        }, 4000);
+        }, 1000);
     };
 
     const handleSubmit = async (e: any) => {
@@ -300,22 +300,22 @@ export default function LoginPage() {
                         </div>
                         <ToastContainer />
                         <div className="hide-scrollbar overflow-auto w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
-                            <div className="pl-9 w-full p-4 sm:p-12.5 xl:p-17.5">
+                            <div className=" pl-9 w-full p-4 sm:p-12.5 xl:p-17.5">
                                 <Image
-                                    className="pl-9 hidden dark:block"
+                                    className="ml-12 pl-9 hidden dark:block"
                                     src={"/images/logo/logo.png"}
                                     alt="Logo"
                                     width={126}
                                     height={32}
                                 />
                                 <Image
-                                    className="pl-9 dark:hidden"
+                                    className="ml-12 pl-9 dark:hidden"
                                     src={"/images/logo/logo.png"}
                                     alt="Logo"
                                     width={126}
                                     height={32}
                                 />
-                                <h2 className="pl-9 mb-5 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
+                                <h2 className="ml-9 pl-9 mb-5 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
                                     SERVIZING
                                 </h2>
 
@@ -335,14 +335,18 @@ export default function LoginPage() {
 
 
                                         {otpFieldVisible && (
-                                            <Input
-                                                id="otp"
-                                                placeholder="Enter OTP"
-                                                type="text"
-                                                value={otp}
-                                                onChange={handleOtpChange}
-                                                className="w-full py-4 px-6 text-black outline-none focus:border-primary focus-visible:shadow-none dark:text-white"
-                                            />
+                                           <Input
+                                           id="otp"
+                                           placeholder="Enter OTP"
+                                           type="text"
+                                           value={otp}
+                                           onChange={(e) => {
+                                               const onlyNumbers = e.target.value.replace(/\D/g, '');
+                                               handleOtpChange({ ...e, target: { ...e.target, value: onlyNumbers } }); 
+                                           }}
+                                           maxLength={6} 
+                                           className="w-full py-4 px-6 text-black outline-none focus:border-primary focus-visible:shadow-none dark:text-white"
+                                       />
                                             // <div className="p-4">
                                             //     <OtpInputWithButton
                                             //         otp={otp}
@@ -407,6 +411,7 @@ export default function LoginPage() {
 
                                         <p className="mt-2 text-base text-center text-gray-700">
                                             Don&apos;t have an account?
+                                            <br />
                                             <Link href="/register" className="text-blue-600 hover:underline">&nbsp; click here</Link>
                                         </p>
 

@@ -69,7 +69,7 @@ export const Navbar = () => {
                       href={`${process.env.NEXT_PUBLIC_BASE_URL}/login`}
                       className="w-full px-6 py-2 mt-3 text-center text-white bg-indigo-600 rounded-md lg:ml-5"
                     >
-                      Get Started
+                      Login
                     </Link>
                   </>
                 </Disclosure.Panel>

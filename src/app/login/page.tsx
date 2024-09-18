@@ -277,14 +277,14 @@ export default function LoginPage() {
                         <div className="hide-scrollbar overflow-auto w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
                             <div className="pl-9 w-full p-4 sm:p-12.5 xl:p-17.5">
                                 <Image
-                                    className="pl-9 hidden dark:block"
+                                    className="ml-12 pl-9 hidden dark:block"
                                     src={"/images/logo/logo.png"}
                                     alt="Logo"
                                     width={126}
                                     height={32}
                                 />
                                 <Image
-                                    className="pl-9 dark:hidden"
+                                    className="ml-12 pl-9 dark:hidden"
                                     src={"/images/logo/logo.png"}
                                     alt="Logo"
                                     width={126}
@@ -292,7 +292,7 @@ export default function LoginPage() {
                                 />
                                 <span className="mb-1.5 block font-medium"></span>
 
-                                <h2 className="pl-9 mb-5 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
+                                <h2 className="ml-9 pl-9 mb-5 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
                                     SERVIZING
                                 </h2>
 

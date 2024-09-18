@@ -27,7 +27,7 @@ const Header = (props: {
 
           {session?.user?.primary_premise_name || 'User'}
         </div> */}
-        <div className="flex items-center gap-2 sm:gap-4 lg:hidden">
+        <div className=" mr-5 flex items-center gap-2 sm:gap-4 lg:hidden">
           {/* <!-- Hamburger Toggle BTN --> */}
           <button
             aria-controls="sidebar"
@@ -66,25 +66,10 @@ const Header = (props: {
           </button>
           {/* <!-- Hamburger Toggle BTN --> */}
 
-          <Link className="block flex-shrink-0 lg:hidden" href="/dashboard">
-            <Image
-              width={52}
-              height={52}
-              src={"/images/logo/logo.png"}
-              alt="Logo"
-            />
-          </Link>
+          
         </div>
 
-        <div className="hidden sm:block">
-          <form action="https://formbold.com/s/unique_form_id" method="POST">
-            <div className="relative">
-
-
-
-            </div>
-          </form>
-        </div>
+       
 
         <div className="flex items-center gap-3 2xsm:gap-7">
 
