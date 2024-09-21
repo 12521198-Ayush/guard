@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 
 declare module "next-auth" {
+  
   interface Session {
     user: {
       id: string
@@ -11,6 +12,7 @@ declare module "next-auth" {
         primary_premise_name: string;
         premises_associated_with: string[]
         accessToken: string
+        premise_name: any
         refreshToken: string
         accessTokenExpires: number
         role: string

@@ -51,10 +51,10 @@ export default function LoginPage() {
                     } else {
                         if (otp == '') {
                             handleloginClick();
-                            message.error('Enter your OTP');
+                            message.error('Please enter the OTP sent to your mobile');
                         } else {
                             handleloginClick();
-                            message.error('Invalid OTP');
+                            message.error('The OTP you entered is invalid.. Please try again');
                         }
                         // errMessage = `Internal Server Error: ${res.error}`;
                         // setErrorMessage(errMessage);
@@ -127,17 +127,17 @@ export default function LoginPage() {
 
             if (!res.ok) {
                 if (username == '') {
-                    message.error('Please enter your number');
+                    message.error('Please enter your mobile number');
                 }
                 else if (res.status === 401) {
-                    message.error('Your number is not registered');
+                    message.error('The mobile number you entered is invalid.. Please check');
                 } else {
                     message.error('Error sending OTP');
                 }
                 throw new Error(userData.error?.message || 'An error occurred');
             } else {
                 handleClick();
-                message.success('OTP sent');
+                message.success('OTP has been sent to your mobile number');
                 setOtpFieldVisible(true);
             }
         } catch (error) {
