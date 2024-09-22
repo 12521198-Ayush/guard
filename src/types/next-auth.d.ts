@@ -11,7 +11,7 @@ declare module "next-auth" {
         primary_premise_name: string;
         premises_associated_with: string[]
         accessToken: string
-        premise_name: any
+        current_premise_name: any
         refreshToken: string
         accessTokenExpires: number
         role: string

@@ -20,7 +20,9 @@ const Header = (props: {
           <h1 className="text-2xl font-bold text-center text-gray-800">
             <HomeWorkIcon />
             &nbsp;&nbsp;
-            {session?.user?.primary_premise_name || 'User'}
+            {session?.user?.current_premise_name || 'User'}
+            {/* " "
+            {session?.user?.primary_premise_id || 'User'} */}
           </h1>
         </header>
         {/* <div>

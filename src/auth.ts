@@ -164,11 +164,28 @@ export const config = {
 
                 const expiration = new Date();
                 expiration.setHours(expiration.getHours() + 1);
+                
+                interface Premise {
+                    premise_id: string;
+                    premise_name: string;
+                    current_premise_name:string;
+                    admin_name: string;
+                    admin_designation: string;
+                    admin_email: string;
+                  }
+                  const premise = userData.data.premises_associated_with.find(
+                    (premise: Premise) => premise.premise_name === userData.data.primary_premise_name
+                  );
+                //   console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                //   console.log(premise)
+                //   console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                  
                 const user = {
                     //isAdmin: true, 
-                    role: userData.data.premises_associated_with[0]?.admin_designation,  // Accessing the first element of the array
                     name: userData.data.premises_associated_with[0]?.admin_name,
+                    role: premise.admin_designation,  // Accessing the first element of the array
                     email: userData.data.premises_associated_with[0]?.admin_email,
+                    current_premise_name:userData.data.primary_premise_name,
                     img: "/avatar.png",
                     accessToken: userData.data.accessToken,
                     refreshToken: userData.data.refreshToken,
@@ -208,18 +225,18 @@ export const config = {
         signIn: "/login",
     },
     callbacks: {
-        async jwt({ token, user, account }) {
+        async jwt({ token, user, account,trigger,session  }) {
             // // console.log("Inside JWT");
             // // console.log(token)
-            // // console.log(user)
-            // // console.log(account)
+            
 
             if (account && user) {
                 token.id = user.id
                 token.accessToken = user.accessToken
                 token.refreshToken = user.refreshToken
                 token.role = user.role // the user role
-                token.primary_premise_id = user.primary_premise_id
+                token.current_premise_name = user.current_premise_name,
+                token.primary_premise_id = user.primary_premise_id,
                 token.primary_premise_name = user.primary_premise_name,
                 token.premises_associated_with = user.premises_associated_with,
                 token.subpremiseArray = user.subpremiseArray,
@@ -236,6 +253,13 @@ export const config = {
                 }
             }
 
+    
+            if(trigger === 'update') {
+                token.current_premise_name = session.user.current_premise_name,
+                token.primary_premise_id = session.user.primary_premise_id,
+                token.role = session.user.role
+            }
+
             // if our access token has not expired yet, return all information except the refresh token
             if (token.accessTokenExpires && (Date.now() < Number(token.accessTokenExpires))) {
                 const { refreshToken, ...rest } = token
@@ -249,8 +273,7 @@ export const config = {
         },
 
         async session({ session, token }) {
-            // // console.log("session => ", session)
-
+            console.log("session => ", session)
             const mySession = {
                 ...session,
                 user: {
@@ -260,6 +283,7 @@ export const config = {
                     societyList: token.societyList as string[],
                     accessToken: token.accessToken as string,
                     accessTokenExpires: token.accessTokenExpires as number,
+                    current_premise_name:token.current_premise_name as any,
                     role: token.role as string,
                     primary_premise_id: token.primary_premise_id as string,
                     primary_premise_name: token.primary_premise_name as string,

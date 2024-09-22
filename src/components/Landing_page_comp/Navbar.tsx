@@ -31,7 +31,7 @@ export const Navbar = () => {
                         height={32}
                       />
                     </span>
-                    <span>SERZVIZING</span>
+                    <span>SERVIZING</span>
                   </span>
                 </Link>
 

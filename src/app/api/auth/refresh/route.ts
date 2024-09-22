@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const payload = {token: refreshToken};
 
     const res = await fetch(
-        `${process.env.API_BASE_URL}/user-service/user/token`, 
+        `${process.env.API_BASE_URL}/user-service/token`, 
         {
             method: 'POST',
             headers: {

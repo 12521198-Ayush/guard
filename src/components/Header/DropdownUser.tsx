@@ -1,12 +1,14 @@
+
 import { useEffect, useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signOut } from 'next-auth/react';
-import { useSession } from 'next-auth/react';
+import { Modal, message, Button, List } from 'antd';
+import { signIn, useSession } from 'next-auth/react';
 
 const DropdownUser = () => {
 
-  const { data: session } = useSession();
+  const { data: session, update, status } = useSession();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -33,6 +35,7 @@ const DropdownUser = () => {
          */
       })
       .finally(async () => {
+        message.success(`Logout Successfully`);
         await signOut({ callbackUrl: `${window.location.origin}/login` })
       })
   }, [session])
@@ -73,6 +76,111 @@ const DropdownUser = () => {
     document.addEventListener("keydown", keyHandler);
     return () => document.removeEventListener("keydown", keyHandler);
   });
+
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+
+
+
+
+  const handleSocietySelect = async (selectedSociety: any) => {
+    if (!session) {
+      message.error('Session is not available.');
+      return;
+    }
+
+    // const updatedSession = { ...session, user: { ...session.user, current_premiss_name: selectedSociety.premise_name } };
+
+    // update({ ...session, user: { ...session.user, current_premise_name: selectedSociety.premise_name } });
+
+    update({
+      ...session,
+      user: {
+        ...session.user,
+        current_premise_name: selectedSociety.premise_name,
+        primary_premise_id: selectedSociety.premise_id,
+        role: selectedSociety.admin_designation
+
+      },
+    });
+    //session.user.current_premise_name = selectedSociety.premise_name
+    console.log(selectedSociety);
+    // update({...session!.user, current_premise_name: selectedSociety.premise_name});
+
+    message.success(`Switched to ${selectedSociety.premise_name}`);
+    setIsModalVisible(false);
+    //console.log(session);
+  };
+
+
+
+  // const handleSocietySelect = (selectedSociety: { premise_name: any; admin_designation: any; }) => {
+  //   if (!session || !update) {
+  //     message.error('Session is not available.');
+  //     return;
+  //   }
+
+  //   console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||');
+  //   console.log(selectedSociety);
+  //   console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||||');
+
+  // const newSession = {
+  //   ...session,
+  //   user: {
+  //     ...session.user,
+  //     current_premise_name: selectedSociety.premise_name,
+  //     role: selectedSociety.admin_designation,
+
+  //   },
+  // };
+
+
+  // update(newSession)
+  //   .then(() => {
+  //     message.success(`Switched to ${selectedSociety.premise_name}`);
+  //     setIsModalVisible(false); 
+  //   })
+  //   .catch(() => {
+  //     message.error('Failed to switch society');
+  //   });
+  // };
+
+  // const handleSocietySelect = async (selectedSociety: { premise_name: any; admin_designation: any; }) => {
+  //   const result = await signIn('credentials', {
+  //     redirect: false,
+  //     // Include additional user info here
+  //     current_premise_name: selectedSociety.premise_name,
+  //     role: selectedSociety.admin_designation,
+  //   });
+  //   console.log(selectedSociety);
+  //   if(result == undefined){
+  //     return null;
+  //   }
+  //   if (result.error) {
+  //     setIsModalVisible(false);
+  //     message.error(`Failed to switch society: ${result.error}`); 
+  //     // Handle error
+  //   } else {
+  //     setIsModalVisible(false);
+  //     message.success(`Switched to ${selectedSociety.premise_name}`);
+
+  //     // Successful sign in
+  //   }
+  // };
+
 
 
   return (
@@ -152,35 +260,81 @@ const DropdownUser = () => {
                   fill=""
                 />
               </svg>
-              {session?.user?.name || 'User'} 
+              {session?.user?.name || 'User'}
               <br></br>
+
               (
+
               {session?.user?.role || 'Role'}
               )
 
             </Link>
           </li>
-          {/* <li>
+          <li>
             <Link
               href="#"
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+              onClick={showModal}
             >
               <svg
-                className="fill-current"
+                className="fill-current text-gray-500 hover:text-primary transition-colors"
                 width="22"
                 height="22"
                 viewBox="0 0 22 22"
-                fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   d="M17.6687 1.44374C17.1187 0.893744 16.4312 0.618744 15.675 0.618744H7.42498C6.25623 0.618744 5.25935 1.58124 5.25935 2.78437V4.12499H4.29685C3.88435 4.12499 3.50623 4.46874 3.50623 4.91562C3.50623 5.36249 3.84998 5.70624 4.29685 5.70624H5.25935V10.2781H4.29685C3.88435 10.2781 3.50623 10.6219 3.50623 11.0687C3.50623 11.4812 3.84998 11.8594 4.29685 11.8594H5.25935V16.4312H4.29685C3.88435 16.4312 3.50623 16.775 3.50623 17.2219C3.50623 17.6687 3.84998 18.0125 4.29685 18.0125H5.25935V19.25C5.25935 20.4187 6.22185 21.4156 7.42498 21.4156H15.675C17.2218 21.4156 18.4937 20.1437 18.5281 18.5969V3.47187C18.4937 2.68124 18.2187 1.95937 17.6687 1.44374ZM16.9469 18.5625C16.9469 19.2844 16.3625 19.8344 15.6406 19.8344H7.3906C7.04685 19.8344 6.77185 19.5594 6.77185 19.2156V17.875H8.6281C9.0406 17.875 9.41873 17.5312 9.41873 17.0844C9.41873 16.6375 9.07498 16.2937 8.6281 16.2937H6.77185V11.7906H8.6281C9.0406 11.7906 9.41873 11.4469 9.41873 11C9.41873 10.5875 9.07498 10.2094 8.6281 10.2094H6.77185V5.63749H8.6281C9.0406 5.63749 9.41873 5.29374 9.41873 4.84687C9.41873 4.39999 9.07498 4.05624 8.6281 4.05624H6.77185V2.74999C6.77185 2.40624 7.04685 2.13124 7.3906 2.13124H15.6406C15.9844 2.13124 16.2937 2.26874 16.5687 2.50937C16.8094 2.74999 16.9469 3.09374 16.9469 3.43749V18.5625Z"
-                  fill=""
+                  fill="currentColor"
                 />
               </svg>
-              My Contacts
+              Switch Premise
             </Link>
-          </li> */}
+          </li>
+
+          <Modal
+            title={<h2 className="text-xl font-semibold text-primary">Premise List</h2>}
+            visible={isModalVisible}
+            onCancel={handleCancel}
+            footer={null}
+            className="custom-modal"
+            bodyStyle={{ backgroundColor: '#f9fafb', padding: '20px' }}
+            centered
+          >
+            <h3 className="text-lg font-medium text-gray-800 mb-4">Available Premises</h3>
+            {session?.user?.premises_associated_with ? (
+              <List
+                dataSource={session.user.premises_associated_with.filter(
+                  (item: any) =>
+                    item.premise_name !== session.user.current_premise_name
+                )}
+                renderItem={(item: any) => (
+                  <List.Item
+                    onClick={() => handleSocietySelect(item)}
+                    className="hover:scale-105 hover:shadow-lg transition-transform duration-300"
+                    style={{
+                      cursor: 'pointer',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      backgroundColor: 'transparent'
+                    }}
+                  >
+                    <span className="font-medium text-gray-700 relative group">
+                      {item.premise_name}
+                      <span className="absolute left-0 bottom-full w-full h-0 bg-white transition-all duration-300 transform scale-y-0 group-hover:scale-y-100 opacity-50 pointer-events-none" />
+                    </span>
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <p className="text-center text-gray-500">No societies available</p>
+            )}
+          </Modal>
+
+
+
+
+
           {/* <li>
             <Link
               href="/settings"
