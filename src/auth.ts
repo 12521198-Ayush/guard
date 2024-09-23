@@ -182,7 +182,6 @@ export const config = {
                   
                 const user = {
                     //isAdmin: true, 
-                    data:userData.data,
                     name: userData.data.premises_associated_with[0]?.admin_name,
                     role: premise.admin_designation,  // Accessing the first element of the array
                     email: userData.data.premises_associated_with[0]?.admin_email,

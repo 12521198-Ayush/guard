@@ -105,8 +105,8 @@ const DropdownUser = () => {
     const payload = {
       premise_id:selectedSociety.premise_id
     }
-    console.log(accessToken)
-    console.log(payload)
+    // console.log(accessToken)
+    // console.log(payload)
 
    
     try {
@@ -125,7 +125,7 @@ const DropdownUser = () => {
         throw new Error(data.message || 'Request failed');
       }
   
-      console.log('Success:', data);
+      //console.log('Success:', data);
       update({
         ...session,
         user: {
@@ -140,7 +140,7 @@ const DropdownUser = () => {
         },
       });
       //session.user.current_premise_name = selectedSociety.premise_name
-      console.log(selectedSociety);
+      //console.log(selectedSociety);
       // update({...session!.user, current_premise_name: selectedSociety.premise_name});
   
       message.success(`Switched to ${selectedSociety.premise_name}`);
