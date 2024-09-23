@@ -7,6 +7,7 @@ declare module "next-auth" {
         email: string
         name: String
         img: string
+        data: object
         primary_premise_id: string;
         primary_premise_name: string;
         premises_associated_with: string[]

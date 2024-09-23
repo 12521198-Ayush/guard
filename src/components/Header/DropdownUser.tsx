@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -102,26 +101,62 @@ const DropdownUser = () => {
       return;
     }
 
+    const accessToken = session.user.accessToken;
+    const payload = {
+      premise_id:selectedSociety.premise_id
+    }
+    console.log(accessToken)
+    console.log(payload)
+
+   
+    try {
+      const response = await fetch('http://139.84.166.124:8060/user-service/admin/premise/fetch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`, 
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || 'Request failed');
+      }
+  
+      console.log('Success:', data);
+      update({
+        ...session,
+        user: {
+          ...session.user,
+          current_premise_name: selectedSociety.premise_name,
+          primary_premise_id: selectedSociety.premise_id,
+          role: selectedSociety.admin_designation,
+          sub_premise_access_control_reqd: data.data.sub_premise_access_control_reqd,
+          subpremiseArray: data.data.subpremiseArray
+
+  
+        },
+      });
+      //session.user.current_premise_name = selectedSociety.premise_name
+      console.log(selectedSociety);
+      // update({...session!.user, current_premise_name: selectedSociety.premise_name});
+  
+      message.success(`Switched to ${selectedSociety.premise_name}`);
+      setIsModalVisible(false);
+      return data;
+    } catch (error:any) {
+      console.error('Error:', error.message);
+      throw error;
+    }
+
+   
     // const updatedSession = { ...session, user: { ...session.user, current_premiss_name: selectedSociety.premise_name } };
 
     // update({ ...session, user: { ...session.user, current_premise_name: selectedSociety.premise_name } });
 
-    update({
-      ...session,
-      user: {
-        ...session.user,
-        current_premise_name: selectedSociety.premise_name,
-        primary_premise_id: selectedSociety.premise_id,
-        role: selectedSociety.admin_designation
-
-      },
-    });
-    //session.user.current_premise_name = selectedSociety.premise_name
-    console.log(selectedSociety);
-    // update({...session!.user, current_premise_name: selectedSociety.premise_name});
-
-    message.success(`Switched to ${selectedSociety.premise_name}`);
-    setIsModalVisible(false);
+   
     //console.log(session);
   };
 
@@ -294,11 +329,10 @@ const DropdownUser = () => {
 
           <Modal
             title={<h2 className="text-xl font-semibold text-primary">Premise List</h2>}
-            visible={isModalVisible}
+            open={isModalVisible}
             onCancel={handleCancel}
             footer={null}
             className="custom-modal"
-            bodyStyle={{ backgroundColor: '#f9fafb', padding: '20px' }}
             centered
           >
             <h3 className="text-lg font-medium text-gray-800 mb-4">Available Premises</h3>

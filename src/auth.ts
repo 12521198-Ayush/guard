@@ -90,10 +90,10 @@ export const config = {
                 const mobile = credentials.mobile as string;
                 const otp = credentials.otp as string;
 
-                console.log("`````````````````````````````````````````````")
-                console.log(otp_json);
-                console.log(json);
-                console.log("`````````````````````````````````````````````")
+                // console.log("`````````````````````````````````````````````")
+                // console.log(otp_json);
+                // console.log(json);
+                // console.log("`````````````````````````````````````````````")
 
 
                 let hashedUsername:any;
@@ -117,9 +117,9 @@ export const config = {
                     otp_hash: hashedOtp
                 }
 
-                console.log("**********************")
-                console.log(otp_payload);
-                console.log("**********************")
+               // console.log("**********************")
+                //console.log(otp_payload);
+               // console.log("**********************")
 
                 const isOtpLogin = mobile && otp;
 
@@ -159,7 +159,7 @@ export const config = {
                     throw new Error(userData.error.message)
                 }
 
-                console.log(userData)
+                // console.log(userData.data)
                 // // console.log("++++++++++++++++++++++++++++++++++")
 
                 const expiration = new Date();
@@ -182,6 +182,7 @@ export const config = {
                   
                 const user = {
                     //isAdmin: true, 
+                    data:userData.data,
                     name: userData.data.premises_associated_with[0]?.admin_name,
                     role: premise.admin_designation,  // Accessing the first element of the array
                     email: userData.data.premises_associated_with[0]?.admin_email,
@@ -231,9 +232,10 @@ export const config = {
             
 
             if (account && user) {
-                token.id = user.id
-                token.accessToken = user.accessToken
-                token.refreshToken = user.refreshToken
+                
+                token.id = user.id,
+                token.accessToken = user.accessToken,
+                token.refreshToken = user.refreshToken,
                 token.role = user.role // the user role
                 token.current_premise_name = user.current_premise_name,
                 token.primary_premise_id = user.primary_premise_id,
@@ -257,7 +259,9 @@ export const config = {
             if(trigger === 'update') {
                 token.current_premise_name = session.user.current_premise_name,
                 token.primary_premise_id = session.user.primary_premise_id,
-                token.role = session.user.role
+                token.role = session.user.role,
+                token.sub_premise_access_control_reqd = session.user.sub_premise_access_control_reqd
+                token.subpremiseArray = session.user.subpremiseArray
             }
 
             // if our access token has not expired yet, return all information except the refresh token
@@ -273,7 +277,7 @@ export const config = {
         },
 
         async session({ session, token }) {
-            console.log("session => ", session)
+            //console.log("session => ", session)
             const mySession = {
                 ...session,
                 user: {
@@ -294,7 +298,7 @@ export const config = {
                 },
                 error: token.error,
             }
-            console.log("session => ", mySession);
+            //console.log("session => ", mySession);
             return mySession;
         },
         authorized({ request, auth }) {
