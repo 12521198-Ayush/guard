@@ -18,14 +18,14 @@ async function refreshAccessToken(token) {
         })
 
         const { success, status, data } = await res.json()
-        // // console.log("#####################################")
-        // // console.log("Refresh response")
-        // // console.log(success)
-        // // console.log(status)
-        // // console.log(data)
-        // // console.log("#####################################")
+        console.log("#####################################")
+        console.log("Refresh response")
+        console.log(success)
+        console.log(status)
+        console.log(data)
+        console.log("#####################################")
         if (!success) {
-            // // console.log("The token could not be refreshed!")
+            console.log("The token could not be refreshed!")
             throw data
         }
 
@@ -38,9 +38,9 @@ async function refreshAccessToken(token) {
             throw new Error(data.error);
         }
 
-        // // console.log("The token has been refreshed successfully.")
+        console.log("The token has been refreshed successfully.")
         // get some data from the new access token such as exp (expiration time)
-        // // console.log("Decoding token 2nd ... ")
+         console.log("Decoding token 2nd ... ")
         const decodedAccessToken = JSON.parse(Buffer.from(data.data.accessToken.split(".")[1], "base64").toString())
 
 
@@ -158,9 +158,9 @@ export const config = {
                 if (!res.ok) {
                     throw new Error(userData.error.message)
                 }
-
+                // console.log("++++++++++++++++++++++++++++++++++")
                 // console.log(userData.data)
-                // // console.log("++++++++++++++++++++++++++++++++++")
+                // console.log("++++++++++++++++++++++++++++++++++")
 
                 const expiration = new Date();
                 expiration.setHours(expiration.getHours() + 1);
@@ -196,7 +196,7 @@ export const config = {
                     sub_premise_access_control_reqd: userData.data.sub_premise_access_control_reqd,
                     subpremiseArray: userData.data.subpremiseArray
                 };
-                //  console.log(user);
+                console.log(user);
 
                 if (res.ok && user) {
                     const prefix = process.env.NODE_ENV === "development" ? "__Dev-" : ""
@@ -257,6 +257,7 @@ export const config = {
     
             if(trigger === 'update') {
                 token.current_premise_name = session.user.current_premise_name,
+                token.subpremiseArray = session.user.subpremiseArray
                 token.primary_premise_id = session.user.primary_premise_id,
                 token.role = session.user.role,
                 token.sub_premise_access_control_reqd = session.user.sub_premise_access_control_reqd
@@ -273,6 +274,7 @@ export const config = {
             //if our access token has expired, refresh it and return the result
             // // console.log("Token expired calling refresh token...");
             return await refreshAccessToken(token)
+            
         },
 
         async session({ session, token }) {
@@ -297,7 +299,7 @@ export const config = {
                 },
                 error: token.error,
             }
-            //console.log("session => ", mySession);
+            console.log("session => ", mySession);
             return mySession;
         },
         authorized({ request, auth }) {

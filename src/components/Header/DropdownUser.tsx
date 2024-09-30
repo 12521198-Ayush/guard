@@ -4,11 +4,13 @@ import Image from "next/image";
 import { signOut } from 'next-auth/react';
 import { Modal, message, Button, List } from 'antd';
 import { signIn, useSession } from 'next-auth/react';
+import { useRouter } from "next/navigation";
+
 
 const DropdownUser = () => {
 
   const { data: session, update, status } = useSession();
-
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -105,7 +107,7 @@ const DropdownUser = () => {
     const payload = {
       premise_id:selectedSociety.premise_id
     }
-    // console.log(accessToken)
+    //  console.log(accessToken)
     // console.log(payload)
 
    
@@ -142,7 +144,7 @@ const DropdownUser = () => {
       //session.user.current_premise_name = selectedSociety.premise_name
       //console.log(selectedSociety);
       // update({...session!.user, current_premise_name: selectedSociety.premise_name});
-  
+      router.push('/dashboard');
       message.success(`Switched to ${selectedSociety.premise_name}`);
       setIsModalVisible(false);
       return data;
@@ -150,6 +152,9 @@ const DropdownUser = () => {
       console.error('Error:', error.message);
       throw error;
     }
+    
+
+
 
    
     // const updatedSession = { ...session, user: { ...session.user, current_premiss_name: selectedSociety.premise_name } };

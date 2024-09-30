@@ -1,117 +1,118 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { Button, Popconfirm, Table, Form, Space, Input, message, Grid } from 'antd';
-import { isEmpty } from 'lodash';
-import { SearchOutlined, UserAddOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import 'react-toastify/dist/ReactToastify.css';
+import { Button, Table, Form, Space, Input, message, Grid, Select } from 'antd';
+import { SearchOutlined, UserAddOutlined, MailOutlined, WhatsAppOutlined, MessageOutlined } from '@ant-design/icons';
+import { useSession } from 'next-auth/react';
 import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from "next/navigation";
 
 const { useBreakpoint } = Grid;
+const { Option } = Select;
 
 const DataTable = () => {
+    const router = useRouter();
     const [gridData, setGridData] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [editRowKey, setEditRowKey] = useState("");
     const [sortedInfo, setSortedInfo] = useState({});
-    const [form] = Form.useForm();
     const [searchText, setSearchText] = useState("");
-    let [filteredData] = useState();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [hasNextPage, setHasNextPage] = useState(false);
+    const [premiseId, setPremiseId] = useState("");
+    const [form] = Form.useForm();
+    const { data: session } = useSession();
+    const subpremise_arr = [session.user.subpremiseArray[0]];
 
     const screens = useBreakpoint();
 
     useEffect(() => {
-        loadData();
-    }, []);
+        if (session?.user?.primary_premise_id) {
+            setPremiseId(session.user.primary_premise_id);
+        }
+    }, [session?.user?.primary_premise_id]);
 
-    const loadData = async () => {
+    useEffect(() => {
+        if (premiseId) {
+            loadData(currentPage, limit);
+        }
+    }, [premiseId, currentPage, limit]);
+
+    const loadData = async (page, limit) => {
         setLoading(true);
-        const response = await axios.get("https://jsonplaceholder.typicode.com/comments");
-        setGridData(response.data);
-        setLoading(false);
-    };
-
-    const dateWithAge = gridData.map((item) => ({
-        ...item,
-        age: Math.floor(Math.random() * 6) + 20,
-    }));
-
-    const modifiedData = dateWithAge.map(({ body, ...item }) => ({
-        ...item,
-        key: item.id,
-        message: isEmpty(body) ? item.message : body,
-    }));
-
-    const handleDelete = (value) => {
-        const dataSource = [...modifiedData];
-        const filterData = dataSource.filter((item) => item.id !== value.id);
-        setGridData(filterData);
-        message.success('Deleted');
-    };
-
-    const isEditing = (record) => {
-        return record.key === editRowKey;
-    };
-
-    const cancel = () => {
-        setEditRowKey("");
-    };
-
-    const save = async (key) => {
+        const accessToken = session?.user?.accessToken || undefined;
         try {
-            const row = await form.validateFields();
-            const newData = [...modifiedData];
-            const index = newData.findIndex((item) => key === item.key);
-            if (index > -1) {
-                const item = newData[index];
-                newData.splice(index, 1, { ...item, ...row });
-                setGridData(newData);
-                setEditRowKey("");
-            } else {
-                newData.push(row);
-                setGridData(newData);
-                setEditRowKey("");
-            }
-        } catch (errInfo) {
-            // // console.log('Validate Failed:', errInfo);
+            const response = await axios.post(
+                "http://139.84.166.124:8060/user-service/admin/premise_unit/list",
+                {
+                    premise_id: premiseId,
+                    page: page,
+                    limit: limit,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
+            const { data } = response.data;
+            setGridData(data);
+            setHasNextPage(data.length === limit);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const edit = (record) => {
-        form.setFieldsValue({
-            name: "",
-            email: "",
-            message: "",
-            ...record,
+    const handleSearch = (e) => {
+        setSearchText(e.target.value);
+        if (e.target.value === "") {
+            loadData(currentPage, limit);
+        }
+    };
+
+    const globalSearch = () => {
+        const filteredData = gridData.filter((value) => {
+            return (
+                value.id.toString().includes(searchText) ||
+                value.size.toString().includes(searchText) ||
+                value.occupancy_status.toLowerCase().includes(searchText.toLowerCase()) ||
+                value.ownership_type.toLowerCase().includes(searchText.toLowerCase())
+            );
         });
-        setEditRowKey(record.key);
+        setGridData(filteredData);
     };
 
-    const handleChange = (...sorter) => {
-        const { order, field } = sorter[2];
-        setSortedInfo({ columnKey: field, order });
+    const handleNext = () => {
+        if (hasNextPage) setCurrentPage(currentPage + 1);
     };
 
-    // Define the EditableCell component
-    const EditableCell = ({ editing, dataIndex, title, record, children, ...restProps }) => {
-        const input = <Input />;
-        return (
-            <td {...restProps}>
-                {editing ? (
-                    <Form.Item
-                        name={dataIndex}
-                        style={{ margin: 0 }}
-                        rules={[{
-                            required: true,
-                            message: `Please input some value in ${title}`
-                        }]}>
-                        {input}
-                    </Form.Item>
-                ) : (
-                    children
-                )}
-            </td>
-        );
+    const handlePrevious = () => {
+        if (currentPage > 1) setCurrentPage(currentPage - 1);
+    };
+
+    const handleLimitChange = (value) => {
+        setLimit(value);
+        setCurrentPage(1);
+    };
+
+    const handleReset = () => {
+        setSearchText("");
+        loadData(currentPage, limit);
+    };
+
+    const handleView = (record) => {
+        return `/premise-unit-form?id=${record.id}`;
+    };
+
+    const findSubpremiseName = (premise_id) => {
+        for (let i = 0; i < session.user.subpremiseArray.length; i++) {
+            if (session.user.subpremiseArray[i].subpremise_id === premise_id) {
+                return session.user.subpremiseArray[i].subpremise_name;
+            }
+        }
     };
 
     const columns = [
@@ -121,154 +122,108 @@ const DataTable = () => {
             responsive: ['md'],
         },
         {
-            title: "Name",
-            dataIndex: "name",
+            title: "Subpremise Name",
+            dataIndex: "sub_premise_id",
             align: "center",
-            editable: true,
-            sorter: (a, b) => a.name.length - b.name.length,
-            sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
+            render: (sub_premise_id) => findSubpremiseName(sub_premise_id),
         },
         {
-            title: "Email",
-            dataIndex: "email",
+            title: "Occupancy Status",
+            dataIndex: "occupancy_status",
             align: "center",
-            editable: true,
-            sorter: (a, b) => a.email.length - b.email.length,
-            sortOrder: sortedInfo.columnKey === 'email' && sortedInfo.order,
-            responsive: ['sm'],
         },
         {
-            title: "Age",
-            dataIndex: "age",
+            title: "Ownership Type",
+            dataIndex: "ownership_type",
             align: "center",
-            editable: true,
-            sorter: (a, b) => a.age - b.age,
-            sortOrder: sortedInfo.columnKey === 'age' && sortedInfo.order,
-            responsive: ['lg'],
         },
         {
-            title: "Message",
-            dataIndex: "message",
+            title: "2W/4W Parkings",
+            dataIndex: "parking",
             align: "center",
-            editable: true,
-            sorter: (a, b) => a.message.length - b.message.length,
-            sortOrder: sortedInfo.columnKey === 'message' && sortedInfo.order,
+            render: (_, record) => {
+                const twParkingCount = record.tw_parking_count || 0; 
+                const fwParkingCount = record.fw_parking_count || 0; 
+                return <span>{`${twParkingCount}/${fwParkingCount}`}</span>;
+            }
+        },
+        {
+            title: "Notifications",
+            dataIndex: "notifications",
+            align: "center",
+            render: (_, record) => (
+                <span>
+                    {record.email_notification === "yes" && <MailOutlined style={{ fontSize: '16px', color: '#1890ff', marginRight: '8px' }} />}
+                    {record.wa_notification === "yes" && <WhatsAppOutlined style={{ fontSize: '16px', color: '#25D366', marginRight: '8px' }} />}
+                    {record.sms_notification === "yes" && <MessageOutlined style={{ fontSize: '16px', color: '#faad14', marginRight: '8px' }} />}
+                </span>
+            ),
         },
         {
             title: "Action",
             dataIndex: "action",
             align: "center",
-            render: (_, record) => {
-                const editable = isEditing(record);
-                return modifiedData.length >= 1 ? (
-                    <Space>
-                        <Popconfirm
-                            icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                            title="Delete"
-                            description="Are you sure to delete this?"
-                            onConfirm={() => handleDelete(record)}
-                            okType="default"
-                            onCancel={cancel}
-                            okText="Yes"
-                            cancelText="No"
-                        >
-                            <Button style={{ backgroundColor: 'red', color: 'white' }} disabled={editable}>Delete</Button>
-                        </Popconfirm>
-                        {editable ? (
-                            <Space size="middle">
-                                <Button onClick={() => { save(record.key); message.success('Saved'); }}>Save</Button>
-                                <Button onClick={cancel}>Cancel</Button>
-                            </Space>
-                        ) : (
-                            <Button onClick={() => edit(record)}>
-                                Edit
-                            </Button>
-                        )}
-                    </Space>
-                ) : null;
-            },
+            render: (_, record) => (
+                <Link href={handleView(record)}>
+                    <Button>View</Button>
+                </Link>
+            ),
         },
     ];
 
-    const mergedColumns = columns.map((col) => {
-        if (!col.editable) {
-            return col;
-        }
-        return {
-            ...col,
-            onCell: (record) => ({
-                record,
-                dataIndex: col.dataIndex,
-                title: col.title,
-                editing: isEditing(record),
-            }),
-        };
-    });
-
-    const reset = () => {
-        setSortedInfo({});
-        setSearchText("");
-        loadData();
-    };
-
-    const handleSearch = (e) => {
-        setSearchText(e.target.value);
-        if (e.target.value === "") {
-            loadData();
-        }
-    };
-
-    const globalSearch = () => {
-        filteredData = modifiedData.filter((value) => {
-            return (
-                value.name.toLowerCase().includes(searchText.toLocaleLowerCase()) ||
-                value.email.toLowerCase().includes(searchText.toLocaleLowerCase()) ||
-                value.message.toLowerCase().includes(searchText.toLocaleLowerCase())
-            );
-        });
-        setGridData(filteredData);
-    };
-
     return (
-        <div style={{ padding: screens.xs ? '10px' : '20px' }}>
-            <ToastContainer />
-            <Space style={{ marginBottom: 16, flexWrap: 'wrap' }}>
-                <Input
-                    placeholder='Enter Search Text'
-                    onChange={handleSearch}
-                    type='text'
-                    allowClear
-                    value={searchText}
-                    style={{ width: screens.xs ? '100%' : 'auto' }}
-                />
-                <Button onClick={globalSearch} icon={<SearchOutlined />} style={{ width: screens.xs ? '100%' : 'auto' }}>
-                    Search
-                </Button>
-                <Button onClick={reset} style={{ width: screens.xs ? '100%' : 'auto' }}>
-                    Reset
-                </Button>
-                <Link href="/flats-residents/add-flats">
-                    <Button icon={<UserAddOutlined />} style={{ width: screens.xs ? '100%' : 'auto' }}>
-                        Add New
+        <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+            <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                <h4 className="font-medium text-xl text-black dark:text-white">
+                    Manage Premise Unit
+                </h4>
+            </div>
+            <div style={{ padding: screens.xs ? '10px' : '20px' }}>
+                <ToastContainer />
+                <Space style={{ marginBottom: 16, flexWrap: 'wrap' }}>
+                    <Input
+                        placeholder='Enter Search Text'
+                        onChange={handleSearch}
+                        type='text'
+                        allowClear
+                        value={searchText}
+                        style={{ width: screens.xs ? '100%' : 'auto' }}
+                    />
+                    <Button onClick={globalSearch} icon={<SearchOutlined />} style={{ width: screens.xs ? '100%' : 'auto' }}>
+                        Search
                     </Button>
-                </Link>
-            </Space>
-            <Form form={form} component={false}>
-                <Table
-                    columns={mergedColumns}
-                    components={{
-                        body: {
-                            cell: EditableCell,
-                        },
-                    }}
-                    dataSource={filteredData && filteredData.length ? filteredData : modifiedData}
-                    bordered
-                    loading={loading}
-                    onChange={handleChange}
-                    pagination={{ pageSize: screens.xs ? 5 : 10 }}
-                    scroll={{ x: screens.xs ? 600 : undefined }}
-                />
-            </Form>
+                    <Link href="/flats-residents/add-flats" >
+                        <Button icon={<UserAddOutlined />} style={{ width: screens.xs ? '100%' : 'auto' }}>
+                            Add New
+                        </Button>
+                    </Link>
+                </Space>
+                <Form form={form} component={false}>
+                    <Table
+                        columns={columns}
+                        dataSource={gridData.map(item => ({ ...item, key: item.id }))} // Adding key prop
+                        bordered
+                        loading={loading}
+                        pagination={false}
+                        scroll={{ x: screens.xs ? 600 : undefined }}
+                    />
+                    <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between' }}>
+                        <Space>
+                            <Button onClick={handlePrevious} disabled={currentPage === 1}>
+                                Previous
+                            </Button>
+                            <Button onClick={handleNext} disabled={!hasNextPage}>
+                                Next
+                            </Button>
+                        </Space>
+                        <Select defaultValue={10} onChange={handleLimitChange} style={{ width: 120 }}>
+                            <Option value={10}>10</Option>
+                            <Option value={50}>50</Option>
+                            <Option value={100}>100</Option>
+                        </Select>
+                    </div>
+                </Form>
+            </div>
         </div>
     );
 };
