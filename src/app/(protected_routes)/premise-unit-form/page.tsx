@@ -1,26 +1,51 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Checkbox, Select, Row, Col, Tabs, message } from 'antd';
+import { Form, Input, Button, Table, Checkbox, Select, Row, Col, Tabs, message } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import EditModal from '../../../components/Modal/Modal'
 
 const PremiseUnitForm = () => {
+
     const { data: session } = useSession();
     const router = useRouter();
-
     const searchParams = new URL(window.location.href).searchParams;
     const id = searchParams.get('id');
     const [loading, setLoading] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [initialData, setInitialData] = useState<any>({});
     const [form] = Form.useForm();
+    const [guardiansData, setGuardiansData] = useState<any[]>([]);
+    const [loadingGuardians, setLoadingGuardians] = useState(false);
     // const [data,setdata] = useState<any>();
+    const fetchGuardiansData = async () => {
+        const accessToken = session?.user?.accessToken || undefined;
+        const premiseId = session?.user?.primary_premise_id || '';
+        const payload = {
+            premise_id: premiseId,
+            premise_unit_id: id
+        }
+        try {
+            setLoadingGuardians(true);
+            const response = await axios.post('http://139.84.166.124:8060/user-service/admin/premise_unit_guardian/list', payload, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+
+            const guardianList = response.data.data;
+            setGuardiansData(guardianList);
+        } catch (error) {
+            console.error('Error fetching guardians data:', error);
+        } finally {
+            setLoadingGuardians(false);
+        }
+    };
 
     const fetchPremiseUnitData = async (premiseId: string, idToFind: string) => {
 
-        //console.log(id);
         const accessToken = session?.user?.accessToken || undefined;
         setLoading(true);
         try {
@@ -41,7 +66,6 @@ const PremiseUnitForm = () => {
 
 
             const data = response.data.data;
-            //console.log(data)
             const unit = data;
             if (unit) {
 
@@ -95,14 +119,90 @@ const PremiseUnitForm = () => {
 
     };
 
+    // const handleAction = (record: any) => {
+    // };
+
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [selectedUnitId, setSelectedUnitId] = useState(null);
+    const [association, setAssociation] = useState("");
+
+    const handleNew = (unit_id: any, association_type: any) => {
+        if (unit_id == null) {
+            setSelectedUnitId(null);
+        } else {
+            setSelectedUnitId(unit_id._id);
+        }
+        if (association_type == 'Owner') {
+            setAssociation("Owner");
+        } else {
+            setAssociation("tenant");
+        }
+        setIsModalVisible(true);
+    };
+    const handleEdit = (unit_id: any) => {
+        if (unit_id == null) {
+            setSelectedUnitId(null);
+        } else {
+            setSelectedUnitId(unit_id._id);
+        }
+        setIsModalVisible(true);
+    };
+
+    const handleClose = () => {
+        fetchGuardiansData();
+        setIsModalVisible(false);
+        setSelectedUnitId(null);
+    };
+
+    const guardianColumns = [
+        {
+            title: 'Name',
+            dataIndex: 'name',
+            key: 'name',
+            
+        },
+        {
+            title: 'Mobile',
+            dataIndex: 'mobile',
+            key: 'mobile',
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email',
+        },
+        {
+            title: 'Type',
+            dataIndex: 'association_type',
+            key: 'association_type',
+        },
+        {
+            title: 'Residing',
+            dataIndex: 'is_residing',
+            key: 'is_residing',
+            render: (residing: string) => (residing === 'yes' ? 'Yes' : 'No'),
+        },
+        {
+            title: 'Action',
+            key: 'action',
+            render: (_: any, record: any) => (
+                <Button onClick={() => handleEdit(record)}>
+                    Edit
+                </Button>
+            ),
+        },
+    ];
+
 
     useEffect(() => {
         const premiseId = session?.user?.primary_premise_id || '';
 
         if (premiseId && id) {
+            fetchGuardiansData();
             fetchPremiseUnitData(premiseId, id);
         }
     }, [session, id]);
+
 
     function transformBooleans(obj: Record<string, any>): Record<string, any> {
         const transformedObject: Record<string, any> = {};
@@ -118,7 +218,6 @@ const PremiseUnitForm = () => {
                 }
             }
         }
-        console.log(transformedObject);
 
         return transformedObject;
     }
@@ -132,7 +231,12 @@ const PremiseUnitForm = () => {
             cancelButtonColor: "#d33",
             confirmButtonText: "Yes, update it!"
         }).then((result) => {
-            Apifetch(values);
+            if (result.isConfirmed) {
+                Apifetch(values);
+            } else if (result.isDenied) {
+                Swal.fire("Changes are not saved", "", "info");
+            }
+
         });
     };
 
@@ -157,9 +261,7 @@ const PremiseUnitForm = () => {
             );
 
             const data = response.data.data;
-            console.log(data)
             fetchPremiseUnitData(premiseId, payload.id || '');
-            console.log("records updated");
             Swal.fire({
                 title: "Updated!",
                 text: "Details has been updated.",
@@ -176,7 +278,6 @@ const PremiseUnitForm = () => {
         } finally {
             setLoading(false);
         }
-        console.log('Form Values:', payload);
     }
 
 
@@ -214,6 +315,7 @@ const PremiseUnitForm = () => {
         {
             label: 'Basic',
             key: '1',
+            disabled: true,
             children: (
                 <Form
                     form={form}
@@ -362,6 +464,7 @@ const PremiseUnitForm = () => {
         {
             label: 'Connections',
             key: '2',
+            disabled: true,
             children: (
                 <Form
                     form={form}
@@ -499,94 +602,113 @@ const PremiseUnitForm = () => {
         {
             label: 'Guardians',
             key: '3',
+            disabled: true,
             children: (
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleFinish}
-                >
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Association Type"
-                                name="association_type"
-                                rules={[{ required: true, message: 'Please select an association type' }]}
-                            >
-                                <Select placeholder="Select Ownership Type" disabled={!editMode}>
-                                    <Select.Option value="none">None</Select.Option>
-                                    <Select.Option value="Tenant">Tenant</Select.Option>
-                                    <Select.Option value="Owner">Owner</Select.Option>
-                                    <Select.Option value="Vacant">Vacant</Select.Option>
-                                    <Select.Option value="Locked">Locked</Select.Option>
-                                    <Select.Option value="Blocked">Blocked</Select.Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Size"
-                                name="size"
-                                rules={[{ required: true, message: 'Please enter the size' }]}
-                            >
-                                <Input placeholder="Size" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Extension No."
-                                name="extension_no"
-                            >
-                                <Input placeholder="Extension No." disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Direct Dial"
-                                name="direct_dial_landline"
-                            >
-                                <Input placeholder="Direct Dial" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    {/* <Form.Item>
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            style={{
-                                backgroundColor: editMode ? 'green' : '#d3d3d3', // Green when editable, gray when disabled
-                                color: 'white',
-                            }}
-                            disabled={!editMode}
-                            loading={loading}
-                        >
-                            Submit
+                <>
+                    <div className="flex items-center justify-between">
+                        <h4 className="font-small text-xl text-black dark:text-white">
+                            Owner
+                        </h4>
+                        <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null, "Owner")} >
+                            Add new
                         </Button>
+                    </div>
 
-                        <Button
-                            style={{
-                                backgroundColor: '#808080', // Neutral gray color for reset
-                                color: 'white',
-                                marginLeft: '8px',
-                            }}
-                            onClick={handleReset}
-                            disabled={!editMode}
-                        >
-                            Reset
-                        </Button>
 
-                        <Button
-                            style={{
-                                backgroundColor: editMode ? 'red' : 'blue', // Red for cancel, blue for edit
-                                color: 'white',
-                                marginLeft: '8px',
-                            }}
-                            onClick={toggleEditMode}
-                        >
-                            {editMode ? 'Cancel' : 'Edit'}
+                    <Table
+                        columns={guardianColumns}
+                        dataSource={guardiansData.filter((item) => item.association_type === 'Owner')}
+                        loading={loadingGuardians}
+                        rowKey="_id"
+                        pagination={false}
+                    />
+                    <EditModal
+                        visible={isModalVisible}
+                        guardian_id={selectedUnitId}
+                        id={id}
+                        onClose={handleClose}
+                        association_type={association}
+                        sub_premise_id={initialData.sub_premise_id}
+                    />
+                    <br />
+                    <br />
+
+                    <div className="flex items-center justify-between">
+                        <h4 className="font-small text-xl text-black dark:text-white">
+                            Tenant
+                        </h4>
+                        <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null, "Tenant")}>
+                            Add new
                         </Button>
-                    </Form.Item> */}
+                        <EditModal
+                            visible={isModalVisible}
+                            guardian_id={selectedUnitId}
+                            id={id}
+                            onClose={handleClose}
+                            association_type={association}
+                            sub_premise_id={initialData.sub_premise_id}
+                        />
+                    </div>
+
+
+                    <Table
+                        columns={[
+                            {
+                                title: 'Name',
+                                dataIndex: 'name',
+                                key: 'name',
+                                responsive: ['xs', 'sm', 'md', 'lg'], 
+                                width: 150,
+                            },
+                            {
+                                title: 'Mobile',
+                                dataIndex: 'mobile',
+                                key: 'mobile',
+                                responsive: ['xs', 'sm', 'md', 'lg'], 
+                                width: 150,
+                            },
+                            {
+                                title: 'Email',
+                                dataIndex: 'email',
+                                key: 'email',
+                                responsive: ['xs', 'sm', 'md', 'lg'],
+                                width: 200,
+                            },
+                            {
+                                title: 'Lease Start Date',
+                                dataIndex: 'lease_start_date',
+                                key: 'lease_start_date',
+                                responsive: ['xs', 'sm', 'md', 'lg'],
+                                width: 150,
+                            },
+                            {
+                                title: 'Lease End Date',
+                                dataIndex: 'lease_end_date',
+                                key: 'lease_end_date',
+                                responsive: ['xs', 'sm', 'md', 'lg'],
+                                width: 150,
+                            },
+                            {
+                                title: 'Action',
+                                key: 'action',
+                                responsive: ['xs', 'sm', 'md', 'lg'], 
+                                render: (_, record) => (
+                                    <span>
+                                        <Button>Edit</Button>
+                                    </span>
+                                ),
+                                width: 100,
+                            },
+                        ]}
+                        dataSource={guardiansData.filter((item) => item.association_type === 'tenant')}
+                        loading={loadingGuardians}
+                        rowKey="_id"
+                        pagination={false}
+                        scroll={{ x: '100%' }}
+                    />
+
+                    <br />
+
                     <Form.Item>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
                             <Button
@@ -598,6 +720,7 @@ const PremiseUnitForm = () => {
                                     border: 'none',
                                 }}
                                 onClick={handlePrev}
+                                disabled={false}
                             >
                                 Previous
                             </Button>
@@ -610,17 +733,20 @@ const PremiseUnitForm = () => {
                                     border: 'none',
                                 }}
                                 onClick={handleNext}
+                                disabled={false}
                             >
                                 Next
                             </Button>
                         </div>
                     </Form.Item>
-                </Form>
+                </>
+
             )
         },
         {
             label: 'Preferences',
             key: '4',
+            disabled: true,
             children: (
                 <Form form={form} layout="vertical" onFinish={handleFinish}>
                     <div style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '24px', backgroundColor: '#f9f9f9' }}>
@@ -783,12 +909,11 @@ const PremiseUnitForm = () => {
     return (
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark flex justify-between items-center">
-                {/* Heading */}
+
                 <h4 className="font-medium text-xl text-black dark:text-white">
                     Manage Premise Unit
                 </h4>
 
-                {/* Button Group */}
                 <div>
                     <div
                         style={{
