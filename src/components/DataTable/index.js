@@ -142,8 +142,8 @@ const DataTable = () => {
             dataIndex: "parking",
             align: "center",
             render: (_, record) => {
-                const twParkingCount = record.tw_parking_count || 0; 
-                const fwParkingCount = record.fw_parking_count || 0; 
+                const twParkingCount = record.tw_parking_count || 0;
+                const fwParkingCount = record.fw_parking_count || 0;
                 return <span>{`${twParkingCount}/${fwParkingCount}`}</span>;
             }
         },
@@ -153,9 +153,27 @@ const DataTable = () => {
             align: "center",
             render: (_, record) => (
                 <span>
-                    {record.email_notification === "yes" && <MailOutlined style={{ fontSize: '16px', color: '#1890ff', marginRight: '8px' }} />}
-                    {record.wa_notification === "yes" && <WhatsAppOutlined style={{ fontSize: '16px', color: '#25D366', marginRight: '8px' }} />}
-                    {record.sms_notification === "yes" && <MessageOutlined style={{ fontSize: '16px', color: '#faad14', marginRight: '8px' }} />}
+                    <MailOutlined
+                        style={{
+                            fontSize: '16px',
+                            color: record.email_notification === "yes" ? '#1890ff' : '#bfbfbf',
+                            marginRight: '8px'
+                        }}
+                    />
+                    <WhatsAppOutlined
+                        style={{
+                            fontSize: '16px',
+                            color: record.wa_notification === "yes" ? '#25D366' : '#bfbfbf',
+                            marginRight: '8px'
+                        }}
+                    />
+                    <MessageOutlined
+                        style={{
+                            fontSize: '16px',
+                            color: record.sms_notification === "yes" ? '#faad14' : '#bfbfbf',
+                            marginRight: '8px'
+                        }}
+                    />
                 </span>
             ),
         },

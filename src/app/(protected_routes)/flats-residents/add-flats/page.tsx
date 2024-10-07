@@ -49,7 +49,7 @@ const MyForm = () => {
 
   const handleFinish = async (values: any) => {
 
-    // Your SweetAlert2 configuration
+    
     Swal.fire({
       title: "Are you sure?",
       text: "Do you want to save?",
@@ -103,10 +103,17 @@ const MyForm = () => {
 
     } catch (error) {
       console.error('Error fetching data:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to save the guardian.',
+        icon: 'error',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK'
+    });
     } finally {
       setLoading(false);
     }
-    console.log('Form Values:', payload);
+    //console.log('Form Values:', payload);
   }
 
   const handleNew = (unit_id: any, association_type: any) => {

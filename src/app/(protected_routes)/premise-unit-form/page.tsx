@@ -6,6 +6,9 @@ import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import EditModal from '../../../components/Modal/Modal'
+import moment from 'moment';
+import type { ColumnsType } from 'antd/es/table';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const PremiseUnitForm = () => {
 
@@ -124,19 +127,8 @@ const PremiseUnitForm = () => {
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedUnitId, setSelectedUnitId] = useState(null);
-    const [association, setAssociation] = useState("");
 
-    const handleNew = (unit_id: any, association_type: any) => {
-        if (unit_id == null) {
-            setSelectedUnitId(null);
-        } else {
-            setSelectedUnitId(unit_id._id);
-        }
-        if (association_type == 'Owner') {
-            setAssociation("Owner");
-        } else {
-            setAssociation("tenant");
-        }
+    const handleNew = (unit_id: any) => {
         setIsModalVisible(true);
     };
     const handleEdit = (unit_id: any) => {
@@ -154,44 +146,70 @@ const PremiseUnitForm = () => {
         setSelectedUnitId(null);
     };
 
-    const guardianColumns = [
+
+    const guardianColumns: ColumnsType<any> = [
         {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
-            
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 150, 
         },
         {
             title: 'Mobile',
             dataIndex: 'mobile',
             key: 'mobile',
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 150, 
         },
         {
             title: 'Email',
             dataIndex: 'email',
             key: 'email',
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 200, 
         },
         {
             title: 'Type',
             dataIndex: 'association_type',
             key: 'association_type',
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 150, 
         },
         {
             title: 'Residing',
             dataIndex: 'is_residing',
             key: 'is_residing',
             render: (residing: string) => (residing === 'yes' ? 'Yes' : 'No'),
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 150, 
         },
         {
             title: 'Action',
             key: 'action',
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 150, 
             render: (_: any, record: any) => (
-                <Button onClick={() => handleEdit(record)}>
-                    Edit
-                </Button>
+                <>
+                    <Button onClick={() => handleEdit(record)} icon={<EditOutlined />}>
+                        {/* Replaced Edit text with EditOutlined icon */}
+                    </Button>
+                    <Button
+                        className="ml-2"
+                        onClick={() => handleDelete(record)}
+                        style={{
+                            backgroundColor: 'red',
+                            color: 'white'
+                        }}
+                        type="default"
+                        icon={<DeleteOutlined />} // DeleteOutlined icon for delete button
+                    />
+                </>
             ),
         },
     ];
+
+
 
 
     useEffect(() => {
@@ -279,6 +297,73 @@ const PremiseUnitForm = () => {
             setLoading(false);
         }
     }
+
+    const handleDelete = async (record: any) => {
+
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            const url = 'http://139.84.166.124:8060/user-service/admin/premise_unit_guardian/delete';
+
+            const payload = {
+                premise_unit_id: record.premise_unit_id,
+                premise_id: record.premise_id,
+                mobile: record.mobile
+            };
+            console.log(payload);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'accessToken': 'your-access-token-here',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete guardian.');
+                }
+
+                const data = await response.json();
+
+
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'The guardian has been deleted.',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+
+
+
+            } catch (error) {
+                console.error('Error deleting guardian:', error);
+
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to delete the guardian.',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+    };
+
+
+
 
 
     const [activeKey, setActiveKey] = useState('1');
@@ -609,7 +694,7 @@ const PremiseUnitForm = () => {
                         <h4 className="font-small text-xl text-black dark:text-white">
                             Owner
                         </h4>
-                        <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null, "Owner")} >
+                        <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null)} >
                             Add new
                         </Button>
                     </div>
@@ -618,6 +703,7 @@ const PremiseUnitForm = () => {
                     <Table
                         columns={guardianColumns}
                         dataSource={guardiansData.filter((item) => item.association_type === 'Owner')}
+                        scroll={{ x: 900 }}
                         loading={loadingGuardians}
                         rowKey="_id"
                         pagination={false}
@@ -627,7 +713,6 @@ const PremiseUnitForm = () => {
                         guardian_id={selectedUnitId}
                         id={id}
                         onClose={handleClose}
-                        association_type={association}
                         sub_premise_id={initialData.sub_premise_id}
                     />
                     <br />
@@ -637,15 +722,12 @@ const PremiseUnitForm = () => {
                         <h4 className="font-small text-xl text-black dark:text-white">
                             Tenant
                         </h4>
-                        <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null, "Tenant")}>
-                            Add new
-                        </Button>
+
                         <EditModal
                             visible={isModalVisible}
                             guardian_id={selectedUnitId}
                             id={id}
                             onClose={handleClose}
-                            association_type={association}
                             sub_premise_id={initialData.sub_premise_id}
                         />
                     </div>
@@ -657,22 +739,22 @@ const PremiseUnitForm = () => {
                                 title: 'Name',
                                 dataIndex: 'name',
                                 key: 'name',
-                                responsive: ['xs', 'sm', 'md', 'lg'], 
-                                width: 150,
+                                responsive: ['xs', 'sm', 'md', 'lg'],
+                                width: 150, 
                             },
                             {
                                 title: 'Mobile',
                                 dataIndex: 'mobile',
                                 key: 'mobile',
-                                responsive: ['xs', 'sm', 'md', 'lg'], 
-                                width: 150,
+                                responsive: ['xs', 'sm', 'md', 'lg'],
+                                width: 150, 
                             },
                             {
                                 title: 'Email',
                                 dataIndex: 'email',
                                 key: 'email',
                                 responsive: ['xs', 'sm', 'md', 'lg'],
-                                width: 200,
+                                width: 200, 
                             },
                             {
                                 title: 'Lease Start Date',
@@ -680,6 +762,7 @@ const PremiseUnitForm = () => {
                                 key: 'lease_start_date',
                                 responsive: ['xs', 'sm', 'md', 'lg'],
                                 width: 150,
+                                render: (date) => date ? moment(date).format('YYYY-MM-DD') : 'N/A',
                             },
                             {
                                 title: 'Lease End Date',
@@ -687,17 +770,30 @@ const PremiseUnitForm = () => {
                                 key: 'lease_end_date',
                                 responsive: ['xs', 'sm', 'md', 'lg'],
                                 width: 150,
+                                render: (date) => date ? moment(date).format('YYYY-MM-DD') : 'N/A',
                             },
                             {
                                 title: 'Action',
                                 key: 'action',
-                                responsive: ['xs', 'sm', 'md', 'lg'], 
-                                render: (_, record) => (
-                                    <span>
-                                        <Button>Edit</Button>
-                                    </span>
+                                responsive: ['xs', 'sm', 'md', 'lg'],
+                                width: 150,
+                                render: (_: any, record: any) => (
+                                    <>
+                                        <Button onClick={() => handleEdit(record)} icon={<EditOutlined />}>
+                                            {/* Replaced Edit text with EditOutlined icon */}
+                                        </Button>
+                                        <Button
+                                            className="ml-2"
+                                            onClick={() => handleDelete(record)}
+                                            style={{
+                                                backgroundColor: 'red',
+                                                color: 'white'
+                                            }}
+                                            type="default"
+                                            icon={<DeleteOutlined />} // DeleteOutlined icon for delete button
+                                        />
+                                    </>
                                 ),
-                                width: 100,
                             },
                         ]}
                         dataSource={guardiansData.filter((item) => item.association_type === 'tenant')}
@@ -706,6 +802,7 @@ const PremiseUnitForm = () => {
                         pagination={false}
                         scroll={{ x: '100%' }}
                     />
+
 
                     <br />
 
@@ -938,7 +1035,7 @@ const PremiseUnitForm = () => {
                     </div>
                     <Button
                         style={{
-                            backgroundColor: editMode ? 'white' : 'red',
+                            backgroundColor: editMode ? 'white' : '#597ef7',
                             color: editMode ? 'black' : 'white',
                             marginLeft: '8px',
                         }}
