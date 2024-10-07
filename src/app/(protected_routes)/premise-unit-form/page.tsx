@@ -800,7 +800,7 @@ const PremiseUnitForm = () => {
                         loading={loadingGuardians}
                         rowKey="_id"
                         pagination={false}
-                        scroll={{ x: '100%' }}
+                        scroll={{ x: 900 }}
                     />
 
 
