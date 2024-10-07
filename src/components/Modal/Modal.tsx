@@ -1,9 +1,10 @@
-import { Modal, Form, Input, Button, Select, Upload, Row, Col } from 'antd';
+import { Modal, Form, Input, Button, Select, Upload, Row, Col, DatePicker } from 'antd';
 import { UploadOutlined, StarOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import dayjs from 'dayjs';
 import type { UploadProps } from 'antd';
 
 const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, association_type }: any) => {
@@ -110,12 +111,16 @@ const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, associat
             supporting_documents: existingDocuments,
         };
 
+        console.log(payload)
+
         try {
-            await axios.post('http://139.84.166.124:8060/user-service/admin/premise_unit_guardian/upsert', payload, {
+            const res = await axios.post('http://139.84.166.124:8060/user-service/admin/premise_unit_guardian/upsert', payload, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 },
             });
+            console.log(res)
+
             Swal.fire({
                 title: isNewRecord ? "Saved!" : "Updated!",
                 text: isNewRecord ? "" : "Details have been updated.",
@@ -214,16 +219,44 @@ const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, associat
                         </Form.Item>
                     </Col>
                     <Col span={12}>
-                        <Form.Item label="Lease Start Date" name="lease_start_date">
-                            <Input disabled={!isEditMode} placeholder="Select Lease Start Date" />
+                        <Form.Item
+                            label="Lease Start Date"
+                            name="lease_start_date"
+                            getValueProps={(value) => ({
+                                value: value ? dayjs(value) : null,
+                            })}
+                        >
+                            <DatePicker
+                                disabled={!isEditMode}
+                                placeholder="Select Lease Start Date"
+                                format="YYYY-MM-DD"
+                                style={{ width: '100%' }}
+                                onChange={(date) => {
+                                    form.setFieldValue('lease_start_date', date ? dayjs(date).toISOString() : null);
+                                }}
+                            />
                         </Form.Item>
                     </Col>
                 </Row>
 
                 <Row gutter={16}>
                     <Col span={12}>
-                        <Form.Item label="Lease End Date" name="lease_end_date">
-                            <Input disabled={!isEditMode} placeholder="Select Lease End Date" />
+                        <Form.Item
+                            label="Lease End Date"
+                            name="lease_end_date"
+                            getValueProps={(value) => ({
+                                value: value ? dayjs(value) : null,
+                            })}
+                        >
+                            <DatePicker
+                                disabled={!isEditMode}
+                                placeholder="Select Lease End Date"
+                                format="YYYY-MM-DD"
+                                style={{ width: '100%' }}
+                                onChange={(date) => {
+                                    form.setFieldValue('lease_end_date', date ? dayjs(date).toISOString() : null);
+                                }}
+                            />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -254,7 +287,7 @@ const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, associat
                         <Form.Item
                             label="Document Type"
                             name="document_type"
-                            //rules={[{ required: true, message: 'Please select document type!' }]}
+                        //rules={[{ required: true, message: 'Please select document type!' }]}
                         >
                             <Select
                                 onChange={(value) => setSelectedDocType(value)}
@@ -277,7 +310,7 @@ const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, associat
                     </Col>
                 </Row>
 
-                <div style={{ display: 'flex'}}>
+                <div style={{ display: 'flex' }}>
                     {isEditMode ? (
                         <Button
                             type="primary"
@@ -308,7 +341,7 @@ const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, associat
                         </Button>
                     ) : null}
                 </div>
-            
+
 
                 {existingDocuments.length > 0 && (
                     <div>

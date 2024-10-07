@@ -146,6 +146,69 @@ const PremiseUnitForm = () => {
         setSelectedUnitId(null);
     };
 
+    const handleDelete = async (record: any) => {
+
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            const url = 'http://139.84.166.124:8060/user-service/admin/premise_unit_guardian/delete';
+
+            const payload = {
+                premise_unit_id: record.premise_unit_id,
+                premise_id: record.premise_id,
+                mobile: record.mobile
+            };
+            console.log(payload);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'accessToken': 'your-access-token-here',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete guardian.');
+                }
+
+                const data = await response.json();
+
+
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'The guardian has been deleted.',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+
+
+
+            } catch (error) {
+                console.error('Error deleting guardian:', error);
+
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to delete the guardian.',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+    };
 
     const guardianColumns: ColumnsType<any> = [
         {
@@ -298,69 +361,7 @@ const PremiseUnitForm = () => {
         }
     }
 
-    const handleDelete = async (record: any) => {
 
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel'
-        });
-
-        if (result.isConfirmed) {
-            const url = 'http://139.84.166.124:8060/user-service/admin/premise_unit_guardian/delete';
-
-            const payload = {
-                premise_unit_id: record.premise_unit_id,
-                premise_id: record.premise_id,
-                mobile: record.mobile
-            };
-            console.log(payload);
-
-            try {
-                const response = await fetch(url, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'accessToken': 'your-access-token-here',
-                    },
-                    body: JSON.stringify(payload),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to delete guardian.');
-                }
-
-                const data = await response.json();
-
-
-                Swal.fire({
-                    title: 'Deleted!',
-                    text: 'The guardian has been deleted.',
-                    icon: 'success',
-                    confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'OK'
-                });
-
-
-
-            } catch (error) {
-                console.error('Error deleting guardian:', error);
-
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Failed to delete the guardian.',
-                    icon: 'error',
-                    confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'OK'
-                });
-            }
-        }
-    };
 
 
 
