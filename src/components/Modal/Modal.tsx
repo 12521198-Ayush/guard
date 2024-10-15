@@ -268,7 +268,7 @@ const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, associat
                         >
                             <Select disabled={!isEditMode}>
                                 <Select.Option value="Owner">Owner</Select.Option>
-                                <Select.Option value="Tenant">Tenant</Select.Option>
+                                <Select.Option value="tenant">Tenant</Select.Option>
                             </Select>
                         </Form.Item>
                     </Col>

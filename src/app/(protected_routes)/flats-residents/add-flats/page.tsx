@@ -426,149 +426,149 @@ const handleEdit = (unit_id: any) => {
         </Form>
       ),
     },
-    {
-      label: 'Guardians',
-      key: '3',
-      disabled: true,
-      children: (
-        <>
-          <div className="flex items-center justify-between">
-            <h4 className="font-small text-xl text-black dark:text-white">
-              Owner
-            </h4>
-            <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null, "Owner")} >
-              Add new
-            </Button>
-          </div>
+    // {
+    //   label: 'Guardians',
+    //   key: '3',
+    //   disabled: true,
+    //   children: (
+    //     <>
+    //       <div className="flex items-center justify-between">
+    //         <h4 className="font-small text-xl text-black dark:text-white">
+    //           Owner
+    //         </h4>
+    //         <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null, "Owner")} >
+    //           Add new
+    //         </Button>
+    //       </div>
 
 
-          <Table
-            columns={guardianColumns}
-            dataSource={guardiansData.filter((item) => item.association_type === 'Owner')}
-            loading={loadingGuardians}
-            rowKey="_id"
-            pagination={false}
-          />
-          <EditModal
-            visible={isModalVisible}
-            guardian_id={selectedUnitId}
-            onClose={handleClose}
-            association_type={association}
-          />
-          <br />
-          <br />
+    //       <Table
+    //         columns={guardianColumns}
+    //         dataSource={guardiansData.filter((item) => item.association_type === 'Owner')}
+    //         loading={loadingGuardians}
+    //         rowKey="_id"
+    //         pagination={false}
+    //       />
+    //       <EditModal
+    //         visible={isModalVisible}
+    //         guardian_id={selectedUnitId}
+    //         onClose={handleClose}
+    //         association_type={association}
+    //       />
+    //       <br />
+    //       <br />
 
-          <div className="flex items-center justify-between">
-            <h4 className="font-small text-xl text-black dark:text-white">
-              Tenant
-            </h4>
-            <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null, "Tenant")}>
-              Add new
-            </Button>
-            <EditModal
-              visible={isModalVisible}
-              guardian_id={selectedUnitId}
-              onClose={handleClose}
-              association_type={association}
-            />
-          </div>
+    //       <div className="flex items-center justify-between">
+    //         <h4 className="font-small text-xl text-black dark:text-white">
+    //           Tenant
+    //         </h4>
+    //         <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null, "Tenant")}>
+    //           Add new
+    //         </Button>
+    //         <EditModal
+    //           visible={isModalVisible}
+    //           guardian_id={selectedUnitId}
+    //           onClose={handleClose}
+    //           association_type={association}
+    //         />
+    //       </div>
 
 
-          <Table
-            columns={[
-              {
-                title: 'Name',
-                dataIndex: 'name',
-                key: 'name',
-                responsive: ['xs', 'sm', 'md', 'lg'],
-                width: 150,
-              },
-              {
-                title: 'Mobile',
-                dataIndex: 'mobile',
-                key: 'mobile',
-                responsive: ['xs', 'sm', 'md', 'lg'],
-                width: 150,
-              },
-              {
-                title: 'Email',
-                dataIndex: 'email',
-                key: 'email',
-                responsive: ['xs', 'sm', 'md', 'lg'],
-                width: 200,
-              },
-              {
-                title: 'Lease Start Date',
-                dataIndex: 'lease_start_date',
-                key: 'lease_start_date',
-                responsive: ['xs', 'sm', 'md', 'lg'],
-                width: 150,
-              },
-              {
-                title: 'Lease End Date',
-                dataIndex: 'lease_end_date',
-                key: 'lease_end_date',
-                responsive: ['xs', 'sm', 'md', 'lg'],
-                width: 150,
-              },
-              {
-                title: 'Action',
-                key: 'action',
-                responsive: ['xs', 'sm', 'md', 'lg'],
-                render: (_, record) => (
-                  <span>
-                    <Button>Edit</Button>
-                  </span>
-                ),
-                width: 100,
-              },
-            ]}
-            dataSource={guardiansData.filter((item) => item.association_type === 'tenant')}
-            loading={loadingGuardians}
-            rowKey="_id"
-            pagination={false}
-            scroll={{ x: '100%' }}
-          />
+    //       <Table
+    //         columns={[
+    //           {
+    //             title: 'Name',
+    //             dataIndex: 'name',
+    //             key: 'name',
+    //             responsive: ['xs', 'sm', 'md', 'lg'],
+    //             width: 150,
+    //           },
+    //           {
+    //             title: 'Mobile',
+    //             dataIndex: 'mobile',
+    //             key: 'mobile',
+    //             responsive: ['xs', 'sm', 'md', 'lg'],
+    //             width: 150,
+    //           },
+    //           {
+    //             title: 'Email',
+    //             dataIndex: 'email',
+    //             key: 'email',
+    //             responsive: ['xs', 'sm', 'md', 'lg'],
+    //             width: 200,
+    //           },
+    //           {
+    //             title: 'Lease Start Date',
+    //             dataIndex: 'lease_start_date',
+    //             key: 'lease_start_date',
+    //             responsive: ['xs', 'sm', 'md', 'lg'],
+    //             width: 150,
+    //           },
+    //           {
+    //             title: 'Lease End Date',
+    //             dataIndex: 'lease_end_date',
+    //             key: 'lease_end_date',
+    //             responsive: ['xs', 'sm', 'md', 'lg'],
+    //             width: 150,
+    //           },
+    //           {
+    //             title: 'Action',
+    //             key: 'action',
+    //             responsive: ['xs', 'sm', 'md', 'lg'],
+    //             render: (_, record) => (
+    //               <span>
+    //                 <Button>Edit</Button>
+    //               </span>
+    //             ),
+    //             width: 100,
+    //           },
+    //         ]}
+    //         dataSource={guardiansData.filter((item) => item.association_type === 'tenant')}
+    //         loading={loadingGuardians}
+    //         rowKey="_id"
+    //         pagination={false}
+    //         scroll={{ x: '100%' }}
+    //       />
 
-          <br />
+    //       <br />
 
-          <Form.Item>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-              <Button
-                style={{
-                  marginRight: '8px',
-                  borderRadius: '4px',
-                  backgroundColor: '#e0e0e0',
-                  color: '#333',
-                  border: 'none',
-                }}
-                onClick={handlePrev}
-                disabled={false}
-              >
-                Previous
-              </Button>
-              <Button
-                style={{
-                  marginRight: '8px',
-                  borderRadius: '4px',
-                  backgroundColor: '#e0e0e0',
-                  color: '#333',
-                  border: 'none',
-                }}
-                onClick={handleNext}
-                disabled={false}
-              >
-                Next
-              </Button>
-            </div>
-          </Form.Item>
-        </>
+    //       <Form.Item>
+    //         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+    //           <Button
+    //             style={{
+    //               marginRight: '8px',
+    //               borderRadius: '4px',
+    //               backgroundColor: '#e0e0e0',
+    //               color: '#333',
+    //               border: 'none',
+    //             }}
+    //             onClick={handlePrev}
+    //             disabled={false}
+    //           >
+    //             Previous
+    //           </Button>
+    //           <Button
+    //             style={{
+    //               marginRight: '8px',
+    //               borderRadius: '4px',
+    //               backgroundColor: '#e0e0e0',
+    //               color: '#333',
+    //               border: 'none',
+    //             }}
+    //             onClick={handleNext}
+    //             disabled={false}
+    //           >
+    //             Next
+    //           </Button>
+    //         </div>
+    //       </Form.Item>
+    //     </>
 
-      )
-    },
+    //   )
+    // },
     {
       label: 'Preferences',
-      key: '4',
+      key: '3',
       disabled: true,
       children: (
         <Form form={form} layout="vertical" onFinish={handleFinish}>

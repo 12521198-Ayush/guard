@@ -89,14 +89,14 @@ export default function LoginPage() {
     const [isDisabled, setIsDisabled] = useState(false);
     const [isloginDisabled, setIsloginDisabled] = useState(false);
     const handleClick = () => {
-        setIsDisabled(true); // Disable the button
+        setIsDisabled(true); 
 
         setTimeout(() => {
             setIsDisabled(false);
         }, 10000);
     };
     const handleloginClick = () => {
-        setIsloginDisabled(true); // Disable the button
+        setIsloginDisabled(true); 
 
         setTimeout(() => {
             setIsloginDisabled(false);

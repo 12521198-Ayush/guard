@@ -9,6 +9,13 @@ import EditModal from '../../../components/Modal/Modal'
 import moment from 'moment';
 import type { ColumnsType } from 'antd/es/table';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import BasicDetailsForm from '../../../components/Premise_manage_Tabs/BasicDetailsForm';
+import ConnectionsForm from '../../../components/Premise_manage_Tabs/ConnectionsForm';
+import GuardiansTab from '../../../components/Premise_manage_Tabs/GuardiansTab';
+import PreferencesTab from '../../../components/Premise_manage_Tabs/PreferencesTab';
+import ParkingTab from '../../../components/Premise_manage_Tabs/ParkingSlotTab';
+import ResidentTab from '../../../components/Premise_manage_Tabs/ResidentTab';
+
 
 const PremiseUnitForm = () => {
 
@@ -23,6 +30,8 @@ const PremiseUnitForm = () => {
     const [guardiansData, setGuardiansData] = useState<any[]>([]);
     const [loadingGuardians, setLoadingGuardians] = useState(false);
     // const [data,setdata] = useState<any>();
+    const premiseId = session?.user?.primary_premise_id || '';
+
     const fetchGuardiansData = async () => {
         const accessToken = session?.user?.accessToken || undefined;
         const premiseId = session?.user?.primary_premise_id || '';
@@ -63,11 +72,6 @@ const PremiseUnitForm = () => {
                     },
                 }
             );
-
-
-
-
-
             const data = response.data.data;
             const unit = data;
             if (unit) {
@@ -114,6 +118,13 @@ const PremiseUnitForm = () => {
 
         } catch (error) {
             console.error('Error fetching data:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to fetch Premise data',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
         } finally {
             setLoading(false);
         }
@@ -147,6 +158,18 @@ const PremiseUnitForm = () => {
     };
 
     const handleDelete = async (record: any) => {
+        const accessToken = session?.user?.accessToken || undefined;
+
+        if (!accessToken) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Access token is missing. Please log in again.',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
 
         const result = await Swal.fire({
             title: 'Are you sure?',
@@ -171,10 +194,10 @@ const PremiseUnitForm = () => {
 
             try {
                 const response = await fetch(url, {
-                    method: 'DELETE',
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'accessToken': 'your-access-token-here',
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json' 
                     },
                     body: JSON.stringify(payload),
                 });
@@ -184,8 +207,7 @@ const PremiseUnitForm = () => {
                 }
 
                 const data = await response.json();
-
-
+ 
                 Swal.fire({
                     title: 'Deleted!',
                     text: 'The guardian has been deleted.',
@@ -193,8 +215,7 @@ const PremiseUnitForm = () => {
                     confirmButtonColor: '#3085d6',
                     confirmButtonText: 'OK'
                 });
-
-
+                fetchGuardiansData();
 
             } catch (error) {
                 console.error('Error deleting guardian:', error);
@@ -216,28 +237,28 @@ const PremiseUnitForm = () => {
             dataIndex: 'name',
             key: 'name',
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 150, 
+            width: 150,
         },
         {
             title: 'Mobile',
             dataIndex: 'mobile',
             key: 'mobile',
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 150, 
+            width: 150,
         },
         {
             title: 'Email',
             dataIndex: 'email',
             key: 'email',
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 200, 
+            width: 200,
         },
         {
             title: 'Type',
             dataIndex: 'association_type',
             key: 'association_type',
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 150, 
+            width: 150,
         },
         {
             title: 'Residing',
@@ -245,17 +266,16 @@ const PremiseUnitForm = () => {
             key: 'is_residing',
             render: (residing: string) => (residing === 'yes' ? 'Yes' : 'No'),
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 150, 
+            width: 150,
         },
         {
             title: 'Action',
             key: 'action',
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 150, 
+            width: 150,
             render: (_: any, record: any) => (
                 <>
                     <Button onClick={() => handleEdit(record)} icon={<EditOutlined />}>
-                        {/* Replaced Edit text with EditOutlined icon */}
                     </Button>
                     <Button
                         className="ml-2"
@@ -265,7 +285,7 @@ const PremiseUnitForm = () => {
                             color: 'white'
                         }}
                         type="default"
-                        icon={<DeleteOutlined />} // DeleteOutlined icon for delete button
+                        icon={<DeleteOutlined />}
                     />
                 </>
             ),
@@ -356,15 +376,17 @@ const PremiseUnitForm = () => {
 
         } catch (error) {
             console.error('Error fetching data:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to update the details',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
         } finally {
             setLoading(false);
         }
     }
-
-
-
-
-
 
 
     const [activeKey, setActiveKey] = useState('1');
@@ -402,605 +424,62 @@ const PremiseUnitForm = () => {
             label: 'Basic',
             key: '1',
             disabled: true,
-            children: (
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleFinish}
-                >
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Sub-premise"
-                                name="sub_premise_id"
-                                rules={[
-                                    { required: true, message: 'Please select a sub-premise' },
-                                    { validator: (_, value) => value !== "none" ? Promise.resolve() : Promise.reject(new Error('None is not a valid option.')) }
-                                ]}
-                            >
-                                <Select placeholder="Select Sub-premise" disabled={true}>
-                                    <Select.Option value="none">None</Select.Option>
-                                    {session?.user?.subpremiseArray?.map((subpremise: any) => (
-                                        <Select.Option key={subpremise.subpremise_id} value={subpremise.subpremise_id}>
-                                            {subpremise.subpremise_name}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Unit ID"
-                                name="unit_id"
-                                rules={[{ required: true, message: 'Please enter the Unit ID' }]}
-                            >
-                                <Input placeholder="Unit ID" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item label="Size" name="size">
-                                <Input placeholder="Size" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Occupancy Status"
-                                name="occupancy_status"
-                                rules={[
-                                    { required: true, message: 'Please select occupancy status' },
-                                    { validator: (_, value) => value !== "none" ? Promise.resolve() : Promise.reject(new Error('None is not a valid option.')) }
-                                ]}
-                            >
-                                <Select placeholder="Select Occupancy Status" disabled={!editMode}>
-                                    <Select.Option value="none">None</Select.Option>
-                                    <Select.Option value="Tenant">Tenant</Select.Option>
-                                    <Select.Option value="Owner">Owner</Select.Option>
-                                    <Select.Option value="Vacant">Vacant</Select.Option>
-                                    <Select.Option value="Locked">Locked</Select.Option>
-                                    <Select.Option value="Blocked">Blocked</Select.Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item label="Extension No." name="extension_no">
-                                <Input placeholder="Extension No." disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item label="Direct Dial" name="direct_dial">
-                                <Input placeholder="Direct Dial" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item label="2W Parking Count" name="tw_parking_count">
-                                <Input placeholder="2W Parking Count" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item label="4W Parking Count" name="fw_parking_count">
-                                <Input placeholder="4W Parking Count" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-
-                            <Button
-                                style={{
-                                    marginRight: '8px',
-                                    borderRadius: '4px',
-                                    backgroundColor: '#e0e0e0',
-                                    color: '#333',
-                                    border: 'none',
-                                }}
-                                onClick={handleNext}
-                            >
-                                Next
-                            </Button>
-                        </div>
-                    </Form.Item>
-                    {/* <Form.Item>
-                        <Button
-                            style={{
-                                backgroundColor: editMode ? 'green' : '#d3d3d3',
-                                color: 'white',
-                            }}
-                            htmlType="submit"
-                            loading={loading}
-                            disabled={!editMode}
-                        >
-                            Submit
-                        </Button>
-
-                        <Button
-                            style={{
-                                backgroundColor: '#808080',
-                                color: 'white',
-                                marginLeft: '8px',
-                            }}
-                            onClick={handleReset}
-                            disabled={!editMode}
-                        >
-                            Reset
-                        </Button>
-
-                        <Button
-                            style={{
-                                backgroundColor: editMode ? 'red' : 'blue',
-                                color: 'white',
-                                marginLeft: '8px',
-                            }}
-                            onClick={toggleEditMode}
-                        >
-                            {editMode ? 'Cancel' : 'Edit'}
-                        </Button>
-                    </Form.Item> */}
-                </Form>
-            ),
+            children: <BasicDetailsForm form={form} handleNext={handleNext} editMode={editMode} session={session} />,
         },
         {
             label: 'Connections',
             key: '2',
             disabled: true,
-            children: (
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleFinish}
-                    disabled={true}
-
-                >
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Water Meter ID"
-                                name="water_meter_id"
-                            >
-                                <Input placeholder="Water Meter ID" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Electricity Meter Vendor"
-                                name="electricity_meter_vendor"
-                                rules={[{ required: true, message: 'Please enter electricity meter vendor' }]}
-                            >
-                                <Input placeholder="Electricity Meter Vendor" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Electricity Meter ID"
-                                name="electricity_meter_id"
-                            >
-                                <Input placeholder="Electricity Meter ID" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Gas Connection ID"
-                                name="gas_connection_id"
-                            >
-                                <Input placeholder="Gas Connection ID" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Direct Sanction Load"
-                                name="direct_sanction_load"
-                            >
-                                <Input placeholder="Direct Sanction Load" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="DG Sanction Load"
-                                name="dg_sanction_load"
-                            >
-                                <Input placeholder="DG Sanction Load" disabled={!editMode} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-                            <Button
-                                style={{
-                                    marginRight: '8px',
-                                    borderRadius: '4px',
-                                    backgroundColor: '#e0e0e0',
-                                    color: '#333',
-                                    border: 'none',
-                                }}
-                                onClick={handlePrev}
-                                disabled={false}
-                            >
-                                Previous
-                            </Button>
-                            <Button
-                                style={{
-                                    marginRight: '8px',
-                                    borderRadius: '4px',
-                                    backgroundColor: '#e0e0e0',
-                                    color: '#333',
-                                    border: 'none',
-                                }}
-                                disabled={false}
-
-                                onClick={handleNext}
-                            >
-                                Next
-                            </Button>
-                        </div>
-                    </Form.Item>
-                    {/* <Form.Item>
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            style={{
-                                backgroundColor: editMode ? 'green' : '#d3d3d3', // Green when editable, gray when disabled
-                                color: 'white',
-                            }}
-                            disabled={!editMode}
-                            loading={loading}
-                        >
-                            Submit
-                        </Button>
-
-                        <Button
-                            style={{
-                                backgroundColor: '#808080', // Neutral gray color for reset
-                                color: 'white',
-                                marginLeft: '8px',
-                            }}
-                            onClick={handleReset}
-                            disabled={!editMode}
-                        >
-                            Reset
-                        </Button>
-
-                        <Button
-                            style={{
-                                backgroundColor: editMode ? 'red' : 'blue', // Red for cancel, blue for edit
-                                color: 'white',
-                                marginLeft: '8px',
-                            }}
-                            onClick={toggleEditMode}
-                        >
-                            {editMode ? 'Cancel' : 'Edit'}
-                        </Button>
-                    </Form.Item> */}
-                </Form>
-            )
+            children: <ConnectionsForm form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} />,
         },
         {
             label: 'Guardians',
             key: '3',
             disabled: true,
             children: (
-                <>
-                    <div className="flex items-center justify-between">
-                        <h4 className="font-small text-xl text-black dark:text-white">
-                            Owner
-                        </h4>
-                        <Button style={{ marginBottom: '8px' }} onClick={() => handleNew(null)} >
-                            Add new
-                        </Button>
-                    </div>
-
-
-                    <Table
-                        columns={guardianColumns}
-                        dataSource={guardiansData.filter((item) => item.association_type === 'Owner')}
-                        scroll={{ x: 900 }}
-                        loading={loadingGuardians}
-                        rowKey="_id"
-                        pagination={false}
-                    />
-                    <EditModal
-                        visible={isModalVisible}
-                        guardian_id={selectedUnitId}
-                        id={id}
-                        onClose={handleClose}
-                        sub_premise_id={initialData.sub_premise_id}
-                    />
-                    <br />
-                    <br />
-
-                    <div className="flex items-center justify-between">
-                        <h4 className="font-small text-xl text-black dark:text-white">
-                            Tenant
-                        </h4>
-
-                        <EditModal
-                            visible={isModalVisible}
-                            guardian_id={selectedUnitId}
-                            id={id}
-                            onClose={handleClose}
-                            sub_premise_id={initialData.sub_premise_id}
-                        />
-                    </div>
-
-
-                    <Table
-                        columns={[
-                            {
-                                title: 'Name',
-                                dataIndex: 'name',
-                                key: 'name',
-                                responsive: ['xs', 'sm', 'md', 'lg'],
-                                width: 150, 
-                            },
-                            {
-                                title: 'Mobile',
-                                dataIndex: 'mobile',
-                                key: 'mobile',
-                                responsive: ['xs', 'sm', 'md', 'lg'],
-                                width: 150, 
-                            },
-                            {
-                                title: 'Email',
-                                dataIndex: 'email',
-                                key: 'email',
-                                responsive: ['xs', 'sm', 'md', 'lg'],
-                                width: 200, 
-                            },
-                            {
-                                title: 'Lease Start Date',
-                                dataIndex: 'lease_start_date',
-                                key: 'lease_start_date',
-                                responsive: ['xs', 'sm', 'md', 'lg'],
-                                width: 150,
-                                render: (date) => date ? moment(date).format('YYYY-MM-DD') : 'N/A',
-                            },
-                            {
-                                title: 'Lease End Date',
-                                dataIndex: 'lease_end_date',
-                                key: 'lease_end_date',
-                                responsive: ['xs', 'sm', 'md', 'lg'],
-                                width: 150,
-                                render: (date) => date ? moment(date).format('YYYY-MM-DD') : 'N/A',
-                            },
-                            {
-                                title: 'Action',
-                                key: 'action',
-                                responsive: ['xs', 'sm', 'md', 'lg'],
-                                width: 150,
-                                render: (_: any, record: any) => (
-                                    <>
-                                        <Button onClick={() => handleEdit(record)} icon={<EditOutlined />}>
-                                            {/* Replaced Edit text with EditOutlined icon */}
-                                        </Button>
-                                        <Button
-                                            className="ml-2"
-                                            onClick={() => handleDelete(record)}
-                                            style={{
-                                                backgroundColor: 'red',
-                                                color: 'white'
-                                            }}
-                                            type="default"
-                                            icon={<DeleteOutlined />} // DeleteOutlined icon for delete button
-                                        />
-                                    </>
-                                ),
-                            },
-                        ]}
-                        dataSource={guardiansData.filter((item) => item.association_type === 'tenant')}
-                        loading={loadingGuardians}
-                        rowKey="_id"
-                        pagination={false}
-                        scroll={{ x: 900 }}
-                    />
-
-
-                    <br />
-
-                    <Form.Item>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-                            <Button
-                                style={{
-                                    marginRight: '8px',
-                                    borderRadius: '4px',
-                                    backgroundColor: '#e0e0e0',
-                                    color: '#333',
-                                    border: 'none',
-                                }}
-                                onClick={handlePrev}
-                                disabled={false}
-                            >
-                                Previous
-                            </Button>
-                            <Button
-                                style={{
-                                    marginRight: '8px',
-                                    borderRadius: '4px',
-                                    backgroundColor: '#e0e0e0',
-                                    color: '#333',
-                                    border: 'none',
-                                }}
-                                onClick={handleNext}
-                                disabled={false}
-                            >
-                                Next
-                            </Button>
-                        </div>
-                    </Form.Item>
-                </>
-
+                <GuardiansTab
+                    guardianColumns={guardianColumns}
+                    guardiansData={guardiansData}
+                    isModalVisible={isModalVisible}
+                    selectedUnitId={selectedUnitId}
+                    id={id}
+                    initialData={initialData}
+                    handleNew={handleNew}
+                    handleClose={handleClose}
+                    handleEdit={handleEdit}
+                    handleDelete={handleDelete}
+                    handlePrev={handlePrev}
+                    handleNext={handleNext}
+                    loadingGuardians={loadingGuardians}
+                />
             )
         },
         {
-            label: 'Preferences',
+            label: 'Parking Slots',
             key: '4',
             disabled: true,
+            children: (<ParkingTab form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
+        },
+        {
+            label: 'Residents',
+            key: '5',
+            disabled: true,
+            children: (<ResidentTab form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
+        },
+        {
+            label: 'Preferences',
+            key: '6',
+            disabled: true,
             children: (
-                <Form form={form} layout="vertical" onFinish={handleFinish}>
-                    <div style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '24px', backgroundColor: '#f9f9f9' }}>
-                        <Row gutter={[8, 8]}>
-                            <Col xs={24} sm={6}>
-                                <h4 style={{ fontSize: '16px', margin: '0', color: '#555' }}>Notification Type</h4>
-                            </Col>
-                            <Col xs={24} sm={6}>
-                                <Form.Item name="maid_notification" valuePropName="checked">
-                                    <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                        Maid Notifications
-                                    </Checkbox>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={6}>
-                                <Form.Item name="vehicle_notification" valuePropName="checked">
-                                    <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                        Vehicle Notifications
-                                    </Checkbox>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-
-                        <Row gutter={[8, 8]}>
-                            <Col xs={24} sm={6}>
-                                <h4 style={{ fontSize: '16px', margin: '0', color: '#555' }}>Services</h4>
-                            </Col>
-                            <Col xs={24} sm={6}>
-                                <Form.Item name="email_notification" valuePropName="checked">
-                                    <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                        Email Notifications
-                                    </Checkbox>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={6}>
-                                <Form.Item name="wa_notification" valuePropName="checked">
-                                    <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                        WhatsApp Notifications
-                                    </Checkbox>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={6}>
-                                <Form.Item name="sms_notification" valuePropName="checked">
-                                    <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                        SMS Notifications
-                                    </Checkbox>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </div>
-
-                    <Form.Item shouldUpdate noStyle>
-                        {({ getFieldValue }) => {
-                            return (
-                                <div style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '24px', marginTop: '16px', backgroundColor: '#f9f9f9' }}>
-                                    <Row gutter={[8, 8]}>
-                                        <Col xs={24} sm={6}>
-                                            <h4 style={{ fontSize: '16px', margin: '0', color: '#555' }}>Visitors</h4>
-                                        </Col>
-                                        <Col xs={24} sm={6}>
-                                            <Form.Item name="pre_invite" valuePropName="checked">
-                                                <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                                    Pre Invite
-                                                </Checkbox>
-                                            </Form.Item>
-                                        </Col>
-                                    </Row>
-
-                                    <Row gutter={[8, 8]}>
-                                        <Col xs={24} sm={6}>
-                                            <h4 style={{ fontSize: '16px', margin: '0', color: '#555' }}>Mode</h4>
-                                        </Col>
-                                        <Col xs={24} sm={4}>
-                                            <Form.Item name="vms_voip" valuePropName="checked">
-                                                <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                                    VOIP
-                                                </Checkbox>
-                                            </Form.Item>
-                                        </Col>
-                                        <Col xs={24} sm={4}>
-                                            <Form.Item name="vms_ivrs" valuePropName="checked">
-                                                <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                                    IVRS
-                                                </Checkbox>
-                                            </Form.Item>
-                                        </Col>
-                                        <Col xs={24} sm={4}>
-                                            <Form.Item name="vms_manual" valuePropName="checked">
-                                                <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                                    Manual
-                                                </Checkbox>
-                                            </Form.Item>
-                                        </Col>
-                                    </Row>
-                                </div>
-                            );
-                        }}
-                    </Form.Item>
-
-                    <Form.Item>
-                        <div style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '24px', marginTop: '16px', backgroundColor: '#f9f9f9' }}>
-                            <Row gutter={[8, 8]}>
-                                <Col xs={24} sm={6}>
-                                    <h4 style={{ fontSize: '16px', margin: '0', color: '#555' }}>Other</h4>
-                                </Col>
-                                <Col xs={24} sm={6}>
-                                    <Form.Item name="service_centre" valuePropName="checked">
-                                        <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                            Service Center
-                                        </Checkbox>
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} sm={6}>
-                                    <Form.Item name="billing" valuePropName="checked">
-                                        <Checkbox style={{ fontSize: '14px', color: '#333' }} disabled={!editMode}>
-                                            Billing
-                                        </Checkbox>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                        </div>
-                    </Form.Item>
-
-                    <Form.Item>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-                            <Button
-                                style={{
-                                    marginRight: '8px',
-                                    borderRadius: '4px',
-                                    backgroundColor: '#e0e0e0',
-                                    color: '#333',
-                                    border: 'none',
-                                }}
-                                onClick={handlePrev}
-                            >
-                                Previous
-                            </Button>
-
-                            <Button
-                                style={{
-                                    borderRadius: '4px',
-                                    backgroundColor: '#4CAF50',
-                                    color: 'white',
-                                }}
-                                disabled={!editMode}
-                                htmlType="submit"
-                            >
-                                Submit
-                            </Button>
-                        </div>
-                    </Form.Item>
-                </Form>
-
-
+                <PreferencesTab
+                    form={form}
+                    handlePrev={handlePrev}
+                    handleFinish={handleFinish}
+                    editMode={editMode}
+                />
             )
         },
+
 
     ];
 

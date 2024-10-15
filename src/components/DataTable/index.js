@@ -98,10 +98,10 @@ const DataTable = () => {
         setCurrentPage(1);
     };
 
-    const handleReset = () => {
-        setSearchText("");
-        loadData(currentPage, limit);
-    };
+    // const handleReset = () => {
+    //     setSearchText("");
+    //     loadData(currentPage, limit);
+    // };
 
     const handleView = (record) => {
         return `/premise-unit-form?id=${record.id}`;
