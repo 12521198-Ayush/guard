@@ -15,6 +15,7 @@ import GuardiansTab from '../../../components/Premise_manage_Tabs/GuardiansTab';
 import PreferencesTab from '../../../components/Premise_manage_Tabs/PreferencesTab';
 import ParkingTab from '../../../components/Premise_manage_Tabs/ParkingSlotTab';
 import ResidentTab from '../../../components/Premise_manage_Tabs/ResidentTab';
+import VehicleTab from '@/components/Premise_manage_Tabs/VehicleTab';
 
 
 const PremiseUnitForm = () => {
@@ -197,7 +198,7 @@ const PremiseUnitForm = () => {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json' 
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(payload),
                 });
@@ -207,7 +208,7 @@ const PremiseUnitForm = () => {
                 }
 
                 const data = await response.json();
- 
+
                 Swal.fire({
                     title: 'Deleted!',
                     text: 'The guardian has been deleted.',
@@ -423,19 +424,19 @@ const PremiseUnitForm = () => {
         {
             label: 'Basic',
             key: '1',
-            disabled: true,
-            children: <BasicDetailsForm form={form} handleNext={handleNext} editMode={editMode} session={session} />,
+            disabled: (editMode),
+            children: <BasicDetailsForm form={form} handleNext={handleNext} editMode={editMode} session={session} toggleEditMode={toggleEditMode}/>,
         },
         {
             label: 'Connections',
             key: '2',
-            disabled: true,
-            children: <ConnectionsForm form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} />,
+            disabled: (editMode),
+            children: <ConnectionsForm form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} toggleEditMode={toggleEditMode} />,
         },
         {
             label: 'Guardians',
             key: '3',
-            disabled: true,
+            disabled: (editMode),
             children: (
                 <GuardiansTab
                     guardianColumns={guardianColumns}
@@ -457,25 +458,32 @@ const PremiseUnitForm = () => {
         {
             label: 'Parking Slots',
             key: '4',
-            disabled: true,
+            disabled: (editMode),
             children: (<ParkingTab form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
         },
         {
             label: 'Residents',
             key: '5',
-            disabled: true,
+            disabled: (editMode),
             children: (<ResidentTab form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
         },
         {
-            label: 'Preferences',
+            label: 'Vehicle',
             key: '6',
-            disabled: true,
+            disabled: (editMode),
+            children: (<VehicleTab form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
+        },
+        {
+            label: 'Preferences',
+            key: '7',
+            disabled: (editMode),
             children: (
                 <PreferencesTab
                     form={form}
                     handlePrev={handlePrev}
                     handleFinish={handleFinish}
                     editMode={editMode}
+                    toggleEditMode={toggleEditMode}
                 />
             )
         },
@@ -513,22 +521,22 @@ const PremiseUnitForm = () => {
                             Reset
                         </Button>
                     </div>
-                    <Button
-                        style={{
-                            backgroundColor: editMode ? 'white' : '#597ef7',
-                            color: editMode ? 'black' : 'white',
-                            marginLeft: '8px',
-                        }}
-                        onClick={toggleEditMode}
-                    >
-                        {editMode ? 'Cancel' : 'Edit'}
-                    </Button>
 
                 </div>
             </div>
 
             <div style={{ padding: '20px' }}>
                 <Tabs defaultActiveKey="1" activeKey={activeKey} onChange={setActiveKey} size="large" items={items} />
+                {/* <Button
+                    style={{
+                        backgroundColor: editMode ? 'white' : '#597ef7',
+                        color: editMode ? 'black' : 'white',
+                        marginLeft: '8px',
+                    }}
+                    onClick={toggleEditMode}
+                >
+                    {editMode ? 'Cancel' : 'Edit'}
+                </Button> */}
             </div>
         </div>
 

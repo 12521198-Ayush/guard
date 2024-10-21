@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useSession } from 'next-auth/react';
 import moment from 'moment';
-import ParkingModal from '../Modal/ParkingModal'; 
+import ParkingModal from '../Modal/ParkingModal';
 import Swal from 'sweetalert2';
 
 const ParkingTab = ({
@@ -17,7 +17,7 @@ const ParkingTab = ({
 }: any) => {
     const [loading, setLoading] = useState(true);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [editingRecord, setEditingRecord] = useState<any | null>(null); 
+    const [editingRecord, setEditingRecord] = useState<any | null>(null);
     const [data, setData] = useState<any[]>([]);
 
     const handleOpenModal = (record: any | null) => {
@@ -106,28 +106,28 @@ const ParkingTab = ({
                             'Content-Type': 'application/json',
                         },
                     });
-    
+
                     const result = await response.json();
-    
+
                     if (!response.ok) {
                         throw new Error(result.error || 'Failed to delete the parking slot.');
                     }
-    
+
                     Swal.fire({
                         title: 'Success!',
                         text: `Parking slot has been deleted successfully!`,
                         icon: 'success',
-                        confirmButtonColor: '#3085d6',  
-                        confirmButtonText: 'OK',  
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK',
                     });
-                    fetchParkingSlots(); 
+                    fetchParkingSlots();
                 } catch (error: any) {
                     Swal.fire({
                         title: 'Error!',
                         text: `Failed to delete parking slot: ${error.message}`,
                         icon: 'error',
-                        confirmButtonColor: '#3085d6',  
-                        confirmButtonText: 'OK', 
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK',
                     });
 
                 }
@@ -194,38 +194,40 @@ const ParkingTab = ({
                     premiseId={premiseId}
                     subPremiseId={subPremiseId}
                     premiseUnitId={premiseUnitId}
-                    record={editingRecord} 
+                    record={editingRecord}
                     fetchParkingSlots={fetchParkingSlots}
                 />
             )}
             <Form.Item>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
                     <Button
                         style={{
-                            marginRight: '8px',
                             borderRadius: '4px',
                             backgroundColor: '#e0e0e0',
                             color: '#333',
                             border: 'none',
                         }}
                         onClick={handlePrev}
+                        disabled={false}
                     >
                         Previous
                     </Button>
+
                     <Button
                         style={{
-                            marginRight: '8px',
                             borderRadius: '4px',
                             backgroundColor: '#e0e0e0',
                             color: '#333',
                             border: 'none',
                         }}
                         onClick={handleNext}
+                        disabled={false}
                     >
                         Next
                     </Button>
                 </div>
             </Form.Item>
+
         </>
     );
 };

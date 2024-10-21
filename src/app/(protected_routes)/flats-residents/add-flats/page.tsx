@@ -13,8 +13,6 @@ const MyForm = () => {
   const [form] = Form.useForm();
   const [activeKey, setActiveKey] = useState('1');
   const [loading, setLoading] = useState(false);
-  const [guardiansData, setGuardiansData] = useState<any[]>([]);
-  const [loadingGuardians, setLoadingGuardians] = useState(false);
 
 
   const handleNext = () => {

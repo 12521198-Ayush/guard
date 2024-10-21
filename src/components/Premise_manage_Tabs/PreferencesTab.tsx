@@ -5,6 +5,7 @@ const PreferencesTab = ({
     handlePrev,
     handleFinish,
     editMode,
+    toggleEditMode
 }: any) => {
     return (
         <Form form={form} layout="vertical" onFinish={handleFinish}>
@@ -129,34 +130,49 @@ const PreferencesTab = ({
                 </div>
             </Form.Item>
 
+
             <Form.Item>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
                     <Button
                         style={{
-                            marginRight: '8px',
                             borderRadius: '4px',
                             backgroundColor: '#e0e0e0',
                             color: '#333',
                             border: 'none',
                         }}
                         onClick={handlePrev}
+                        disabled={false}
                     >
                         Previous
                     </Button>
 
-                    <Button
-                        style={{
-                            borderRadius: '4px',
-                            backgroundColor: '#4CAF50',
-                            color: 'white',
-                        }}
-                        disabled={!editMode}
-                        htmlType="submit"
-                    >
-                        Submit
-                    </Button>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                            style={{
+                                backgroundColor: editMode ? 'white' : '#597ef7',
+                                color: editMode ? 'black' : 'white',
+                                marginRight: '8px',
+                            }}
+                            onClick={toggleEditMode}
+                        >
+                            {editMode ? 'Cancel' : 'Edit'}
+                        </Button>
+                        <Button
+                            style={{
+                                borderRadius: '4px',
+                                backgroundColor: '#4CAF50',
+                                color: 'white',
+                            }}
+                            disabled={!editMode}
+                            htmlType="submit"
+                        >
+                            Submit
+                        </Button>
+                    </div>
                 </div>
             </Form.Item>
+
+
         </Form>
     );
 };

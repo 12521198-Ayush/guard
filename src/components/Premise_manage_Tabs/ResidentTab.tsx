@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import { MailOutlined, WhatsAppOutlined, MessageOutlined, UserOutlined, CarOutlined } from '@ant-design/icons';
 import ResidentModal from '../Modal/ResidentModal';
 import NewResidentModal from '../Modal/NewResidentModal';
-import type { ColumnType } from 'antd/es/table'; 
+import type { ColumnType } from 'antd/es/table';
 
 const ResidentTab = ({
     form,
@@ -90,7 +90,13 @@ const ResidentTab = ({
                     })
                     .catch((error) => {
                         console.error('Error deleting resident:', error);
-                        Swal.fire('Error!', 'Resident could not be deleted.', 'error');
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to remove vehicle. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#3085d6', // Custom color for the 'OK' button
+                            confirmButtonText: 'OK', // Custom text for the button
+                        });
                     });
             }
         });
@@ -104,7 +110,7 @@ const ResidentTab = ({
         setIsModalVisible(true);
     };
 
-    const Residentcolumns:ColumnType<any>[]  = [
+    const Residentcolumns: ColumnType<any>[] = [
         {
             title: 'Name',
             dataIndex: 'name',
@@ -120,7 +126,7 @@ const ResidentTab = ({
             width: 150,
             render: (text) => {
                 const formattedMobile = text ? text.replace(/^0+/, '') : '';
-                return formattedMobile; 
+                return formattedMobile;
             },
         },
         {
@@ -238,9 +244,10 @@ const ResidentTab = ({
 
     const [isNewModalVisible, setIsNewModalVisible] = useState(false);
     const handlenew = () => {
-        setIsNewModalVisible(true);
         if (isNewModalVisible == false) {
-
+            setIsNewModalVisible(true);
+        }else{
+            setIsNewModalVisible(false);
         }
     }
 
@@ -257,7 +264,6 @@ const ResidentTab = ({
                     subPremiseId={subPremiseId}
                     premiseUnitId={premiseUnitId}
                     refetchResidents={fetchResidentData}
-
                 />
                 <ResidentModal
                     visible={isModalVisible}
@@ -278,33 +284,35 @@ const ResidentTab = ({
                 pagination={false}
             />
             <Form.Item>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
                     <Button
                         style={{
-                            marginRight: '8px',
                             borderRadius: '4px',
                             backgroundColor: '#e0e0e0',
                             color: '#333',
                             border: 'none',
                         }}
                         onClick={handlePrev}
+                        disabled={false}
                     >
                         Previous
                     </Button>
+
                     <Button
                         style={{
-                            marginRight: '8px',
                             borderRadius: '4px',
                             backgroundColor: '#e0e0e0',
                             color: '#333',
                             border: 'none',
                         }}
                         onClick={handleNext}
+                        disabled={false}
                     >
                         Next
                     </Button>
                 </div>
             </Form.Item>
+
         </>
     );
 };

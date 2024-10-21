@@ -118,10 +118,9 @@ const GuardiansTab = ({
             <br />
 
             <Form.Item>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
                     <Button
                         style={{
-                            marginRight: '8px',
                             borderRadius: '4px',
                             backgroundColor: '#e0e0e0',
                             color: '#333',
@@ -132,9 +131,9 @@ const GuardiansTab = ({
                     >
                         Previous
                     </Button>
+
                     <Button
                         style={{
-                            marginRight: '8px',
                             borderRadius: '4px',
                             backgroundColor: '#e0e0e0',
                             color: '#333',
@@ -147,6 +146,7 @@ const GuardiansTab = ({
                     </Button>
                 </div>
             </Form.Item>
+
         </>
     );
 };

@@ -26,7 +26,7 @@ const DataTable = () => {
     const subpremise_arr = [session.user.subpremiseArray[0]];
 
     const screens = useBreakpoint();
-
+    let accessToken = session?.user?.accessToken || undefined;
     useEffect(() => {
         if (session?.user?.primary_premise_id) {
             setPremiseId(session.user.primary_premise_id);
@@ -41,7 +41,7 @@ const DataTable = () => {
 
     const loadData = async (page, limit) => {
         setLoading(true);
-        const accessToken = session?.user?.accessToken || undefined;
+       
         try {
             const response = await axios.post(
                 "http://139.84.166.124:8060/user-service/admin/premise_unit/list",
@@ -68,21 +68,47 @@ const DataTable = () => {
 
     const handleSearch = (e) => {
         setSearchText(e.target.value);
+        
         if (e.target.value === "") {
             loadData(currentPage, limit);
         }
     };
 
-    const globalSearch = () => {
-        const filteredData = gridData.filter((value) => {
-            return (
-                value.id.toString().includes(searchText) ||
-                value.size.toString().includes(searchText) ||
-                value.occupancy_status.toLowerCase().includes(searchText.toLowerCase()) ||
-                value.ownership_type.toLowerCase().includes(searchText.toLowerCase())
+    const globalSearch = async () => {
+        try {
+            // Show a loading indicator or disable the search button while fetching
+            setLoading(true);
+    
+            // Make API request to search for the entered text
+            const response = await axios.post(
+                'http://139.84.166.124:8060/user-service/admin/premise_unit/list',
+                {
+                    premise_id: "0a8e1070-6b21-11ef-b2cb-13f201b16993",
+                    id: searchText, // use the searchText in the API request
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`, // Pass the access token in the headers
+                    },
+                }
             );
-        });
-        setGridData(filteredData);
+            console.log(response.data)
+    
+            // Check if response contains data and update gridData
+            if (response.data?.data) {
+                setGridData(response.data.data);
+            } else {
+                // In case no data is returned
+                setGridData([]);
+                message.info('No matching records found.');
+            }
+        } catch (error) {
+            console.error('Error searching for data:', error);
+            message.error('Failed to fetch search results. Please try again.');
+        } finally {
+            // Hide the loading indicator
+            setLoading(false);
+        }
     };
 
     const handleNext = () => {
@@ -200,7 +226,7 @@ const DataTable = () => {
                 <ToastContainer />
                 <Space style={{ marginBottom: 16, flexWrap: 'wrap' }}>
                     <Input
-                        placeholder='Enter Search Text'
+                        placeholder='Enter Unit id'
                         onChange={handleSearch}
                         type='text'
                         allowClear
