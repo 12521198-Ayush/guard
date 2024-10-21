@@ -7,7 +7,7 @@ import 'react-phone-input-2/lib/material.css';
 
 const { Option } = Select;
 
-const CreateResidentModal = ({ visible, onClose, premiseId, subPremiseId, premiseUnitId, refetchResidents }: any) => {
+const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUnitId, refetchResidents }: any) => {
     const { data: session } = useSession();
     const [form] = Form.useForm();
     const [phone, setPhone] = useState<string>(''); 
@@ -84,7 +84,7 @@ const CreateResidentModal = ({ visible, onClose, premiseId, subPremiseId, premis
     return (
         <Modal
             title="Create New Resident"
-            visible={visible}
+            open={open}
             onCancel={onClose}
             footer={null}
         >

@@ -44,9 +44,10 @@ const ResidentTab = ({
         }
     };
 
-
     useEffect(() => {
-        fetchResidentData();
+        if (typeof window !== 'undefined') {
+            fetchResidentData();
+        }
     }, [premiseId, subPremiseId, premiseUnitId]);
 
     const handleDelete = (record: any) => {
@@ -258,7 +259,7 @@ const ResidentTab = ({
                 <h4 className="font-small text-xl text-black dark:text-white">Existing Residents</h4>
                 <Button style={{ marginBottom: '8px' }} onClick={() => handlenew()} >Add new</Button>
                 <NewResidentModal
-                    visible={isNewModalVisible}
+                    open={isNewModalVisible}
                     onClose={() => setIsNewModalVisible(false)}
                     premiseId={premiseId}
                     subPremiseId={subPremiseId}
@@ -266,7 +267,7 @@ const ResidentTab = ({
                     refetchResidents={fetchResidentData}
                 />
                 <ResidentModal
-                    visible={isModalVisible}
+                    open={isModalVisible}
                     onClose={() => setIsModalVisible(false)}
                     residentData={selectedResidentData}
                     premiseId={premiseId}

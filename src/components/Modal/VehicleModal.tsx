@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useSession } from 'next-auth/react';
 
 interface VehicleModalProps {
-    visible: boolean;
+    open: boolean;
     onClose: () => void;
     premiseId: string;
     subPremiseId: string;
@@ -13,7 +13,7 @@ interface VehicleModalProps {
     refetchVehicleData: () => void;
 }
 
-const VehicleModal: React.FC<VehicleModalProps> = ({ visible, onClose, premiseId, subPremiseId, premiseUnitId, refetchVehicleData }) => {
+const VehicleModal: React.FC<VehicleModalProps> = ({ open, onClose, premiseId, subPremiseId, premiseUnitId, refetchVehicleData }) => {
     const [form] = Form.useForm();
     const { data: session } = useSession();
     const accessToken = session?.user?.accessToken;
@@ -76,7 +76,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ visible, onClose, premiseId
 
     return (
         <Modal
-            visible={visible}
+            open={open}
             title="Add New Vehicle"
             onCancel={onClose}
             footer={null}

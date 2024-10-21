@@ -4,7 +4,8 @@ import axios from 'axios';
 import { DeleteOutlined } from '@ant-design/icons';
 import Swal from 'sweetalert2';
 import { useSession } from 'next-auth/react';
-import VehicleModal from "../Modal/VehicleModal"
+import VehicleModal from "../Modal/VehicleModal";
+import type { ColumnType } from 'antd/es/table';
 
 interface VehicleRecord {
     parking_id: string;
@@ -53,13 +54,12 @@ const VehicleTab = ({
             setLoading(false);
         }
     };
-    useEffect(() => {
 
-        fetchVehicleData();
-        if (accessToken) {
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
             fetchVehicleData();
         }
-    }, [premiseId, subPremiseId, premiseUnitId, session]);
+    }, [premiseId, subPremiseId, premiseUnitId]);
 
     const handleDelete = (record: VehicleRecord) => {
 
@@ -111,34 +111,40 @@ const VehicleTab = ({
         });
     };
 
-    const columns = [
+    const columns: ColumnType<any>[] = [
         {
             title: 'Parking ID',
             dataIndex: 'parking_id',
             key: 'parking_id',
-            width: 150,
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 200,
         },
         {
             title: 'Slot ID',
             dataIndex: 'slot_id',
             key: 'slot_id',
-            width: 150,
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 200,
         },
         {
             title: 'Parking Area',
             dataIndex: 'parking_area',
             key: 'parking_area',
-            width: 150,
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 200,
         },
         {
             title: 'Vehicle Number',
             dataIndex: 'vno',
             key: 'vno',
-            width: 150,
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 200,
         },
         {
             title: 'Action',
             key: 'action',
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 200,
             render: (record: VehicleRecord) => (
                 <>
                     <Button
@@ -153,7 +159,7 @@ const VehicleTab = ({
                     />
                 </>
             ),
-            width: 200,
+
         },
     ];
 
@@ -162,7 +168,7 @@ const VehicleTab = ({
     const handlenew = () => {
         setIsNewModalVisible(true);
     }
-
+    
     return (
         <div>
             <div className="flex items-center justify-between">
@@ -171,7 +177,7 @@ const VehicleTab = ({
                     Add new
                 </Button>
                 <VehicleModal
-                    visible={isNewModalVisible}
+                    open={isNewModalVisible}
                     onClose={() => setIsNewModalVisible(false)}
                     premiseId={premiseId}
                     subPremiseId={subPremiseId}
@@ -179,13 +185,18 @@ const VehicleTab = ({
                     refetchVehicleData={fetchVehicleData}
                 />
             </div>
-            <Table
-                columns={columns}
-                dataSource={vehicleData}
-                loading={loading}
-                rowKey="_id"
-                pagination={false}
-            />
+            
+                <Table
+                    columns={columns}
+                    dataSource={vehicleData}
+                    rowKey="_id"
+                    pagination={false}
+                    scroll={{ x: 'max-content' }}
+                    style={{
+                        whiteSpace: 'nowrap',
+                    }}
+                />
+           
 
             <Form.Item>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>

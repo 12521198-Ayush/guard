@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import type { UploadProps } from 'antd';
 
-const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, association_type }: any) => {
+const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association_type }: any) => {
     const { data: session } = useSession();
     const [form] = Form.useForm();
     const [guardianData, setGuardianData] = useState<any>(null);
@@ -18,10 +18,10 @@ const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, associat
     const [selectedDocType, setSelectedDocType] = useState<string>('');
 
     useEffect(() => {
-        if (visible) {
+        if (open) {
             fetchGuardiansData();
         }
-    }, [visible]);
+    }, [open]);
 
     const fetchGuardiansData = async () => {
         const accessToken = session?.user?.accessToken || undefined;
@@ -171,7 +171,7 @@ const EditModal = ({ visible, guardian_id, onClose, id, sub_premise_id, associat
     return (
         <Modal
             title={isNewRecord ? "Create Guardian" : "Edit Guardian"}
-            visible={visible}
+            open={open}
             onCancel={onClose}
             footer={null}
             width={900}

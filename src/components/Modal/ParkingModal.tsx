@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
 
 interface ParkingModalProps {
-    visible: boolean;
+    open: boolean;
     onClose: () => void;
     premiseId: string;
     subPremiseId: string;
@@ -14,7 +14,7 @@ interface ParkingModalProps {
 }
 
 const ParkingModal: React.FC<ParkingModalProps> = ({
-    visible,
+    open,
     onClose,
     premiseId,
     subPremiseId,
@@ -94,7 +94,7 @@ const ParkingModal: React.FC<ParkingModalProps> = ({
     return (
         <Modal
             title={record ? 'Edit Parking Slot' : 'Add Parking Slot'}
-            visible={visible}
+            open={open}
             onCancel={onClose}
             footer={[
                 <Button key="cancel" onClick={onClose}>

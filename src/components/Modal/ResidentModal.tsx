@@ -24,7 +24,7 @@ const vmsOptions = [
     { value: 'manual', label: 'VMS Manual' },
 ];
 
-const ResidentModal = ({ visible, onClose, residentData, premiseId, subPremiseId, premiseUnitId, refetchResidents }: any) => {
+const ResidentModal = ({ open, onClose, residentData, premiseId, subPremiseId, premiseUnitId, refetchResidents }: any) => {
     const [form] = Form.useForm();
     const { data: session } = useSession();
 
@@ -168,7 +168,7 @@ const ResidentModal = ({ visible, onClose, residentData, premiseId, subPremiseId
 
         <Modal
             title="Edit Resident"
-            visible={visible}
+            open={open}
             width={900}
             footer={[
                 <Button key="cancel" onClick={handleCancel}>

@@ -164,9 +164,10 @@ const ParkingTab = ({
     };
 
     useEffect(() => {
-        fetchParkingSlots();
+        if (typeof window !== 'undefined') {
+            fetchParkingSlots();
+        }
     }, [premiseId, subPremiseId, premiseUnitId]);
-
     return (
         <>
             <div className="flex items-center justify-between">
@@ -189,7 +190,7 @@ const ParkingTab = ({
 
             {isModalVisible && (
                 <ParkingModal
-                    visible={isModalVisible}
+                    open={isModalVisible}
                     onClose={handleClose}
                     premiseId={premiseId}
                     subPremiseId={subPremiseId}

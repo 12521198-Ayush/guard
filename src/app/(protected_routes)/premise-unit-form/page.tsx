@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import EditModal from '../../../components/Modal/Modal'
-import moment from 'moment';
 import type { ColumnsType } from 'antd/es/table';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import BasicDetailsForm from '../../../components/Premise_manage_Tabs/BasicDetailsForm';
