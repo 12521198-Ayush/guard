@@ -1,11 +1,11 @@
 import { Form, Row, Col, Input, Select, Button } from 'antd';
 
-const BasicDetailsForm = ({ form, handleNext, editMode, session, toggleEditMode }: any) => {
+const BasicDetailsForm = ({ form, handleNext,handleFinish, editMode, session, toggleEditMode }: any) => {
     return (
         <Form
             form={form}
             layout="vertical"
-            onFinish={handleNext}
+            onFinish={handleFinish}
         >
             <Row gutter={16}>
                 <Col span={12}>
@@ -92,19 +92,29 @@ const BasicDetailsForm = ({ form, handleNext, editMode, session, toggleEditMode 
             </Row>
             <Form.Item>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-
-                    <Button
+                    <div
                         style={{
-                            marginRight: '8px',
-                            borderRadius: '4px',
-                            backgroundColor: '#e0e0e0',
-                            color: '#333',
-                            border: 'none',
+                            transition: 'opacity 0.3s ease, transform 0.3s ease',
+                            opacity: editMode ? 1 : 0,
+                            transform: editMode ? 'translateX(0)' : 'translateX(20px)',
+                            visibility: editMode ? 'visible' : 'hidden',
+                            display: 'inline-block',
+                            marginLeft: '8px',
                         }}
-                        onClick={handleNext}
                     >
-                        Next
-                    </Button>
+                        <Button
+                            style={{
+                                borderRadius: '4px',
+                                backgroundColor: '#597ef7',
+                                color: 'white',
+                            }}
+                            disabled={!editMode}
+                            htmlType="submit"
+                        >
+                            Submit
+                        </Button>
+                    </div>
+
                     <Button
                         style={{
                             backgroundColor: editMode ? 'white' : '#597ef7',

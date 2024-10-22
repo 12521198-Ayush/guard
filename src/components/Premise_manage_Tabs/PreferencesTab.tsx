@@ -130,37 +130,22 @@ const PreferencesTab = ({
                 </div>
             </Form.Item>
 
-
             <Form.Item>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-                    <Button
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                    <div
                         style={{
-                            borderRadius: '4px',
-                            backgroundColor: '#e0e0e0',
-                            color: '#333',
-                            border: 'none',
+                            transition: 'opacity 0.3s ease, transform 0.3s ease',
+                            opacity: editMode ? 1 : 0,
+                            transform: editMode ? 'translateX(0)' : 'translateX(20px)',
+                            visibility: editMode ? 'visible' : 'hidden',
+                            display: 'inline-block',
+                            marginLeft: '8px',
                         }}
-                        onClick={handlePrev}
-                        disabled={false}
                     >
-                        Previous
-                    </Button>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button
-                            style={{
-                                backgroundColor: editMode ? 'white' : '#597ef7',
-                                color: editMode ? 'black' : 'white',
-                                marginRight: '8px',
-                            }}
-                            onClick={toggleEditMode}
-                        >
-                            {editMode ? 'Cancel' : 'Edit'}
-                        </Button>
                         <Button
                             style={{
                                 borderRadius: '4px',
-                                backgroundColor: '#4CAF50',
+                                backgroundColor: '#597ef7',
                                 color: 'white',
                             }}
                             disabled={!editMode}
@@ -169,8 +154,21 @@ const PreferencesTab = ({
                             Submit
                         </Button>
                     </div>
+
+                    <Button
+                        style={{
+                            backgroundColor: editMode ? 'white' : '#597ef7',
+                            color: editMode ? 'black' : 'white',
+                            marginLeft: '8px',
+                        }}
+                        onClick={toggleEditMode}
+                    >
+                        {editMode ? 'Cancel' : 'Edit'}
+                    </Button>
                 </div>
+
             </Form.Item>
+
 
 
         </Form>

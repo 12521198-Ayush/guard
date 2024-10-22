@@ -1,11 +1,11 @@
 import { Form, Row, Col, Input, Button } from 'antd';
 
-const ConnectionsForm = ({ form, handlePrev, handleNext, editMode, toggleEditMode }: any) => {
+const ConnectionsForm = ({ form, handleFinish, handleNext, editMode, toggleEditMode }: any) => {
     return (
         <Form
             form={form}
             layout="vertical"
-            onFinish={handleNext}
+            onFinish={handleFinish}
             disabled={true}
 
         >
@@ -65,47 +65,43 @@ const ConnectionsForm = ({ form, handlePrev, handleNext, editMode, toggleEditMod
                 </Col>
             </Row>
             <Form.Item>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-                    <Button
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                    <div
                         style={{
-                            borderRadius: '4px',
-                            backgroundColor: '#e0e0e0',
-                            color: '#333',
-                            border: 'none',
+                            transition: 'opacity 0.3s ease, transform 0.3s ease',
+                            opacity: editMode ? 1 : 0,
+                            transform: editMode ? 'translateX(0)' : 'translateX(20px)',
+                            visibility: editMode ? 'visible' : 'hidden',
+                            display: 'inline-block',
+                            marginLeft: '8px',
                         }}
-                        onClick={handlePrev}
-                        disabled={false}
                     >
-                        Previous
-                    </Button>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button
-                            style={{
-                                backgroundColor: editMode ? 'white' : '#597ef7',
-                                color: editMode ? 'black' : 'white',
-                                marginRight: '8px',
-                            }}
-                            disabled={false}
-                            onClick={toggleEditMode}
-                        >
-                            {editMode ? 'Cancel' : 'Edit'}
-                        </Button>
                         <Button
                             style={{
                                 borderRadius: '4px',
-                                backgroundColor: '#e0e0e0',
-                                color: '#333',
-                                border: 'none',
+                                backgroundColor: '#597ef7',
+                                color: 'white',
                             }}
-                            onClick={handleNext}
-                            disabled={false}
+                            disabled={!editMode}
+                            htmlType="submit"
                         >
-                            Next
+                            Submit
                         </Button>
-
                     </div>
+
+                    <Button
+                        style={{
+                            backgroundColor: editMode ? 'white' : '#597ef7',
+                            color: editMode ? 'black' : 'white',
+                            marginLeft: '8px',
+                        }}
+                        onClick={toggleEditMode}
+                        disabled={false}
+                    >
+                        {editMode ? 'Cancel' : 'Edit'}
+                    </Button>
                 </div>
+
             </Form.Item>
 
 

@@ -3,6 +3,7 @@ import { Modal, Form, Input, Button } from 'antd';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
+import {useEffect} from 'react'
 
 interface VehicleModalProps {
     open: boolean;
@@ -18,6 +19,18 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ open, onClose, premiseId, s
     const { data: session } = useSession();
     const accessToken = session?.user?.accessToken;
 
+    const generateRandomParkingId = () => {
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const randomLetters = letters.charAt(Math.floor(Math.random() * letters.length)) +
+            letters.charAt(Math.floor(Math.random() * letters.length));
+        const randomSerial = 101 + Math.floor(Math.random() * 900); 
+        return `${randomSerial}${randomLetters}`;
+    };
+
+    useEffect (()=>{
+        generateRandomParkingId();
+    },[])
+    
     const handleSubmit = async (values: any) => {
         const requestData = {
             premise_id: premiseId,
@@ -59,7 +72,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ open, onClose, premiseId, s
                     });
                     refetchVehicleData();
                     onClose();
-                    form.resetFields(); 
+                    form.resetFields();
                 }
             });
         } catch (error) {
@@ -90,9 +103,11 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ open, onClose, premiseId, s
                     label="Parking ID"
                     name="parking_id"
                     rules={[{ required: true, message: 'Please enter Parking ID' }]}
+                    initialValue={generateRandomParkingId()}
                 >
-                    <Input placeholder="Enter Parking ID" />
+                    <Input placeholder="Enter Parking ID" disabled />
                 </Form.Item>
+
 
                 <Form.Item
                     label="Slot ID"

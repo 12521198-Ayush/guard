@@ -423,13 +423,13 @@ const PremiseUnitForm = () => {
             label: 'Basic',
             key: '1',
             disabled: (editMode),
-            children: <BasicDetailsForm form={form} handleNext={handleNext} editMode={editMode} session={session} toggleEditMode={toggleEditMode}/>,
+            children: <BasicDetailsForm form={form} handleNext={handleNext} handleFinish={handleFinish} editMode={editMode} session={session} toggleEditMode={toggleEditMode}/>,
         },
         {
             label: 'Connections',
             key: '2',
             disabled: (editMode),
-            children: <ConnectionsForm form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} toggleEditMode={toggleEditMode} />,
+            children: <ConnectionsForm form={form} handleFinish={handleFinish}  handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} toggleEditMode={toggleEditMode} />,
         },
         {
             label: 'Guardians',
@@ -438,6 +438,7 @@ const PremiseUnitForm = () => {
             children: (
                 <GuardiansTab
                     guardianColumns={guardianColumns}
+                    handleFinish={handleFinish} 
                     guardiansData={guardiansData}
                     isModalVisible={isModalVisible}
                     selectedUnitId={selectedUnitId}
@@ -457,19 +458,19 @@ const PremiseUnitForm = () => {
             label: 'Parking Slots',
             key: '4',
             disabled: (editMode),
-            children: (<ParkingTab form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
+            children: (<ParkingTab form={form} handleFinish={handleFinish}  handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
         },
         {
             label: 'Residents',
             key: '5',
             disabled: (editMode),
-            children: (<ResidentTab form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
+            children: (<ResidentTab form={form} handleFinish={handleFinish}  handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
         },
         {
             label: 'Vehicle',
             key: '6',
             disabled: (editMode),
-            children: (<VehicleTab form={form} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
+            children: (<VehicleTab form={form} handleFinish={handleFinish}  handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
         },
         {
             label: 'Preferences',

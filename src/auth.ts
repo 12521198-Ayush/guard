@@ -196,7 +196,7 @@ export const config = {
                     sub_premise_access_control_reqd: userData.data.sub_premise_access_control_reqd,
                     subpremiseArray: userData.data.subpremiseArray
                 };
-                console.log(user);
+               // console.log(user);
 
                 if (res.ok && user) {
                     const prefix = process.env.NODE_ENV === "development" ? "__Dev-" : ""
@@ -299,7 +299,7 @@ export const config = {
                 },
                 error: token.error,
             }
-            console.log("session => ", mySession);
+            //console.log("session => ", mySession);
             return mySession;
         },
         authorized({ request, auth }) {

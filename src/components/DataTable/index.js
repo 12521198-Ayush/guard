@@ -13,9 +13,10 @@ const { Option } = Select;
 
 const DataTable = () => {
     const router = useRouter();
+    let Gdata = [];
     const [gridData, setGridData] = useState([]);
+    const [newgridData, setnewGridData] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [sortedInfo, setSortedInfo] = useState({});
     const [searchText, setSearchText] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [limit, setLimit] = useState(10);
@@ -23,10 +24,9 @@ const DataTable = () => {
     const [premiseId, setPremiseId] = useState("");
     const [form] = Form.useForm();
     const { data: session } = useSession();
-    const subpremise_arr = [session.user.subpremiseArray[0]];
-
     const screens = useBreakpoint();
     let accessToken = session?.user?.accessToken || undefined;
+
     useEffect(() => {
         if (session?.user?.primary_premise_id) {
             setPremiseId(session.user.primary_premise_id);
@@ -41,7 +41,6 @@ const DataTable = () => {
 
     const loadData = async (page, limit) => {
         setLoading(true);
-       
         try {
             const response = await axios.post(
                 "http://139.84.166.124:8060/user-service/admin/premise_unit/list",
@@ -57,7 +56,12 @@ const DataTable = () => {
                 }
             );
             const { data } = response.data;
-            setGridData(data);
+            if (Array.isArray(data)) {
+                setGridData(data);
+            } else {
+                console.error("Unexpected data format:", data);
+                setGridData([]);
+            }
             setHasNextPage(data.length === limit);
         } catch (error) {
             console.log(error);
@@ -68,66 +72,55 @@ const DataTable = () => {
 
     const handleSearch = (e) => {
         setSearchText(e.target.value);
-        
         if (e.target.value === "") {
             loadData(currentPage, limit);
         }
     };
 
     const globalSearch = async () => {
-        // try {
-        //     // Show a loading indicator or disable the search button while fetching
-        //     setLoading(true);
-    
-        //     // Make API request to search for the entered text
-        //     const response = await axios.post(
-        //         'http://139.84.166.124:8060/user-service/admin/premise_unit/list',
-        //         {
-        //             premise_id: "0a8e1070-6b21-11ef-b2cb-13f201b16993",
-        //             id: searchText, // use the searchText in the API request
-        //         },
-        //         {
-        //             headers: {
-        //                 Authorization: `Bearer ${accessToken}`, // Pass the access token in the headers
-        //             },
-        //         }
-        //     );
-        //     console.log(response.data)
-    
-        //     // Check if response contains data and update gridData
-        //     if (response.data?.data) {
-        //         setGridData(response.data.data);
-        //     } else {
-        //         // In case no data is returned
-        //         setGridData([]);
-        //         message.info('No matching records found.');
-        //     }
-        // } catch (error) {
-        //     console.error('Error searching for data:', error);
-        //     message.error('Failed to fetch search results. Please try again.');
-        // } finally {
-        //     // Hide the loading indicator
-        //     setLoading(false);
-        // }
+        if (!searchText) return;
+        setLoading(true);
+        try {
+            const response = await axios.post(
+                'http://139.84.166.124:8060/user-service/admin/premise_unit/list',
+                {
+                    premise_id: (session?.user?.primary_premise_id),
+                    id: searchText,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
+            if (response.data?.data) {
+                const dataObj = response.data?.data;
+                const dataArray = [dataObj];
+                setGridData(dataArray); 
+            } else {
+                setGridData([]);
+                message.info('No matching records found.');
+            }
+        } catch (error) {
+            console.error('Error searching for data:', error);
+            message.error('No matching records found');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleNext = () => {
-        if (hasNextPage) setCurrentPage(currentPage + 1);
+        setCurrentPage((prevPage) => (hasNextPage ? prevPage + 1 : prevPage));
     };
 
     const handlePrevious = () => {
-        if (currentPage > 1) setCurrentPage(currentPage - 1);
+        setCurrentPage((prevPage) => (prevPage > 1 ? prevPage - 1 : prevPage));
     };
 
     const handleLimitChange = (value) => {
         setLimit(value);
         setCurrentPage(1);
     };
-
-    // const handleReset = () => {
-    //     setSearchText("");
-    //     loadData(currentPage, limit);
-    // };
 
     const handleView = (record) => {
         return `/premise-unit-form?id=${record.id}`;
@@ -145,7 +138,7 @@ const DataTable = () => {
         {
             title: "ID",
             dataIndex: "id",
-            responsive: ['md'],
+            
         },
         {
             title: "Subpremise Name",
@@ -245,7 +238,7 @@ const DataTable = () => {
                 <Form form={form} component={false}>
                     <Table
                         columns={columns}
-                        dataSource={gridData.map(item => ({ ...item, key: item.id }))} // Adding key prop
+                        dataSource={gridData.map(item => ({ ...item, key: item.id }))}
                         bordered
                         loading={loading}
                         pagination={false}
@@ -260,10 +253,10 @@ const DataTable = () => {
                                 Next
                             </Button>
                         </Space>
-                        <Select defaultValue={10} onChange={handleLimitChange} style={{ width: 120 }}>
+                        <Select defaultValue={10} onChange={handleLimitChange}>
                             <Option value={10}>10</Option>
+                            <Option value={20}>20</Option>
                             <Option value={50}>50</Option>
-                            <Option value={100}>100</Option>
                         </Select>
                     </div>
                 </Form>
