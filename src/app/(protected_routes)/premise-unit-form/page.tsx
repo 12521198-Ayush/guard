@@ -1,11 +1,12 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Table, Checkbox, Select, Row, Col, Tabs, message } from 'antd';
+import { Form, Button, Tabs } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import type { ColumnsType } from 'antd/es/table';
+import { ReloadOutlined } from '@ant-design/icons';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import BasicDetailsForm from '../../../components/Premise_manage_Tabs/BasicDetailsForm';
 import ConnectionsForm from '../../../components/Premise_manage_Tabs/ConnectionsForm';
@@ -14,6 +15,7 @@ import PreferencesTab from '../../../components/Premise_manage_Tabs/PreferencesT
 import ParkingTab from '../../../components/Premise_manage_Tabs/ParkingSlotTab';
 import ResidentTab from '../../../components/Premise_manage_Tabs/ResidentTab';
 import VehicleTab from '@/components/Premise_manage_Tabs/VehicleTab';
+import HelpersTab from '../../../components/Premise_manage_Tabs/HelpersTab';
 
 
 const PremiseUnitForm = () => {
@@ -28,7 +30,6 @@ const PremiseUnitForm = () => {
     const [form] = Form.useForm();
     const [guardiansData, setGuardiansData] = useState<any[]>([]);
     const [loadingGuardians, setLoadingGuardians] = useState(false);
-    // const [data,setdata] = useState<any>();
     const premiseId = session?.user?.primary_premise_id || '';
 
     const fetchGuardiansData = async () => {
@@ -423,13 +424,13 @@ const PremiseUnitForm = () => {
             label: 'Basic',
             key: '1',
             disabled: (editMode),
-            children: <BasicDetailsForm form={form} handleNext={handleNext} handleFinish={handleFinish} editMode={editMode} session={session} toggleEditMode={toggleEditMode}/>,
+            children: <BasicDetailsForm form={form} handleNext={handleNext} handleFinish={handleFinish} editMode={editMode} session={session} toggleEditMode={toggleEditMode} />,
         },
         {
             label: 'Connections',
             key: '2',
             disabled: (editMode),
-            children: <ConnectionsForm form={form} handleFinish={handleFinish}  handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} toggleEditMode={toggleEditMode} />,
+            children: <ConnectionsForm form={form} handleFinish={handleFinish} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} toggleEditMode={toggleEditMode} />,
         },
         {
             label: 'Guardians',
@@ -438,7 +439,7 @@ const PremiseUnitForm = () => {
             children: (
                 <GuardiansTab
                     guardianColumns={guardianColumns}
-                    handleFinish={handleFinish} 
+                    handleFinish={handleFinish}
                     guardiansData={guardiansData}
                     isModalVisible={isModalVisible}
                     selectedUnitId={selectedUnitId}
@@ -458,19 +459,19 @@ const PremiseUnitForm = () => {
             label: 'Parking Slots',
             key: '4',
             disabled: (editMode),
-            children: (<ParkingTab form={form} handleFinish={handleFinish}  handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
+            children: (<ParkingTab form={form} handleFinish={handleFinish} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
         },
         {
             label: 'Residents',
             key: '5',
             disabled: (editMode),
-            children: (<ResidentTab form={form} handleFinish={handleFinish}  handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
+            children: (<ResidentTab form={form} handleFinish={handleFinish} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
         },
         {
             label: 'Vehicle',
             key: '6',
             disabled: (editMode),
-            children: (<VehicleTab form={form} handleFinish={handleFinish}  handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
+            children: (<VehicleTab form={form} handleFinish={handleFinish} handlePrev={handlePrev} handleNext={handleNext} editMode={editMode} premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id} />)
         },
         {
             label: 'Preferences',
@@ -480,6 +481,19 @@ const PremiseUnitForm = () => {
                 <PreferencesTab
                     form={form}
                     handlePrev={handlePrev}
+                    handleFinish={handleFinish}
+                    editMode={editMode}
+                    toggleEditMode={toggleEditMode}
+                />
+            )
+        },
+        {
+            label: 'Helpers',
+            key: '8',
+            disabled: (editMode),
+            children: (
+                <HelpersTab
+                    form={form}
                     handleFinish={handleFinish}
                     editMode={editMode}
                     toggleEditMode={toggleEditMode}
@@ -511,11 +525,25 @@ const PremiseUnitForm = () => {
                     >
                         <Button
                             style={{
-                                backgroundColor: '#808080',
-                                color: 'white',
+                                background: 'linear-gradient(90deg, #d50032, #ff6f61)', // Dark gradient background
+                                color: 'white', // White text color
+                                border: 'none', // No border
+                                borderRadius: '4px', // Rounded corners
+                                padding: '8px 16px', // Padding for a more substantial look
+                                boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+                                cursor: 'pointer', // Pointer cursor on hover
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
                             }}
                             onClick={handleReset}
-                            disabled={!editMode}
+                            disabled={!editMode} // Disable the button based on editMode
                         >
                             Reset
                         </Button>

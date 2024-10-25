@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { Modal, Form, Input, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Modal, Form, Input, Button, Select } from 'antd';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import {useEffect} from 'react'
 
 interface VehicleModalProps {
     open: boolean;
@@ -14,23 +13,68 @@ interface VehicleModalProps {
     refetchVehicleData: () => void;
 }
 
-const VehicleModal: React.FC<VehicleModalProps> = ({ open, onClose, premiseId, subPremiseId, premiseUnitId, refetchVehicleData }) => {
+interface ParkingSlot {
+    _id: string;
+    parking_id: string;
+    parking_slot: string;
+}
+
+const VehicleModal: React.FC<VehicleModalProps> = ({
+    open,
+    onClose,
+    premiseId,
+    subPremiseId,
+    premiseUnitId,
+    refetchVehicleData,
+}) => {
     const [form] = Form.useForm();
     const { data: session } = useSession();
     const accessToken = session?.user?.accessToken;
 
-    const generateRandomParkingId = () => {
-        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const randomLetters = letters.charAt(Math.floor(Math.random() * letters.length)) +
-            letters.charAt(Math.floor(Math.random() * letters.length));
-        const randomSerial = 101 + Math.floor(Math.random() * 900); 
-        return `${randomSerial}${randomLetters}`;
+    const [parkingSlots, setParkingSlots] = useState<ParkingSlot[]>([]);
+    const [loadingSlots, setLoadingSlots] = useState(true);
+
+    useEffect(() => {
+        const fetchParkingSlots = async () => {
+            try {
+                const response = await axios.post(
+                    'http://139.84.166.124:8060/user-service/admin/parking/slot/list',
+                    {
+                        premise_id: premiseId,
+                        sub_premise_id: subPremiseId,
+                        premise_unit_id: premiseUnitId,
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                    }
+                );
+
+                const uniqueSlots = response.data.data.filter(
+                    (slot: ParkingSlot, index: number, self: ParkingSlot[]) =>
+                        index === self.findIndex(s => s.parking_slot === slot.parking_slot)
+                );
+                setParkingSlots(uniqueSlots);
+            } catch (error) {
+                console.error('Error fetching parking slots:', error);
+            } finally {
+                setLoadingSlots(false);
+            }
+        };
+
+        if (open) {
+            fetchParkingSlots();
+        }
+    }, [open, premiseId, subPremiseId, premiseUnitId, accessToken]);
+
+    const handleSlotChange = (selectedSlot: string) => {
+        const selectedSlotData = parkingSlots.find(slot => slot.parking_slot === selectedSlot);
+        if (selectedSlotData) {
+            form.setFieldsValue({ parking_id: selectedSlotData.parking_id });
+        }
     };
 
-    useEffect (()=>{
-        generateRandomParkingId();
-    },[])
-    
     const handleSubmit = async (values: any) => {
         const requestData = {
             premise_id: premiseId,
@@ -102,19 +146,29 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ open, onClose, premiseId, s
                 <Form.Item
                     label="Parking ID"
                     name="parking_id"
-                    rules={[{ required: true, message: 'Please enter Parking ID' }]}
-                    initialValue={generateRandomParkingId()}
+                    rules={[{ required: true, message: 'Please select a parking slot to populate Parking ID' }]}
                 >
-                    <Input placeholder="Enter Parking ID" disabled />
+                    <Input placeholder="Parking ID" disabled />
                 </Form.Item>
 
-
                 <Form.Item
-                    label="Slot ID"
+                    label="Parking Slot"
                     name="slot_id"
-                    rules={[{ required: true, message: 'Please enter Slot ID' }]}
+                    rules={[{ required: true, message: 'Please select a Slot ID' }]}
                 >
-                    <Input placeholder="Enter Slot ID" />
+                    <Select
+                        placeholder="Select Slot ID"
+                        loading={loadingSlots}
+                        options={parkingSlots.map(slot => ({
+                            label: slot.parking_slot,
+                            value: slot.parking_slot,
+                        }))}
+                        onChange={handleSlotChange}
+                        showSearch
+                        filterOption={(input, option) => {
+                            return option ? option.label.toLowerCase().includes(input.toLowerCase()) : false;
+                        }}
+                    />
                 </Form.Item>
 
                 <Form.Item
@@ -134,29 +188,55 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ open, onClose, premiseId, s
                 </Form.Item>
 
                 <Form.Item>
-                    {/* <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button onClick={onClose} style={{ marginRight: '8px' }}>
-                            Cancel
-                        </Button>
-                        <Button type="primary" htmlType="submit">
-                            Submit
-                        </Button>
-                    </div> */}
-                    <Button key="cancel" onClick={onClose}>
-                        Cancel
-                    </Button>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Button
                         type="primary"
+                        key="submit"
                         htmlType="submit"
                         style={{
                             marginLeft: '8px',
                             borderRadius: '4px',
-                            backgroundColor: '#4CAF50',
+                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Gradient from green to dark green
                             color: 'white',
+                            padding: '6px 16px',
+                            border: 'none',
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
                         }}
                     >
-                        Submit
+                        Add
                     </Button>
+                    <Button
+                        key="cancel"
+                        onClick={onClose}
+                        style={{
+                            borderRadius: '4px',
+                            background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from dark red to light red
+                            color: 'white',
+                            padding: '6px 16px',
+                            marginLeft: '8px',
+                            border: 'none',
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale on hover
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Shadow effect
+                        }}
+                        onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    </div>
                 </Form.Item>
             </Form>
         </Modal>

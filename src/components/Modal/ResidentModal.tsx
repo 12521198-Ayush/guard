@@ -171,12 +171,6 @@ const ResidentModal = ({ open, onClose, residentData, premiseId, subPremiseId, p
             open={open}
             width={900}
             footer={[
-                <Button key="cancel" onClick={handleCancel}>
-                    Cancel
-                </Button>,
-                // <Button key="submit" type="primary" onClick={handleSubmit}>
-                //     {record ? 'Update' : 'Add'}
-                // </Button>,
                 <Button
                     type="primary"
                     key="submit"
@@ -184,12 +178,46 @@ const ResidentModal = ({ open, onClose, residentData, premiseId, subPremiseId, p
                     style={{
                         marginLeft: '8px',
                         borderRadius: '4px',
-                        backgroundColor: '#4CAF50',
+                        background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Gradient from green to dark green
                         color: 'white',
+                        padding: '6px 16px',
+                        border: 'none',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
                     }}
                 >
                     Submit
-                </Button>
+                </Button>,
+                <Button
+                key="cancel"
+                onClick={handleCancel}
+                style={{
+                    borderRadius: '4px',
+                    background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from dark red to light red
+                    color: 'white',
+                    padding: '6px 16px',
+                    border: 'none',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale on hover
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Shadow effect
+                }}
+                onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                }}
+            >
+                Cancel
+            </Button>
+
             ]}
 
         >
@@ -247,12 +275,12 @@ const ResidentModal = ({ open, onClose, residentData, premiseId, subPremiseId, p
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item label="Start Date" name="start_date">
-                            <DatePicker disabled format="YYYY-MM-DD" />
+                            <DatePicker style={{ width: '100%' }} disabled format="YYYY-MM-DD" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item label="End Date" name="end_date">
-                            <DatePicker disabled format="YYYY-MM-DD" />
+                            <DatePicker style={{ width: '100%' }} disabled format="YYYY-MM-DD" />
                         </Form.Item>
                     </Col>
                 </Row>

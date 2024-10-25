@@ -1,4 +1,5 @@
 import { Form, Row, Col, Input, Button } from 'antd';
+import GradientButton from '../Buttons/GradientButton';
 
 const ConnectionsForm = ({ form, handleFinish, handleNext, editMode, toggleEditMode }: any) => {
     return (
@@ -76,29 +77,33 @@ const ConnectionsForm = ({ form, handleFinish, handleNext, editMode, toggleEditM
                             marginLeft: '8px',
                         }}
                     >
-                        <Button
-                            style={{
-                                borderRadius: '4px',
-                                backgroundColor: '#597ef7',
-                                color: 'white',
-                            }}
+                        <GradientButton
+                            text="Submit"
+                            gradientColors={['#4e92ff', '#1e62d0']} // Blue gradient
                             disabled={!editMode}
                             htmlType="submit"
-                        >
-                            Submit
-                        </Button>
+                        />
+
+
                     </div>
 
                     <Button
                         style={{
-                            backgroundColor: editMode ? 'white' : '#597ef7',
-                            color: editMode ? 'black' : 'white',
+                            background: editMode
+                                ? 'linear-gradient(90deg, #ff6f61, #d50032)' 
+                                : 'linear-gradient(90deg, #4e92ff, #1e62d0)', 
+                            color: editMode ? 'white' : 'white',
                             marginLeft: '8px',
+                            border: 'none',
+                            borderRadius: '4px', 
+                            padding: '5px 12px',
+                            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer',
                         }}
                         onClick={toggleEditMode}
                         disabled={false}
                     >
-                        {editMode ? 'Cancel' : 'Edit'}
+                        {editMode ? 'Cancel' : '  Edit  '}
                     </Button>
                 </div>
 

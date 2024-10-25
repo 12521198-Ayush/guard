@@ -73,11 +73,11 @@ const ParkingModal: React.FC<ParkingModalProps> = ({
                         title: 'Success!',
                         text: `Parking slot ${record ? 'updated' : 'added'} successfully!`,
                         icon: 'success',
-                        confirmButtonColor: '#3085d6', 
-                        confirmButtonText: 'OK', 
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK',
                     });
-                    fetchParkingSlots(); 
-                    onClose(); 
+                    fetchParkingSlots();
+                    onClose();
                 }
             });
         } catch (error: any) {
@@ -85,8 +85,8 @@ const ParkingModal: React.FC<ParkingModalProps> = ({
                 title: 'Error!',
                 text: `Failed to delete parking slot: ${error.message}`,
                 icon: 'error',
-                confirmButtonColor: '#3085d6',  
-                confirmButtonText: 'OK', 
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK',
             });
         }
     };
@@ -97,12 +97,27 @@ const ParkingModal: React.FC<ParkingModalProps> = ({
             open={open}
             onCancel={onClose}
             footer={[
-                <Button key="cancel" onClick={onClose}>
-                    Cancel
-                </Button>,
-                // <Button key="submit" type="primary" onClick={handleSubmit}>
-                //     {record ? 'Update' : 'Add'}
+                // <Button key="cancel" onClick={onClose}>
+                //     Cancel
                 // </Button>,
+                // // <Button key="submit" type="primary" onClick={handleSubmit}>
+                // //     {record ? 'Update' : 'Add'}
+                // // </Button>,
+                // <Button
+                //     type="primary"
+                //     key="submit"
+                //     onClick={handleSubmit}
+                //     style={{
+                //         marginLeft: '8px',
+                //         borderRadius: '4px',
+                //         backgroundColor: '#4CAF50',
+                //         color: 'white',
+                //     }}
+                // >
+                //     {record ? 'Update' : 'Add'}
+                // </Button>
+
+               
                 <Button
                     type="primary"
                     key="submit"
@@ -110,12 +125,46 @@ const ParkingModal: React.FC<ParkingModalProps> = ({
                     style={{
                         marginLeft: '8px',
                         borderRadius: '4px',
-                        backgroundColor: '#4CAF50',
+                        background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Gradient from green to dark green
                         color: 'white',
+                        padding: '6px 16px', // Add padding
+                        border: 'none',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
                     }}
                 >
-                    {record ? 'Update' : 'Add'}
-                </Button>
+                    {record ? 'Submit' : 'Add'}
+                </Button>,
+                 <Button
+                 key="cancel"
+                 onClick={onClose}
+                 style={{
+                     borderRadius: '4px',
+                     background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from red to light red
+                     color: 'white',
+                     padding: '6px 16px', // Add padding
+                     border: 'none',
+                     transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                 }}
+                 onMouseEnter={(e) => {
+                     (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale effect on hover
+                     (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Add shadow
+                 }}
+                 onMouseLeave={(e) => {
+                     (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                     (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                 }}
+             >
+                 Cancel
+             </Button>
+
             ]}
         >
             <Form form={form} layout="vertical">

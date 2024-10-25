@@ -10,8 +10,8 @@ const { Option } = Select;
 const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUnitId, refetchResidents }: any) => {
     const { data: session } = useSession();
     const [form] = Form.useForm();
-    const [phone, setPhone] = useState<string>(''); 
-    const [username, setUsername] = useState<string>(''); 
+    const [phone, setPhone] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
     const handleSubmit = async (values: any) => {
         const requestData = {
             premise_unit_id: premiseUnitId,
@@ -78,7 +78,7 @@ const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUn
         const reducedPhone = phone.replace(country.dialCode, '');
         const paddedCountryCode = country.dialCode.padStart(5, '0');
         const uname = paddedCountryCode + reducedPhone;
-        setUsername(uname); 
+        setUsername(uname);
     };
 
     return (
@@ -104,7 +104,7 @@ const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUn
                 </Form.Item>
                 <Form.Item
                     name="mobile"
-                    //rules={[{ required: true, message: 'Please enter the mobile number!' }]}
+                //rules={[{ required: true, message: 'Please enter the mobile number!' }]}
                 >
                     <br />
                     <PhoneInput
@@ -112,7 +112,7 @@ const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUn
                         onChange={handlePhoneChange}
                         inputStyle={{ width: '100%' }}
                         enableSearch={true}
-                        value={phone} 
+                        value={phone}
                     />
                 </Form.Item>
                 <Form.Item
@@ -127,7 +127,7 @@ const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUn
                 </Form.Item>
 
                 <Form.Item>
-                    <Button
+                    {/* <Button
                         type="primary"
                         htmlType="submit"
                         style={{
@@ -138,7 +138,56 @@ const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUn
                         }}
                     >
                         Submit
+                    </Button> */}
+                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                        type="primary"
+                        key="submit"
+                        htmlType="submit"
+                        style={{
+                            marginLeft: '8px',
+                            borderRadius: '4px',
+                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Gradient from green to dark green
+                            color: 'white',
+                            padding: '6px 16px',
+                            border: 'none',
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                        }}
+                    >
+                        Add
                     </Button>
+                    <Button
+                        key="cancel"
+                        onClick={onClose}
+                        style={{
+                            borderRadius: '4px',
+                            background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from dark red to light red
+                            color: 'white',
+                            padding: '6px 16px',
+                            marginLeft: '8px',
+                            border: 'none',
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale on hover
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Shadow effect
+                        }}
+                        onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    </div>
                 </Form.Item>
             </Form>
         </Modal>

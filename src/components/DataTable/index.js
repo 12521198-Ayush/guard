@@ -24,6 +24,7 @@ const DataTable = () => {
     const [premiseId, setPremiseId] = useState("");
     const [form] = Form.useForm();
     const { data: session } = useSession();
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const screens = useBreakpoint();
     let accessToken = session?.user?.accessToken || undefined;
 
@@ -80,6 +81,7 @@ const DataTable = () => {
     const globalSearch = async () => {
         if (!searchText) return;
         setLoading(true);
+        setIsButtonDisabled(true);
         try {
             const response = await axios.post(
                 'http://139.84.166.124:8060/user-service/admin/premise_unit/list',
@@ -96,7 +98,7 @@ const DataTable = () => {
             if (response.data?.data) {
                 const dataObj = response.data?.data;
                 const dataArray = [dataObj];
-                setGridData(dataArray); 
+                setGridData(dataArray);
             } else {
                 setGridData([]);
                 message.info('No matching records found.');
@@ -107,6 +109,9 @@ const DataTable = () => {
         } finally {
             setLoading(false);
         }
+        setTimeout(()=>{
+            setIsButtonDisabled(false);
+        },2000);
     };
 
     const handleNext = () => {
@@ -138,7 +143,7 @@ const DataTable = () => {
         {
             title: "ID",
             dataIndex: "id",
-            
+
         },
         {
             title: "Subpremise Name",
@@ -226,11 +231,11 @@ const DataTable = () => {
                         value={searchText}
                         style={{ width: screens.xs ? '100%' : 'auto' }}
                     />
-                    <Button onClick={globalSearch} icon={<SearchOutlined />} style={{ width: screens.xs ? '100%' : 'auto' }}>
+                    <Button onClick={globalSearch} icon={<SearchOutlined />} disabled={isButtonDisabled} style={{ width: screens.xs ? '100%' : 'auto' }}>
                         Search
                     </Button>
                     <Link href="/flats-residents/add-flats" >
-                        <Button icon={<UserAddOutlined />} style={{ width: screens.xs ? '100%' : 'auto' }}>
+                        <Button icon={<UserAddOutlined />}   style={{ width: screens.xs ? '100%' : 'auto' }}>
                             Add New
                         </Button>
                     </Link>
@@ -244,21 +249,30 @@ const DataTable = () => {
                         pagination={false}
                         scroll={{ x: screens.xs ? 600 : undefined }}
                     />
-                    <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between' }}>
-                        <Space>
-                            <Button onClick={handlePrevious} disabled={currentPage === 1}>
-                                Previous
-                            </Button>
-                            <Button onClick={handleNext} disabled={!hasNextPage}>
-                                Next
-                            </Button>
-                        </Space>
-                        <Select defaultValue={10} onChange={handleLimitChange}>
-                            <Option value={10}>10</Option>
-                            <Option value={20}>20</Option>
-                            <Option value={50}>50</Option>
-                        </Select>
-                    </div>
+                    {gridData.length > 1 && (
+                        <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between' }}>
+                            <Space>
+
+                                <div>
+                                    <Button onClick={handlePrevious} disabled={currentPage === 1}>
+                                        Previous
+                                    </Button>
+                                    <Button onClick={handleNext} disabled={!hasNextPage}>
+                                        Next
+                                    </Button>
+                                </div>
+
+
+                            </Space>
+                            <Select defaultValue={10} onChange={handleLimitChange}>
+                                <Option value={10}>10</Option>
+                                <Option value={20}>20</Option>
+                                <Option value={50}>50</Option>
+                            </Select>
+
+                        </div>
+                    )}
+
                 </Form>
             </div>
         </div>

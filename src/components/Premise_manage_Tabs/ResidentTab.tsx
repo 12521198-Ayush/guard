@@ -247,7 +247,7 @@ const ResidentTab = ({
     const handlenew = () => {
         if (isNewModalVisible == false) {
             setIsNewModalVisible(true);
-        }else{
+        } else {
             setIsNewModalVisible(false);
         }
     }
@@ -257,7 +257,31 @@ const ResidentTab = ({
         <>
             <div className="flex items-center justify-between">
                 <h4 className="font-small text-xl text-black dark:text-white">Existing Residents</h4>
-                <Button style={{ marginBottom: '8px' }} onClick={() => handlenew()} >Add new</Button>
+                <Button
+                    style={{
+                        marginBottom: '8px',
+                        background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
+                        color: 'white', // White text color
+                        border: 'none', // No border
+                        borderRadius: '4px', // Rounded corners
+                        padding: '8px 16px', // Padding for a more substantial look
+                        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+                        cursor: 'pointer', // Pointer cursor on hover
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+                    }}
+                    onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                    }}
+                    onClick={() => handlenew()}
+                >
+                    Add new
+                </Button>
+
                 <NewResidentModal
                     open={isNewModalVisible}
                     onClose={() => setIsNewModalVisible(false)}
@@ -276,7 +300,7 @@ const ResidentTab = ({
                     refetchResidents={fetchResidentData}
                 />
             </div>
-
+            <br />
             <Table
                 columns={Residentcolumns}
                 dataSource={residentData}
@@ -284,35 +308,7 @@ const ResidentTab = ({
                 rowKey="_id"
                 pagination={false}
             />
-            <Form.Item>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-                    <Button
-                        style={{
-                            borderRadius: '4px',
-                            backgroundColor: '#e0e0e0',
-                            color: '#333',
-                            border: 'none',
-                        }}
-                        onClick={handlePrev}
-                        disabled={false}
-                    >
-                        Previous
-                    </Button>
 
-                    <Button
-                        style={{
-                            borderRadius: '4px',
-                            backgroundColor: '#e0e0e0',
-                            color: '#333',
-                            border: 'none',
-                        }}
-                        onClick={handleNext}
-                        disabled={false}
-                    >
-                        Next
-                    </Button>
-                </div>
-            </Form.Item>
 
         </>
     );

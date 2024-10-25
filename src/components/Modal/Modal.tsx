@@ -6,6 +6,8 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import type { UploadProps } from 'antd';
+import GradientButton from '../Buttons/GradientButton';
+
 
 const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association_type }: any) => {
     const { data: session } = useSession();
@@ -310,7 +312,47 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                     </Col>
                 </Row>
 
-                <div style={{ display: 'flex' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                    <div
+                        style={{
+                            transition: 'opacity 0.3s ease, transform 0.3s ease',
+                            opacity: isEditMode ? 1 : 0,
+                            transform: isEditMode ? 'translateX(0)' : 'translateX(20px)',
+                            visibility: isEditMode ? 'visible' : 'hidden',
+                            display: 'inline-block',
+                            marginLeft: '8px',
+                        }}
+                    >
+                        <GradientButton
+                            text="Submit"
+                            gradientColors={['#4e92ff', '#1e62d0']} // Blue gradient
+                            disabled={!isEditMode}
+                            htmlType="submit"
+                        />
+
+
+                    </div>
+
+                    <Button
+                        style={{
+                            background: isEditMode
+                                ? 'linear-gradient(90deg, #ff6f61, #d50032)' 
+                                : 'linear-gradient(90deg, #4e92ff, #1e62d0)', 
+                            color: isEditMode ? 'white' : 'white',
+                            marginLeft: '8px',
+                            border: 'none',
+                            borderRadius: '4px', 
+                            padding: '5px 12px',
+                            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer',
+                        }}
+                        onClick={handleEditToggle}
+                    >
+                        {isEditMode ? 'Cancel' : '  Edit  '}
+                    </Button>
+                </div>
+
+                {/* <div style={{ display: 'flex' }}>
                     {isEditMode ? (
                         <Button
                             type="primary"
@@ -318,12 +360,24 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                             style={{
                                 marginLeft: '8px',
                                 borderRadius: '4px',
-                                backgroundColor: '#4CAF50',
+                                background: 'linear-gradient(90deg, #4CAF50, #2E7D32)', // Gradient from green to a darker green
                                 color: 'white',
+                                border: 'none', // Remove border for a cleaner look
+                                padding: '8px 16px', // Add some padding
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Scale effect on hover
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Add shadow
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; // Reset scale
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'; // Remove shadow
                             }}
                         >
                             Submit
                         </Button>
+
                     ) : null}
 
                     {!isEditMode ? (
@@ -333,14 +387,25 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                             style={{
                                 marginLeft: '8px',
                                 borderRadius: '4px',
-                                backgroundColor: '#1890ff',
+                                background: 'linear-gradient(90deg, #1890ff, #0056b3)', // Gradient from blue to a darker blue
                                 color: 'white',
+                                border: 'none', // Remove border for a cleaner look
+                                padding: '8px 16px', // Add some padding
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Scale effect on hover
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Add shadow
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; // Reset scale
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'; // Remove shadow
                             }}
                         >
                             {isEditMode ? 'Save' : 'Edit'}
                         </Button>
                     ) : null}
-                </div>
+                </div> */}
 
 
                 {existingDocuments.length > 0 && (
