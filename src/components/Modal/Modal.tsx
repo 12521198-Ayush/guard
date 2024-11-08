@@ -336,20 +336,21 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                     <Button
                         style={{
                             background: isEditMode
-                                ? 'linear-gradient(90deg, #ff6f61, #d50032)' 
-                                : 'linear-gradient(90deg, #4e92ff, #1e62d0)', 
-                            color: isEditMode ? 'white' : 'white',
+                                ? 'linear-gradient(90deg, #ff6f61, #d50032)'  // Red gradient for Cancel
+                                : 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient for Edit
+                            color: 'white',
                             marginLeft: '8px',
                             border: 'none',
-                            borderRadius: '4px', 
+                            borderRadius: '4px',
                             padding: '5px 12px',
                             boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
                             cursor: 'pointer',
                         }}
-                        onClick={handleEditToggle}
+                        onClick={isEditMode ? onClose : handleEditToggle} // Conditional onClick
                     >
-                        {isEditMode ? 'Cancel' : '  Edit  '}
+                        {isEditMode ? 'Cancel' : 'Edit'}
                     </Button>
+
                 </div>
 
                 {/* <div style={{ display: 'flex' }}>

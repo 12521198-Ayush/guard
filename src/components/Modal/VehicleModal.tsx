@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 
+
 interface VehicleModalProps {
     open: boolean;
     onClose: () => void;
@@ -16,7 +17,14 @@ interface VehicleModalProps {
 interface ParkingSlot {
     _id: string;
     parking_id: string;
+    parking_area: string;
     parking_slot: string;
+}
+
+interface ParkingArea {
+    _id: string;
+    parking_name: string;
+    count: string;
 }
 
 const VehicleModal: React.FC<VehicleModalProps> = ({
@@ -32,38 +40,72 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
     const accessToken = session?.user?.accessToken;
 
     const [parkingSlots, setParkingSlots] = useState<ParkingSlot[]>([]);
+    const [parkingArea, setParkingArea] = useState<ParkingArea[]>([]);
     const [loadingSlots, setLoadingSlots] = useState(true);
+    const [parkingAreaid, setparkingAreaid] = useState("");
+    const [parkArea, setparkArea] = useState("");
+
+
+    const fetchParkingSlots = async () => {
+        try {
+            const response = await axios.post(
+                'http://139.84.166.124:8060/user-service/admin/parking/slot/list',
+                {
+                    premise_id: premiseId,
+                    sub_premise_id: subPremiseId,
+                    premise_unit_id: premiseUnitId,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
+
+            const uniqueSlots = response.data.data.filter(
+                (slot: ParkingSlot, index: number, self: ParkingSlot[]) =>
+                    index === self.findIndex(s => s.parking_slot === slot.parking_slot)
+            );
+            setParkingSlots(uniqueSlots);
+        } catch (error) {
+            console.error('Error fetching parking slots:', error);
+        } finally {
+            setLoadingSlots(false);
+        }
+    };
+
+    const fetchParkingArea = async () => {
+        try {
+            const response = await axios.post(
+                'http://139.84.166.124:8060/user-service/admin/parking/premises/parking_area/list',
+                {
+                    premise_id: premiseId,
+                    sub_premise_id: subPremiseId,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
+            const uniqueArea = response.data.data.filter(
+                (area: ParkingArea, index: number, self: ParkingArea[]) =>
+                    index === self.findIndex(s => s.parking_name === area.parking_name)
+            );
+            setParkingArea(uniqueArea);
+        } catch (error) {
+            console.error('Error fetching parking Area:', error);
+        } finally {
+            setLoadingSlots(false);
+        }
+    };
+
+    // console.log("parkingArea");
+    // console.log(parkingArea);
 
     useEffect(() => {
-        const fetchParkingSlots = async () => {
-            try {
-                const response = await axios.post(
-                    'http://139.84.166.124:8060/user-service/admin/parking/slot/list',
-                    {
-                        premise_id: premiseId,
-                        sub_premise_id: subPremiseId,
-                        premise_unit_id: premiseUnitId,
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    }
-                );
-
-                const uniqueSlots = response.data.data.filter(
-                    (slot: ParkingSlot, index: number, self: ParkingSlot[]) =>
-                        index === self.findIndex(s => s.parking_slot === slot.parking_slot)
-                );
-                setParkingSlots(uniqueSlots);
-            } catch (error) {
-                console.error('Error fetching parking slots:', error);
-            } finally {
-                setLoadingSlots(false);
-            }
-        };
-
         if (open) {
+            fetchParkingArea();
             fetchParkingSlots();
         }
     }, [open, premiseId, subPremiseId, premiseUnitId, accessToken]);
@@ -72,19 +114,32 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
         const selectedSlotData = parkingSlots.find(slot => slot.parking_slot === selectedSlot);
         if (selectedSlotData) {
             form.setFieldsValue({ parking_id: selectedSlotData.parking_id });
+            setparkingAreaid(selectedSlotData.parking_id);
+            setparkArea(selectedSlotData.parking_area);
         }
+        console.log(parkingAreaid);
     };
+
+    // const handleAreaChange = (selectedArea: string) => {
+    //     console.log(selectedArea);
+    //     const selectedAreaData = parkingArea.find(area => area.parking_name === selectedArea)
+    //     if (selectedAreaData) {
+    //         form.setFieldsValue({ parking_area: selectedAreaData.parking_name })
+    //     }
+    // }
 
     const handleSubmit = async (values: any) => {
         const requestData = {
             premise_id: premiseId,
             sub_premise_id: subPremiseId,
             premise_unit_id: premiseUnitId,
-            parking_id: values.parking_id,
+            parking_id: parkingAreaid,
             slot_id: values.slot_id,
-            parking_area: values.parking_area,
+            parking_area: parkArea,
             vno: values.vno,
+            vehicle_type: values.vehicle_type
         };
+        console.log(requestData)
 
         try {
             Swal.fire({
@@ -143,13 +198,13 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
                 layout="vertical"
                 onFinish={handleSubmit}
             >
-                <Form.Item
+                {/* <Form.Item
                     label="Parking ID"
                     name="parking_id"
                     rules={[{ required: true, message: 'Please select a parking slot to populate Parking ID' }]}
                 >
                     <Input placeholder="Parking ID" disabled />
-                </Form.Item>
+                </Form.Item> */}
 
                 <Form.Item
                     label="Parking Slot"
@@ -171,12 +226,35 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
                     />
                 </Form.Item>
 
-                <Form.Item
+                {/* <Form.Item
                     label="Parking Area"
                     name="parking_area"
                     rules={[{ required: true, message: 'Please enter Parking Area' }]}
                 >
-                    <Input placeholder="Enter Parking Area" />
+                    <Select
+                        placeholder="Select Parking Area"
+                        loading={loadingSlots}
+                        options={parkingArea.map(area => ({
+                            label: area.parking_name,
+                            value: area.parking_name,
+                        }))}
+                        onChange={handleAreaChange}
+                        showSearch
+                        filterOption={(input, option) => {
+                            return option ? option.label.toLowerCase().includes(input.toLowerCase()) : false;
+                        }}
+                    />
+                </Form.Item> */}
+
+                <Form.Item
+                    label="Vehicle Type"
+                    name="vehicle_type"
+                    rules={[{ required: true, message: 'Please select vehicle type!' }]}
+                >
+                    <Select placeholder="Select Vehicle type">
+                        <Select.Option value="2w">2 Wheel</Select.Option>
+                        <Select.Option value="4w">4 Wheel</Select.Option>
+                    </Select>
                 </Form.Item>
 
                 <Form.Item
@@ -188,54 +266,54 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
                 </Form.Item>
 
                 <Form.Item>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button
-                        type="primary"
-                        key="submit"
-                        htmlType="submit"
-                        style={{
-                            marginLeft: '8px',
-                            borderRadius: '4px',
-                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Gradient from green to dark green
-                            color: 'white',
-                            padding: '6px 16px',
-                            border: 'none',
-                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                        }}
-                    >
-                        Add
-                    </Button>
-                    <Button
-                        key="cancel"
-                        onClick={onClose}
-                        style={{
-                            borderRadius: '4px',
-                            background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from dark red to light red
-                            color: 'white',
-                            padding: '6px 16px',
-                            marginLeft: '8px',
-                            border: 'none',
-                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale on hover
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Shadow effect
-                        }}
-                        onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                        }}
-                    >
-                        Cancel
-                    </Button>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                            type="primary"
+                            key="submit"
+                            htmlType="submit"
+                            style={{
+                                marginLeft: '8px',
+                                borderRadius: '4px',
+                                background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Gradient from green to dark green
+                                color: 'white',
+                                padding: '6px 16px',
+                                border: 'none',
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                            }}
+                        >
+                            Add
+                        </Button>
+                        <Button
+                            key="cancel"
+                            onClick={onClose}
+                            style={{
+                                borderRadius: '4px',
+                                background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from dark red to light red
+                                color: 'white',
+                                padding: '6px 16px',
+                                marginLeft: '8px',
+                                border: 'none',
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale on hover
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Shadow effect
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                            }}
+                        >
+                            Cancel
+                        </Button>
                     </div>
                 </Form.Item>
             </Form>

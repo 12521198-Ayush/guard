@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 const { useBreakpoint } = Grid;
 const { Option } = Select;
 
+
 const DataTable = () => {
     const router = useRouter();
     let Gdata = [];
@@ -25,7 +26,7 @@ const DataTable = () => {
     const [form] = Form.useForm();
     const { data: session } = useSession();
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-    const screens = useBreakpoint();
+    const screens = useBreakpoint();    
     let accessToken = session?.user?.accessToken || undefined;
 
     useEffect(() => {
@@ -109,9 +110,9 @@ const DataTable = () => {
         } finally {
             setLoading(false);
         }
-        setTimeout(()=>{
+        setTimeout(() => {
             setIsButtonDisabled(false);
-        },2000);
+        }, 2000);
     };
 
     const handleNext = () => {
@@ -207,7 +208,35 @@ const DataTable = () => {
             align: "center",
             render: (_, record) => (
                 <Link href={handleView(record)}>
-                    <Button>View</Button>
+                    
+                    <Button
+                        className="ml-2"
+                        style={{
+                            background: 'linear-gradient(90deg, #ff4e50, #f9d423)', // Gradient background
+                            color: 'white',
+                            fontWeight: 'bold',
+                            border: 'none',
+                            borderRadius: '16px', // Rounded button for a tag-like appearance
+                            padding: '5px 12px',
+                            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            cursor: 'pointer'
+                        }}
+                        type="default"
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                        }}
+                    >
+                        View
+                    </Button>
+
                 </Link>
             ),
         },
@@ -220,26 +249,48 @@ const DataTable = () => {
                     Manage Premise Unit
                 </h4>
             </div>
+
             <div style={{ padding: screens.xs ? '10px' : '20px' }}>
                 <ToastContainer />
-                <Space style={{ marginBottom: 16, flexWrap: 'wrap' }}>
-                    <Input
-                        placeholder='Enter Unit id'
-                        onChange={handleSearch}
-                        type='text'
-                        allowClear
-                        value={searchText}
-                        style={{ width: screens.xs ? '100%' : 'auto' }}
-                    />
-                    <Button onClick={globalSearch} icon={<SearchOutlined />} disabled={isButtonDisabled} style={{ width: screens.xs ? '100%' : 'auto' }}>
-                        Search
-                    </Button>
-                    <Link href="/flats-residents/add-flats" >
-                        <Button icon={<UserAddOutlined />}   style={{ width: screens.xs ? '100%' : 'auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <Space style={{ flexWrap: 'wrap' }}>
+                        <Input
+                            placeholder="Enter Unit id"
+                            onChange={handleSearch}
+                            type="text"
+                            allowClear
+                            value={searchText}
+                            style={{ width: screens.xs ? '100%' : 'auto' }}
+                        />
+                        <SearchOutlined onClick={globalSearch}/>
+                    </Space>
+
+                    <Link href="/flats-residents/add-flats">
+                        <Button
+                            style={{
+                                background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
+                                color: 'white', // White text color
+                                border: 'none', // No border
+                                borderRadius: '4px', // Rounded corners
+                                padding: '8px 16px', // Padding for a more substantial look
+                                boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+                                cursor: 'pointer', // Pointer cursor on hover
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                                e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                            }}
+                        >
                             Add New
                         </Button>
                     </Link>
-                </Space>
+                </div>
+
                 <Form form={form} component={false}>
                     <Table
                         columns={columns}
@@ -252,30 +303,24 @@ const DataTable = () => {
                     {gridData.length > 1 && (
                         <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between' }}>
                             <Space>
-
-                                <div>
-                                    <Button onClick={handlePrevious} disabled={currentPage === 1}>
-                                        Previous
-                                    </Button>
-                                    <Button onClick={handleNext} disabled={!hasNextPage}>
-                                        Next
-                                    </Button>
-                                </div>
-
-
+                                <Button onClick={handlePrevious} disabled={currentPage === 1}>
+                                    Previous
+                                </Button>
+                                <Button onClick={handleNext} disabled={!hasNextPage}>
+                                    Next
+                                </Button>
                             </Space>
                             <Select defaultValue={10} onChange={handleLimitChange}>
                                 <Option value={10}>10</Option>
                                 <Option value={20}>20</Option>
                                 <Option value={50}>50</Option>
                             </Select>
-
                         </div>
                     )}
-
                 </Form>
             </div>
         </div>
+
     );
 };
 

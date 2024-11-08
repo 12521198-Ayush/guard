@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, Spin, Tag } from 'antd';
 import { EditOutlined, TagsOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import Swal from 'sweetalert2';
+import HelperModal from '../Modal/HelperModal';
+import { useSession } from 'next-auth/react';
 
 interface Helper {
     _id: string;
@@ -16,10 +19,24 @@ interface Helper {
 }
 
 
-const HelpersTab = ({ form, handleFinish, editMode, toggleEditMode }: any) => {
+const HelpersTab = ({ form,
+    handleFinish, 
+    editMode, 
+    toggleEditModepremiseId,
+    premiseId,
+    subPremiseId,
+    premiseUnitId }: any) => {
     const [helpersData, setHelpersData] = useState<Helper[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const { data: session } = useSession();
 
+    const handleOpenModal = (record: any | null) => {
+        setIsModalVisible(true);
+    };
+    const handleClose = () => {
+        setIsModalVisible(false);
+    };
     useEffect(() => {
         const fetchHelpers = async () => {
             try {
@@ -40,6 +57,22 @@ const HelpersTab = ({ form, handleFinish, editMode, toggleEditMode }: any) => {
 
         fetchHelpers();
     }, []);
+
+    const unTag = async (card_no: any) => {
+        console.log(card_no)
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you really want to remove the associated flat ${card_no.maid_name}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, remove it!',
+            cancelButtonText: 'No, cancel',
+        }).then(async (result) => {
+            console.log(card_no)
+        });
+    }
 
     const columns: ColumnsType<any> = [
         {
@@ -97,7 +130,7 @@ const HelpersTab = ({ form, handleFinish, editMode, toggleEditMode }: any) => {
             width: 150,
         },
         {
-            title: 'Address',
+            title: 'Local Address',
             dataIndex: 'maid_address',
             key: 'maid_address',
             responsive: ['xs', 'sm', 'md', 'lg'],
@@ -142,6 +175,7 @@ const HelpersTab = ({ form, handleFinish, editMode, toggleEditMode }: any) => {
                             (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                             (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
                         }}
+                        onClick={() => unTag(record)}
                     >
                         UnTag
                     </Button>
@@ -154,7 +188,7 @@ const HelpersTab = ({ form, handleFinish, editMode, toggleEditMode }: any) => {
     return (
         <div>
             <div className="flex items-center justify-between">
-                <h4 className="font-small text-xl text-black dark:text-white">Helpers Management</h4>
+                <h4 className="font-small text-xl text-black dark:text-white">My Helpers</h4>
                 <Button
                     style={{
                         marginBottom: '8px',
@@ -175,11 +209,19 @@ const HelpersTab = ({ form, handleFinish, editMode, toggleEditMode }: any) => {
                         (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                         (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
                     }}
-                    // onClick={() => handleNew(null)}
+                    onClick={() => handleOpenModal(null)}
                 >
-                    Add new
+                    Tag new
                 </Button>
-
+                {isModalVisible && (
+                    <HelperModal
+                        open={isModalVisible}
+                        onClose={handleClose}
+                        premiseId={premiseId}
+                        subPremiseId={subPremiseId}
+                        premiseUnitId={premiseUnitId}
+                    />
+                )}
             </div>
             <br />
 

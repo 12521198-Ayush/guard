@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Form } from 'antd';
+import { Button, Table, Form, Tooltip } from 'antd';
 import axios from 'axios';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, AppstoreAddOutlined, PlusOutlined, ProfileOutlined  } from '@ant-design/icons';
 import Swal from 'sweetalert2';
 import { useSession } from 'next-auth/react';
 import VehicleModal from "../Modal/VehicleModal";
 import type { ColumnType } from 'antd/es/table';
+import { IdcardOutlined } from '@ant-design/icons';
+import AssignRFIDButton from '../Buttons/AssignRFIDButton';
+import moment from 'moment';
+
 
 interface VehicleRecord {
     parking_id: string;
@@ -111,56 +115,105 @@ const VehicleTab = ({
         });
     };
 
+    const handleAddNewRFID = (record:any) => {
+        console.log('new assigned')
+    };
+    const handleShowExistingRFIDs = (record:any) => {
+        console.log('new assigned')
+    };
+
+
     const columns: ColumnType<any>[] = [
+        // {
+        //     title: 'Parking ID',
+        //     dataIndex: 'parking_id',
+        //     key: 'parking_id',
+        //     responsive: ['xs', 'sm', 'md', 'lg'],
+        //     width: 180,
+        // },
         {
-            title: 'Parking ID',
-            dataIndex: 'parking_id',
-            key: 'parking_id',
-            responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 200,
-        },
-        {
-            title: 'Parking Slot',
+            title: 'Slot Id',
             dataIndex: 'slot_id',
             key: 'slot_id',
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 200,
+            width: 180,
         },
         {
             title: 'Parking Area',
             dataIndex: 'parking_area',
             key: 'parking_area',
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 200,
+            width: 180,
         },
         {
             title: 'Vehicle Number',
             dataIndex: 'vno',
             key: 'vno',
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 200,
+            width: 180,
+        },
+        {
+            title: 'Vehicle Type',
+            dataIndex: 'vehicle_type',
+            key: 'vno',
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 180,
+        },
+        {
+            title: 'Allocation Date',
+            dataIndex: 'create_ts',
+            key: 'create_ts',
+            responsive: ['xs', 'sm', 'md', 'lg'],
+            width: 150,
+            render: (date) => (date ? moment(date).format('YYYY-MM-DD') : 'N/A'),
         },
         {
             title: 'Action',
             key: 'action',
             responsive: ['xs', 'sm', 'md', 'lg'],
-            width: 200,
+            width: 180,
             render: (record: VehicleRecord) => (
-                <>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Button
                         className="ml-2"
                         style={{
                             backgroundColor: 'red',
                             color: 'white',
+                            marginRight: '8px',
                         }}
                         type="default"
                         icon={<DeleteOutlined />}
                         onClick={() => handleDelete(record)}
                     />
-                </>
+                    <Tooltip title="Assign RFID Cards">
+                    <Button
+                        style={{
+                            backgroundColor: '#4CAF50',
+                            color: 'white',
+                            marginRight: '8px',
+                        }}
+                        type="default"
+                        icon={<AppstoreAddOutlined />} //for assign rfid card
+                        onClick={() => handleAddNewRFID(record)}
+                        
+                    >
+                    </Button>
+                    </Tooltip>
+                    <Tooltip title="RFID Cards">
+                    <Button
+                        style={{
+                            backgroundColor: '#1E90FF',
+                            color: 'white',
+                        }}
+                        type="default"
+                        icon={<IdcardOutlined/>} // to show cards
+                        onClick={() => handleShowExistingRFIDs(record)}
+                    >
+                    </Button>
+                    </Tooltip>
+                </div>
             ),
-
-        },
+        }
     ];
 
 
@@ -173,7 +226,7 @@ const VehicleTab = ({
         <div>
             <div className="flex items-center justify-between">
                 <h4 className="font-small text-xl text-black dark:text-white">Vehicle Management</h4>
-                
+
                 <Button
                     style={{
                         marginBottom: '8px',

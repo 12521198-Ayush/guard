@@ -22,15 +22,23 @@ const PremiseUnitForm = () => {
 
     const { data: session } = useSession();
     const router = useRouter();
-    const searchParams = new URL(window.location.href).searchParams;
-    const id = searchParams.get('id');
+    // const searchParams = new URL(window.location.href).searchParams;
+    // const id = searchParams.get('id');
     const [loading, setLoading] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [id, setId] = useState<string | null>(null);
     const [initialData, setInitialData] = useState<any>({});
     const [form] = Form.useForm();
     const [guardiansData, setGuardiansData] = useState<any[]>([]);
     const [loadingGuardians, setLoadingGuardians] = useState(false);
     const premiseId = session?.user?.primary_premise_id || '';
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const searchParams = new URL(window.location.href).searchParams;
+            setId(searchParams.get('id'));
+        }
+    }, []);
 
     const fetchGuardiansData = async () => {
         const accessToken = session?.user?.accessToken || undefined;
@@ -497,6 +505,7 @@ const PremiseUnitForm = () => {
                     handleFinish={handleFinish}
                     editMode={editMode}
                     toggleEditMode={toggleEditMode}
+                    premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id}
                 />
             )
         },

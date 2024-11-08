@@ -36,7 +36,7 @@ const DropdownUser = () => {
          */
       })
       .finally(async () => {
-        message.success(`Logout Successfully`);
+       // message.success(`Logout Successfully`);
         await signOut({ callbackUrl: `${window.location.origin}/otp` })
       })
   }, [session])

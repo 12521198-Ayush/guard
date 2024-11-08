@@ -132,10 +132,41 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   Home
                 </Link>
               </li>
-              
+
+              <li>
+                <Link
+                  href="/flats-residents/manage-flats"
+                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                    }`}
+                >
+                 <AccountBalanceIcon/>
+                  Manage Premise 
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/flats-residents/manage-flats"
+                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                    }`}
+                >
+                  <ManageAccountsSharpIcon/>
+                
+                  Manage Helpers 
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/flats-residents/manage-flats"
+                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                    }`}
+                >
+                <CarRepairIcon/>
+                  Manage Vehicles 
+                </Link>
+              </li>
 
               {/* manage-society menu  */}
-              <SidebarLinkGroup
+              {/* <SidebarLinkGroup
                 activeCondition={
                   pathname === "/society-management" || pathname.includes("society-management")
                 }
@@ -157,7 +188,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         }}
                       >
                        <AccountBalanceIcon/>
-                       Manage Society 
+                       Manage Premise 
                         <svg
                           className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
                             }`}
@@ -175,7 +206,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>
-                      {/* <!-- Dropdown Menu Start --> */}
+                     
                       <div
                         className={`translate transform overflow-hidden ${!open && "hidden"
                           }`}
@@ -255,15 +286,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                         </ul>
                       </div>
-                      {/* <!-- Dropdown Menu End --> */}
+                     
                     </React.Fragment>
                   );
                 }}
-              </SidebarLinkGroup>
+              </SidebarLinkGroup> */}
 
 
               {/* flats and residents menu  */}
-              <SidebarLinkGroup
+              {/* <SidebarLinkGroup
                 activeCondition={
                   pathname === "/flats-residents" || pathname.includes("flats-residents")
                 }
@@ -303,7 +334,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>
-                      {/* <!-- Dropdown Menu Start --> */}
+                      
                       <div
                         className={`translate transform overflow-hidden ${!open && "hidden"
                           }`}
@@ -392,15 +423,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                         </ul>
                       </div>
-                      {/* <!-- Dropdown Menu End --> */}
+                     
                     </React.Fragment>
                   );
                 }}
-              </SidebarLinkGroup>
+              </SidebarLinkGroup> */}
 
 
               {/* gate and visitors menu  */}
-              <SidebarLinkGroup
+              {/* <SidebarLinkGroup
                 activeCondition={
                   pathname === "/gate-visitors" || pathname.includes("gate-visitors")
                 }
@@ -440,7 +471,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>
-                      {/* <!-- Dropdown Menu Start --> */}
+                     
                       <div
                         className={`translate transform overflow-hidden ${!open && "hidden"
                           }`}
@@ -505,15 +536,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
                         </ul>
                       </div>
-                      {/* <!-- Dropdown Menu End --> */}
+                     
                     </React.Fragment>
                   );
                 }}
-              </SidebarLinkGroup> 
+              </SidebarLinkGroup>  */}
             
 
               {/* inventory menu  */}
-              <SidebarLinkGroup
+              {/* <SidebarLinkGroup
                 activeCondition={
                   pathname === "/inventory" || pathname.includes("inventory")
                 }
@@ -553,7 +584,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>
-                      {/* <!-- Dropdown Menu Start --> */}
+                   
                       <div
                         className={`translate transform overflow-hidden ${!open && "hidden"
                           }`}
@@ -611,15 +642,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                         </ul>
                       </div>
-                      {/* <!-- Dropdown Menu End --> */}
+                     
                     </React.Fragment>
                   );
                 }}
-              </SidebarLinkGroup>
+              </SidebarLinkGroup> */}
 
 
               {/* vendors menu  */}
-              <SidebarLinkGroup
+              {/* <SidebarLinkGroup
                 activeCondition={
                   pathname === "/vedor-management" || pathname.includes("vedor-management")
                 }
@@ -659,7 +690,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>
-                      {/* <!-- Dropdown Menu Start --> */}
+                      
                       <div
                         className={`translate transform overflow-hidden ${!open && "hidden"
                           }`}
@@ -677,15 +708,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                         </ul>
                       </div>
-                      {/* <!-- Dropdown Menu End --> */}
+                      
                     </React.Fragment>
                   );
                 }}
-              </SidebarLinkGroup>
+              </SidebarLinkGroup> */}
 
 
               {/* Amenities menu  */}
-              <SidebarLinkGroup
+              {/* <SidebarLinkGroup
                 activeCondition={
                   pathname === "/amenities-management" || pathname.includes("amenities-management")
                 }
@@ -725,7 +756,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>
-                      {/* <!-- Dropdown Menu Start --> */}
+                      
                       <div
                         className={`translate transform overflow-hidden ${!open && "hidden"
                           }`}
@@ -743,15 +774,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                         </ul>
                       </div>
-                      {/* <!-- Dropdown Menu End --> */}
+                      
                     </React.Fragment>
                   );
                 }}
-              </SidebarLinkGroup>
+              </SidebarLinkGroup> */}
 
 
               {/* help desk menu  */}
-              <SidebarLinkGroup
+              {/* <SidebarLinkGroup
                 activeCondition={
                   pathname === "/help-desk" || pathname.includes("help-desk")
                 }
@@ -791,7 +822,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>
-                      {/* <!-- Dropdown Menu Start --> */}
+                      
                       <div
                         className={`translate transform overflow-hidden ${!open && "hidden"
                           }`}
@@ -839,15 +870,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                         </ul>
                       </div>
-                      {/* <!-- Dropdown Menu End --> */}
+                      
                     </React.Fragment>
                   );
                 }}
-              </SidebarLinkGroup>
+              </SidebarLinkGroup> */}
               
 
               {/* parking management menu  */}
-              <SidebarLinkGroup
+              {/* <SidebarLinkGroup
                 activeCondition={
                   pathname === "/parking-management" || pathname.includes("parking-management")
                 }
@@ -887,7 +918,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>
-                      {/* <!-- Dropdown Menu Start --> */}
+                      
                       <div
                         className={`translate transform overflow-hidden ${!open && "hidden"
                           }`}
@@ -906,15 +937,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           
                         </ul>
                       </div>
-                      {/* <!-- Dropdown Menu End --> */}
+                      
                     </React.Fragment>
                   );
                 }}
-              </SidebarLinkGroup>
+              </SidebarLinkGroup> */}
 
               
               {/* financial management menu  */}
-              <SidebarLinkGroup
+              {/* <SidebarLinkGroup
                 activeCondition={
                   pathname === "/financial-management" || pathname.includes("financial-management")
                 }
@@ -954,7 +985,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>
-                      {/* <!-- Dropdown Menu Start --> */}
+                      
                       <div
                         className={`translate transform overflow-hidden ${!open && "hidden"
                           }`}
@@ -1013,11 +1044,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           
                         </ul>
                       </div>
-                      {/* <!-- Dropdown Menu End --> */}
+                      
                     </React.Fragment>
                   );
                 }}
-              </SidebarLinkGroup>
+              </SidebarLinkGroup> */}
 
             </ul>
           </div>

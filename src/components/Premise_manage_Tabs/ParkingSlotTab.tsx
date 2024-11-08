@@ -35,9 +35,9 @@ const ParkingTab = ({
 
     const ParkingColumns: ColumnsType<any> = [
         {
-            title: 'Parking Id',
-            dataIndex: 'parking_id',
-            key: 'parking_id',
+            title: 'Parking Area',
+            dataIndex: 'parking_area',
+            key: 'parking_area',
             responsive: ['xs', 'sm', 'md', 'lg'],
             width: 150,
         },
@@ -49,14 +49,14 @@ const ParkingTab = ({
             width: 150,
         },
         {
-            title: 'Premise Unit ID',
-            dataIndex: 'premise_unit_id',
-            key: 'premise_unit_id',
+            title: 'Vehicle Type',
+            dataIndex: 'vehicle_type',
+            key: 'vehicle_type',
             responsive: ['xs', 'sm', 'md', 'lg'],
             width: 150,
         },
         {
-            title: 'Created On',
+            title: 'Allocation Date',
             dataIndex: 'created_on',
             key: 'created_on',
             responsive: ['xs', 'sm', 'md', 'lg'],
