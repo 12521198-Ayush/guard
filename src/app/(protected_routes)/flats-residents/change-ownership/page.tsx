@@ -19,6 +19,11 @@ interface Helper {
   maid_picture_url: string;
 }
 
+interface Resident {
+  customer_name: string;
+  customer_mobile: string;
+}
+
 const { useBreakpoint } = Grid;
 const { Option } = Select;
 
@@ -140,9 +145,9 @@ const HelpersTab = ({ form, handleFinish, editMode, toggleEditMode }: any) => {
       key: 'resident_associated_with',
       responsive: ['xs', 'sm', 'md', 'lg'],
       width: 150,
-      render: (resident_associated_with) => {
+      render: (resident_associated_with: Resident[]) => {
         if (resident_associated_with && resident_associated_with.length > 0) {
-            return resident_associated_with.map((resident, index) => (
+            return resident_associated_with.map((resident: Resident, index) => (
                 <div key={index} style={{ marginBottom: '8px' }}>
                     <p style={{ margin: 0, fontWeight: 'bold' }}>{resident.customer_name}</p>
                     <p style={{ margin: 0, color: '#888' }}>{resident.customer_mobile}</p>
@@ -150,7 +155,7 @@ const HelpersTab = ({ form, handleFinish, editMode, toggleEditMode }: any) => {
             ));
         }
         return '-';
-      },
+    },    
     },
     {
       title: 'Action',
