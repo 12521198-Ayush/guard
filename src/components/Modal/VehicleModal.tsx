@@ -16,8 +16,8 @@ interface VehicleModalProps {
 
 interface ParkingSlot {
     _id: string;
-    parking_id: string;
-    parking_area: string;
+    parking_area_id: string;
+    parking_area_name: string;
     parking_slot: string;
 }
 
@@ -113,11 +113,11 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
     const handleSlotChange = (selectedSlot: string) => {
         const selectedSlotData = parkingSlots.find(slot => slot.parking_slot === selectedSlot);
         if (selectedSlotData) {
-            form.setFieldsValue({ parking_id: selectedSlotData.parking_id });
-            setparkingAreaid(selectedSlotData.parking_id);
-            setparkArea(selectedSlotData.parking_area);
+            form.setFieldsValue({ parking_id: selectedSlotData.parking_area_id });
+            setparkingAreaid(selectedSlotData.parking_area_id);
+            setparkArea(selectedSlotData.parking_area_name);
+            console.log(selectedSlotData);
         }
-        console.log(parkingAreaid);
     };
 
     // const handleAreaChange = (selectedArea: string) => {
@@ -133,9 +133,9 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
             premise_id: premiseId,
             sub_premise_id: subPremiseId,
             premise_unit_id: premiseUnitId,
-            parking_id: parkingAreaid,
-            slot_id: values.slot_id,
-            parking_area: parkArea,
+            parking_area_id: parkingAreaid,
+            parking_slot: values.slot_id,
+            parking_area_name: parkArea,
             vno: values.vno,
             vehicle_type: values.vehicle_type
         };

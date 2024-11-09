@@ -21,15 +21,14 @@ const SubmitBtn: React.FC<SubmitBtnProps> = ({
             disabled={disabled}
             style={{
                 marginBottom: '8px',
-                background: `linear-gradient(90deg, ${gradientColors[0]}, ${gradientColors[1]})`,
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '8px 16px',
-                boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                cursor: disabled ? 'not-allowed' : 'pointer',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                opacity: disabled ? 0.6 : 1, // Reduced opacity when disabled
+                background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
+                color: 'white', // White text color
+                border: 'none', // No border
+                borderRadius: '4px', // Rounded corners
+                padding: '8px 16px', // Padding for a more substantial look
+                boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+                cursor: 'pointer', // Pointer cursor on hover
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
             }}
             onMouseEnter={(e) => {
                 if (!disabled) {

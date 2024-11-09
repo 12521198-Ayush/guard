@@ -19,6 +19,7 @@ const ParkingTab = ({
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingRecord, setEditingRecord] = useState<any | null>(null);
     const [data, setData] = useState<any[]>([]);
+    const [length, setlength] = useState(1);
 
     const handleOpenModal = (record: any | null) => {
         setEditingRecord(record);
@@ -30,14 +31,15 @@ const ParkingTab = ({
         setEditingRecord(null);
     };
 
+
     const { data: session } = useSession();
     const accessToken = session?.user?.accessToken || undefined;
 
     const ParkingColumns: ColumnsType<any> = [
         {
             title: 'Parking Area',
-            dataIndex: 'parking_area',
-            key: 'parking_area',
+            dataIndex: 'parking_area_name',
+            key: 'parking_area_name',
             responsive: ['xs', 'sm', 'md', 'lg'],
             width: 150,
         },
@@ -135,6 +137,7 @@ const ParkingTab = ({
         });
     };
 
+
     const fetchParkingSlots = async () => {
         setLoading(true);
         try {
@@ -156,8 +159,9 @@ const ParkingTab = ({
                 throw new Error(result.error);
             }
             setData(result.data);
+            setlength(result.data.length());
         } catch (error: any) {
-            message.error('Failed to fetch parking slots: ' + error.message);
+            console.error('Failed to fetch parking slots: ' + error.message);
         } finally {
             setLoading(false);
         }
@@ -218,6 +222,7 @@ const ParkingTab = ({
                     premiseUnitId={premiseUnitId}
                     record={editingRecord}
                     fetchParkingSlots={fetchParkingSlots}
+                    data = {data}
                 />
             )}
 
