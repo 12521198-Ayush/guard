@@ -1,10 +1,12 @@
+'use client'
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, Spin, Tag } from 'antd';
 import { EditOutlined, TagsOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import Swal from 'sweetalert2';
-import HelperModal from '../Modal/HelperModal';
+import HelperModal from '../../../../components/Modal/HelperModal';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 interface Helper {
     _id: string;
@@ -118,6 +120,7 @@ const HelpersTab = ({ form,
                         <p style={{ margin: '4px 0', color: '#555' }}>Name: {record.maid_name}</p>
                         <p style={{ margin: 0, color: '#555' }}>Mobile: {record.maid_mobile}</p>
                         <p style={{ margin: 0, color: '#555' }}>Profession: {record.profession}</p>
+                        <Link href={'/'}>Card Status</Link>
                     </div>
                 </div>
             ),
@@ -211,7 +214,7 @@ const HelpersTab = ({ form,
                     }}
                     onClick={() => handleOpenModal(null)}
                 >
-                    Tag new
+                    Add new
                 </Button>
                 {isModalVisible && (
                     <HelperModal

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Button, Select } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Modal, Form, Input, Button, Select, Row, Col } from 'antd';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-
+import { InputRef } from 'antd/es/input';
 
 interface VehicleModalProps {
     open: boolean;
@@ -35,6 +35,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
     premiseUnitId,
     refetchVehicleData,
 }) => {
+
     const [form] = Form.useForm();
     const { data: session } = useSession();
     const accessToken = session?.user?.accessToken;
@@ -45,8 +46,59 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
     const [parkingAreaid, setparkingAreaid] = useState("");
     const [parkArea, setparkArea] = useState("");
 
+    const [stateCode, setStateCode] = useState('');
+    const [stateNumber, setStateNumber] = useState('');
+    const [cityCode, setCityCode] = useState('');
+    const [vehicleCode, setVehicleCode] = useState('');
+
+    const stateCodeRef = useRef<InputRef | null>(null);
+    const stateNumberRef = useRef<InputRef | null>(null);
+    const cityCodeRef = useRef<InputRef | null>(null);
+    const vehicleCodeRef = useRef<InputRef | null>(null);
+
+    const handleStateCodeChange = (e: any) => {
+        const value = e.target.value.toUpperCase();
+        if (/^[A-Z]*$/.test(value) && value.length <= 2) {
+            setStateCode(value);
+            if (value.length === 2 && stateNumberRef.current) {
+                stateNumberRef.current.focus(); // Move focus to next input
+            }
+        }
+    };
+
+    const handleStateNumberChange = (e: any) => {
+        const value = e.target.value;
+        if (/^\d*$/.test(value) && value.length <= 2) {
+            setStateNumber(value);
+            if (value.length === 2 && cityCodeRef.current) {
+                cityCodeRef.current.focus(); // Move focus to next input
+            }
+        }
+    };
+
+    // Handle city code change and focus shift
+    const handleCityCodeChange = (e: any) => {
+        const value = e.target.value.toUpperCase();
+        if (/^[A-Z]*$/.test(value) && value.length <= 2) {
+            setCityCode(value);
+            if (value.length === 2 && vehicleCodeRef.current) {
+                vehicleCodeRef.current.focus(); // Move focus to next input
+            }
+        }
+    };
+
+    // Handle vehicle code change
+    const handleVehicleCodeChange = (e: any) => {
+        const value = e.target.value;
+        if (/^\d*$/.test(value) && value.length <= 4) {
+            setVehicleCode(value);
+        }
+    };
+
+
 
     const fetchParkingSlots = async () => {
+
         try {
             const response = await axios.post(
                 'http://139.84.166.124:8060/user-service/admin/parking/slot/list',
@@ -129,6 +181,11 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
     // }
 
     const handleSubmit = async (values: any) => {
+        const vehicleNumber = `${stateCode}${stateNumber}${cityCode}${vehicleCode}`;
+        setVehicleCode('');
+        setCityCode('');
+        setStateNumber('');
+        setStateCode('');
         const requestData = {
             premise_id: premiseId,
             sub_premise_id: subPremiseId,
@@ -136,7 +193,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
             parking_area_id: parkingAreaid,
             parking_slot: values.slot_id,
             parking_area_name: parkArea,
-            vno: values.vno,
+            vno: vehicleNumber,
             vehicle_type: values.vehicle_type
         };
         console.log(requestData)
@@ -262,7 +319,44 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
                     name="vno"
                     rules={[{ required: true, message: 'Please enter Vehicle Number' }]}
                 >
-                    <Input placeholder="Enter Vehicle Number" />
+                    <Row gutter={8}>
+                        <Col span={4}>
+                            <Input
+                                ref={stateCodeRef}
+                                placeholder="State Code"
+                                value={stateCode}
+                                onChange={handleStateCodeChange}
+                                maxLength={2}
+                            />
+                        </Col>
+                        <Col span={4}>
+                            <Input
+                                ref={stateNumberRef}
+                                placeholder="State Number"
+                                value={stateNumber}
+                                onChange={handleStateNumberChange}
+                                maxLength={2}
+                            />
+                        </Col>
+                        <Col span={4}>
+                            <Input
+                                ref={cityCodeRef}
+                                placeholder="City Code"
+                                value={cityCode}
+                                onChange={handleCityCodeChange}
+                                maxLength={2}
+                            />
+                        </Col>
+                        <Col span={6}>
+                            <Input
+                                ref={vehicleCodeRef}
+                                placeholder="Vehicle Code"
+                                value={vehicleCode}
+                                onChange={handleVehicleCodeChange}
+                                maxLength={4}
+                            />
+                        </Col>
+                    </Row>
                 </Form.Item>
 
                 <Form.Item>

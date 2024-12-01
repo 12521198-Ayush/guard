@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, Button } from 'antd';
 import Swal from 'sweetalert2';
 import { useSession } from 'next-auth/react';
@@ -12,6 +12,7 @@ const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUn
     const [form] = Form.useForm();
     const [phone, setPhone] = useState<string>('');
     const [username, setUsername] = useState<string>('');
+    
     const handleSubmit = async (values: any) => {
         const requestData = {
             premise_unit_id: premiseUnitId,
@@ -73,13 +74,30 @@ const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUn
         }
     };
 
-    const handlePhoneChange = (phone: string, country: any) => {
-        setPhone(phone);
-        const reducedPhone = phone.replace(country.dialCode, '');
-        const paddedCountryCode = country.dialCode.padStart(5, '0');
-        const uname = paddedCountryCode + reducedPhone;
-        setUsername(uname);
+    useEffect(() => {
+       
+    }, []);
+
+    const handlePhoneChange = (phoneNumber: string, country: any) => {
+        const reducedPhone = phoneNumber.replace(country.dialCode, ''); 
+        const paddedCountryCode = country.dialCode.padStart(5, '0'); 
+        if (reducedPhone.charAt(0) === '0') {
+            setPhone('');
+            setUsername('');
+            Swal.fire({
+                title: 'Invalid Phone Number',
+                text: 'The phone number cannot start with a zero.',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK',
+            });
+        } else {
+            setPhone('');
+            const uname = paddedCountryCode + reducedPhone;
+            setUsername(uname);
+        }
     };
+    
 
     return (
         <Modal
@@ -139,54 +157,54 @@ const CreateResidentModal = ({ open, onClose, premiseId, subPremiseId, premiseUn
                     >
                         Submit
                     </Button> */}
-                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button
-                        type="primary"
-                        key="submit"
-                        htmlType="submit"
-                        style={{
-                            marginLeft: '8px',
-                            borderRadius: '4px',
-                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Gradient from green to dark green
-                            color: 'white',
-                            padding: '6px 16px',
-                            border: 'none',
-                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                        }}
-                    >
-                        Add
-                    </Button>
-                    <Button
-                        key="cancel"
-                        onClick={onClose}
-                        style={{
-                            borderRadius: '4px',
-                            background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from dark red to light red
-                            color: 'white',
-                            padding: '6px 16px',
-                            marginLeft: '8px',
-                            border: 'none',
-                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale on hover
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Shadow effect
-                        }}
-                        onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                        }}
-                    >
-                        Cancel
-                    </Button>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                            type="primary"
+                            key="submit"
+                            htmlType="submit"
+                            style={{
+                                marginLeft: '8px',
+                                borderRadius: '4px',
+                                background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Gradient from green to dark green
+                                color: 'white',
+                                padding: '6px 16px',
+                                border: 'none',
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                            }}
+                        >
+                            Add
+                        </Button>
+                        <Button
+                            key="cancel"
+                            onClick={onClose}
+                            style={{
+                                borderRadius: '4px',
+                                background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from dark red to light red
+                                color: 'white',
+                                padding: '6px 16px',
+                                marginLeft: '8px',
+                                border: 'none',
+                                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale on hover
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Shadow effect
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                                (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                            }}
+                        >
+                            Cancel
+                        </Button>
                     </div>
                 </Form.Item>
             </Form>

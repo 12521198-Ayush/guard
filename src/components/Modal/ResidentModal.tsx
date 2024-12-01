@@ -196,27 +196,27 @@ const ResidentModal = ({ open, onClose, residentData, premiseId, subPremiseId, p
                     Submit
                 </Button>,
                 <Button
-                key="cancel"
-                onClick={handleCancel}
-                style={{
-                    borderRadius: '4px',
-                    background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from dark red to light red
-                    color: 'white',
-                    padding: '6px 16px',
-                    border: 'none',
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale on hover
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Shadow effect
-                }}
-                onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                }}
-            >
-                Cancel
-            </Button>
+                    key="cancel"
+                    onClick={handleCancel}
+                    style={{
+                        borderRadius: '4px',
+                        background: 'linear-gradient(90deg, #f44336, #e57373)', // Gradient from dark red to light red
+                        color: 'white',
+                        padding: '6px 16px',
+                        border: 'none',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)'; // Slight scale on hover
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Shadow effect
+                    }}
+                    onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                    }}
+                >
+                    Cancel
+                </Button>
 
             ]}
 

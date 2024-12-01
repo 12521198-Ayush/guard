@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Form, Select, Input,Checkbox, Button, Table, Space, Avatar } from 'antd';
+import { Modal, Form, Select, Input, Checkbox, Button, Table, Space, Avatar } from 'antd';
 import { SearchOutlined, IdcardOutlined, UserOutlined } from '@ant-design/icons';
 import { useSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
@@ -21,7 +21,7 @@ interface SearchResult {
     selected: boolean;
 }
 
-const HelperModal: React.FC<HelperModalProps> = ({
+const   HelperModal: React.FC<HelperModalProps> = ({
     open,
     onClose,
     premiseId,
@@ -30,7 +30,7 @@ const HelperModal: React.FC<HelperModalProps> = ({
 }) => {
     const [form] = Form.useForm();
     const [searchResults, setSearchResults] = useState<SearchResult[]>([
-       
+
     ]);
 
     const handleSearch = () => {
@@ -110,7 +110,7 @@ const HelperModal: React.FC<HelperModalProps> = ({
                         (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
                     }}
                 >
-                    Save
+                    Tag
                 </Button>,
                 <Button
                     key="cancel"
@@ -137,59 +137,60 @@ const HelperModal: React.FC<HelperModalProps> = ({
             ]}
         >
             <Form layout="inline" form={form} style={{ width: '100%', alignItems: 'center' }}>
-                
-                    <div style={{ padding: '20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                            <Space style={{ flexWrap: 'wrap' }}>
-                                <Input
-                                    placeholder="Enter Unit id"
-                                    onChange={handleSearch}
-                                    type="text"
-                                    allowClear
-                                    // value={searchText}
-                                    style={{ width: 'auto' }}
-                                /><Input
-                                    placeholder="Enter Unit id"
-                                    onChange={handleSearch}
-                                    type="text"
-                                    allowClear
-                                    // value={searchText}
-                                    style={{ width: 'auto' }}
 
-                                /><Input
-                                    placeholder="Enter Unit id"
-                                    onChange={handleSearch}
-                                    type="text"
-                                    allowClear
-                                    // value={searchText}
-                                    style={{ width: 'auto' }}
+                <div style={{ padding: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <Space style={{ flexWrap: 'wrap' }}>
+                            <Input
+                                placeholder="Enter Unit id"
+                                onChange={handleSearch}
+                                type="text"
+                                allowClear
+                                // value={searchText}
+                                style={{ width: 'auto' }}
+                            /><Input
+                                placeholder="Enter Unit id"
+                                onChange={handleSearch}
+                                type="text"
+                                allowClear
+                                // value={searchText}
+                                style={{ width: 'auto' }}
 
-                                />
-                                <Button
-                                    icon={<SearchOutlined />}
-                                    shape="circle"
-                                    onClick={handleSearch}
-                                    style={{
-                                        backgroundColor: '#4e92ff',
-                                        color: 'white',
-                                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                                        marginLeft: '8px',
-                                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)';
-                                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.3)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-                                    }}
-                                />
-                            </Space>
-                        </div>
+                            /><Input
+                                placeholder="Enter Unit id"
+                                onChange={handleSearch}
+                                type="text"
+                                allowClear
+                                // value={searchText}
+                                style={{ width: 'auto' }}
+
+                            />
+                            <Button
+                                icon={<SearchOutlined />}
+                                onClick={handleSearch}
+                                style={{
+                                    backgroundColor: '#4e92ff',
+                                    color: 'white',
+                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                                    marginLeft: '8px',
+                                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)';
+                                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                                }}
+                            >
+                                Search
+                            </Button>
+                        </Space>
                     </div>
+                </div>
 
-                
+
             </Form>
 
             <Table

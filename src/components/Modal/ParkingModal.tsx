@@ -57,10 +57,18 @@ const ParkingModal: React.FC<ParkingModalProps> = ({
     }, []);
 
     const generateParkingSlot = () => {
-        const length = data.length; // Get the current length of data array
-        const generatedSlot = `${premiseUnitId}-${length + 1}`; // Adjusted to start from length + 1
-        form.setFieldsValue({ parking_slot: generatedSlot });
+        if (data.length > 0) {
+            const lastParkingSlot = data[data.length - 1].parking_slot;
+            const lastNumber = parseInt(lastParkingSlot.split('-').pop(), 10);
+            const newNumber = lastNumber + 1;
+            const generatedSlot = `${premiseUnitId}-${newNumber}`;
+            form.setFieldsValue({ parking_slot: generatedSlot });
+        } else {
+            const generatedSlot = `${premiseUnitId}-1`;
+            form.setFieldsValue({ parking_slot: generatedSlot });
+        }
     };
+    
 
     const handleSubmit = async () => {
         try {

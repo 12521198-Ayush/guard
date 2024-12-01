@@ -26,7 +26,7 @@ const DataTable = () => {
     const [form] = Form.useForm();
     const { data: session } = useSession();
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-    const screens = useBreakpoint();    
+    const screens = useBreakpoint();
     let accessToken = session?.user?.accessToken || undefined;
 
     useEffect(() => {
@@ -208,11 +208,11 @@ const DataTable = () => {
             align: "center",
             render: (_, record) => (
                 <Link href={handleView(record)}>
-                    
+
                     <Button
                         className="ml-2"
                         style={{
-                            background: 'linear-gradient(90deg, #ff4e50, #f9d423)', // Gradient background
+                            background: 'linear-gradient(90deg, #4e92ff, #1e6fdd)', // Blue gradient background
                             color: 'white',
                             fontWeight: 'bold',
                             border: 'none',
@@ -222,7 +222,7 @@ const DataTable = () => {
                             display: 'flex',
                             alignItems: 'center',
                             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                         }}
                         type="default"
                         onMouseEnter={(e) => {
@@ -246,7 +246,7 @@ const DataTable = () => {
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                 <h4 className="font-medium text-xl text-black dark:text-white">
-                    Manage Premise Unit
+                    Manage Premise Unit 
                 </h4>
             </div>
 
@@ -262,10 +262,10 @@ const DataTable = () => {
                             value={searchText}
                             style={{ width: screens.xs ? '100%' : 'auto' }}
                         />
-                        <SearchOutlined onClick={globalSearch}/>
+                        <SearchOutlined onClick={globalSearch} />
                     </Space>
 
-                    <Link href="/flats-residents/add-flats">
+                    <Link href="/manage-premise/add-flats">
                         <Button
                             style={{
                                 background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background

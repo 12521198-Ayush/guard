@@ -56,7 +56,8 @@ const ParkingTab = ({
             key: 'vehicle_type',
             responsive: ['xs', 'sm', 'md', 'lg'],
             width: 150,
-        },
+            render: (text) => (text === '2w' ? '2 Wheel' : text === '4w' ? '4 Wheel' : text),
+        },        
         {
             title: 'Allocation Date',
             dataIndex: 'created_on',
