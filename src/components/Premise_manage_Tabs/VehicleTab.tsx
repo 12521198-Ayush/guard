@@ -64,6 +64,11 @@ const VehicleTab = ({
         }
     };
 
+    const [isNewModalVisible, setIsNewModalVisible] = useState(false);
+    const handlenew = () => {
+        setIsNewModalVisible(true);
+    }
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             fetchVehicleData();
@@ -176,33 +181,71 @@ const VehicleTab = ({
 
     return (
         <div>
-            <h4>Vehicle Management</h4>
-            <Table
-                columns={columns}
-                dataSource={vehicleData}
-                rowKey="vno"
-                pagination={false}
-                scroll={{ x: 'max-content' }}
-            />
-            {selectedVehicle && (
-                <>
-                    <RfidCardsModal
-                        open={AssignRFIDModal}
-                        vno={selectedVehicle.vno}
-                        onClose={() => setAssignRFIDModal(false)}
-                        premiseId={premiseId}
-                        subPremiseId={subPremiseId}
-                    />
-                    <ExistingRfidCardsModal
-                        open={ExistingRFIDsModal}
-                        vno={selectedVehicle.vno}
-                        onClose={() => setExistingRFIDsModal(false)}
-                        premiseId={premiseId}
-                        subPremiseId={subPremiseId}
-                    />
-                </>
-            )}
+            <div className="flex items-center justify-between">
+                <h4 className="font-small text-xl text-black dark:text-white">Vehicle Management</h4>
+                {/* <h4>Vehicle Management</h4> */}
+                <Button
+                    style={{
+                        marginBottom: '8px',
+                        background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
+                        color: 'white', // White text color
+                        border: 'none', // No border
+                        borderRadius: '4px', // Rounded corners
+                        padding: '8px 16px', // Padding for a more substantial look
+                        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+                        cursor: 'pointer', // Pointer cursor on hover
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+                    }}
+                    onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                    }}
+                    onClick={() => handlenew()}
+                >
+                    Add new
+                </Button>
+                <VehicleModal
+                    open={isNewModalVisible}
+                    onClose={() => setIsNewModalVisible(false)}
+                    premiseId={premiseId}
+                    subPremiseId={subPremiseId}
+                    premiseUnitId={premiseUnitId}
+                    refetchVehicleData={fetchVehicleData}
+                />
+            </div>
+            <br />
+
+                <Table
+                    columns={columns}
+                    dataSource={vehicleData}
+                    rowKey="vno"
+                    pagination={false}
+                    scroll={{ x: 'max-content' }}
+                />
+                {selectedVehicle && (
+                    <>
+                        <RfidCardsModal
+                            open={AssignRFIDModal}
+                            vno={selectedVehicle.vno}
+                            onClose={() => setAssignRFIDModal(false)}
+                            premiseId={premiseId}
+                            subPremiseId={subPremiseId}
+                        />
+                        <ExistingRfidCardsModal
+                            open={ExistingRFIDsModal}
+                            vno={selectedVehicle.vno}
+                            onClose={() => setExistingRFIDsModal(false)}
+                            premiseId={premiseId}
+                            subPremiseId={subPremiseId}
+                        />
+                    </>
+                )}
         </div>
+
     );
 };
 
