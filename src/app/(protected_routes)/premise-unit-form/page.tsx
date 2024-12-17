@@ -506,6 +506,8 @@ const PremiseUnitForm = () => {
                     editMode={editMode}
                     toggleEditMode={toggleEditMode}
                     premiseId={premiseId} subPremiseId={initialData.sub_premise_id} premiseUnitId={id}
+                    initialData={initialData}
+
                 />
             )
         },

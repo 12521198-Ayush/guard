@@ -17,6 +17,7 @@ declare module "next-auth" {
         accessTokenExpires: number
         role: string
         isAdmin: boolean
+        subpremise_name: string
         username: string
         sub_premise_access_control_reqd: string
         subpremiseArray: string[]
