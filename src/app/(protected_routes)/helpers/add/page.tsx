@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Select, Row, Col, message } from 'antd';
+import { Form, Input, Button, Select, Row, Col, message, Upload } from 'antd';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 
@@ -11,25 +11,73 @@ type SubPremise = {
 };
 
 const HelperCreationForm = () => {
-  const { data: session } = useSession();
-  const [skills, setSkills] = useState<string[]>([]); // Ensure skills is an array
-  const [loading, setLoading] = useState(false);
 
+
+  const { data: session } = useSession();
+  const [skills, setSkills] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [fileKeys, setFileKeys] = useState({
+    profile_pic: '',
+    id_proof: '',
+    address_proof: '',
+    police_verification: '',
+  });
   const user = session?.user || {};
   const premiseId = session?.user.primary_premise_id;
+  const [form] = Form.useForm();
+
+  const handleFileUpload = async (file: File, type: keyof typeof fileKeys) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64Data = (reader.result as string).split(',')[1];
+        const response = await axios.post(
+          'http://139.84.166.124:8060/staff-service/upload/async',
+          {
+            premise_id: premiseId,
+            filetype: file.type,
+            file_extension: file.name.split('.').pop(),
+            base64_data: base64Data,
+          },
+          { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+        );
+
+        const fileKey = response.data?.data?.filekey;
+        if (!fileKey) {
+          throw new Error('File key is missing in the response.');
+        }
+
+        // Log current fileKeys for debugging
+        console.log('Before update:', fileKeys);
+
+        setFileKeys((prev) => {
+          const updatedKeys = { ...prev, [type]: fileKey };
+          console.log('After update:', updatedKeys); // Log updated keys
+          return updatedKeys;
+        });
+
+        message.success(`${type.replace('_', ' ')} uploaded successfully.`);
+      } catch (error) {
+        message.error(`Failed to upload ${type.replace('_', ' ')}.`);
+        console.error(error);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+
   const subPremiseArray: SubPremise[] = (session?.user.subpremiseArray || []).map((sub) => {
     if (typeof sub === 'string') {
       return {
-        subpremise_id: sub, // Assuming the string is the ID
-        subpremise_name: sub, // Use the string as the name, or replace with logic
+        subpremise_id: sub,
+        subpremise_name: sub,
       };
     }
     return sub;
   });
 
-  const [form] = Form.useForm();
 
-  // Fetch skills from the API
+
   useEffect(() => {
     const fetchSkills = async () => {
       try {
@@ -52,9 +100,10 @@ const HelperCreationForm = () => {
     }
   }, [session?.user.accessToken]);
 
-  // Handle form submission
+
   const onFinish = async (values: any) => {
     setLoading(true);
+
     try {
       const payload = {
         premise_id: premiseId,
@@ -64,18 +113,28 @@ const HelperCreationForm = () => {
         skill: values.skill,
         mobile: values.mobile,
         father_name: values.father_name || '',
-        picture_obj: '-',
-        id_proof_obj: '-',
-        address_proof_obj: '-',
-        pv_obj: '-',
+        picture_obj: fileKeys.profile_pic,
+        id_proof_obj: fileKeys.id_proof,
+        address_proof_obj: fileKeys.address_proof,
+        pv_obj: fileKeys.police_verification,
       };
+
+      console.log("payload**************************");
+      console.log(payload);
 
       await axios.post('http://139.84.166.124:8060/staff-service/create', payload, {
         headers: { Authorization: `Bearer ${session?.user.accessToken}` },
       });
 
+
       message.success('Helper created successfully.');
       form.resetFields();
+      setFileKeys({
+        profile_pic: '',
+        id_proof: '',
+        address_proof: '',
+        police_verification: '',
+      });
     } catch (error) {
       message.error('Failed to create helper.');
       console.error(error);
@@ -85,138 +144,181 @@ const HelperCreationForm = () => {
   };
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={onFinish}
-      style={{ maxWidth: 'full', margin: '0 auto', padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}
-    >
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            name="sub_premise_id_array"
-            label="Sub-Premises"
-            rules={[{ required: true, message: 'Please select at least one sub-premise!' }]}
-          >
-            <Select mode="multiple" placeholder="Select Sub-Premises">
-              {subPremiseArray.map((sub) => (
-                <Select.Option key={sub.subpremise_id} value={sub.subpremise_id}>
-                  {sub.subpremise_name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
+    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+        <h4 className="font-medium text-xl text-black dark:text-white">
+          Add Helpers
+        </h4>
+      </div>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        style={{ maxWidth: 'full', margin: '0 auto', padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}
+      >
 
-        <Col span={12}>
-          <Form.Item
-            name="name"
-            label="Name"
-            rules={[{ required: true, message: 'Please enter the helper name!' }]}
-          >
-            <Input placeholder="Enter helper name" />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            name="address"
-            label="Address"
-            rules={[{ required: true, message: 'Please enter the address!' }]}
-          >
-            <Input placeholder="Enter address" />
-          </Form.Item>
-        </Col>
-
-        <Col span={12}>
-          <Form.Item
-            name="skill"
-            label="Skill"
-            rules={[{ required: true, message: 'Please select a skill!' }]}
-          >
-            <Select placeholder="Select a skill">
-              {skills.length > 0 ? (
-                skills.map((skill) => (
-                  <Select.Option key={skill} value={skill}>
-                    {skill}
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="sub_premise_id_array"
+              label="Sub-Premises"
+              rules={[{ required: true, message: 'Please select at least one sub-premise!' }]}
+            >
+              <Select mode="multiple" placeholder="Select Sub-Premises">
+                {subPremiseArray.map((sub) => (
+                  <Select.Option key={sub.subpremise_id} value={sub.subpremise_id}>
+                    {sub.subpremise_name}
                   </Select.Option>
-                ))
-              ) : (
-                <Select.Option disabled>Loading skills...</Select.Option>
-              )}
-            </Select>
-          </Form.Item>
-        </Col>
-      </Row>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
 
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            name="mobile"
-            label="Mobile Number"
-            rules={[{ required: true, message: 'Please enter a mobile number!' }]}
-          >
-            <Input placeholder="Enter mobile number" />
-          </Form.Item>
-        </Col>
+          <Col span={12}>
+            <Form.Item
+              name="name"
+              label="Name"
+              rules={[{ required: true, message: 'Please enter the helper name!' }]}
+            >
+              <Input placeholder="Enter helper name" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Col span={12}>
-          <Form.Item name="father_name" label="Father's Name">
-            <Input placeholder="Enter father name (optional)" />
-          </Form.Item>
-        </Col>
-      </Row>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="address"
+              label="Address"
+              rules={[{ required: true, message: 'Please enter the address!' }]}
+            >
+              <Input placeholder="Enter address" />
+            </Form.Item>
+          </Col>
 
-      <Form.Item style={{ textAlign: 'right', marginTop: '20px' }}>
+          <Col span={12}>
+            <Form.Item
+              name="skill"
+              label="Skill"
+              rules={[{ required: true, message: 'Please select a skill!' }]}
+            >
+              <Select placeholder="Select a skill">
+                {skills.length > 0 ? (
+                  skills.map((skill) => (
+                    <Select.Option key={skill} value={skill}>
+                      {skill}
+                    </Select.Option>
+                  ))
+                ) : (
+                  <Select.Option disabled>Loading skills...</Select.Option>
+                )}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
 
-        {/* <Button type="primary" htmlType="submit" loading={loading} style={{ padding: '0 40px' }}>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="mobile"
+              label="Mobile Number"
+              rules={[{ required: true, message: 'Please enter a mobile number!' }]}
+            >
+              <Input placeholder="Enter mobile number" />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item name="father_name" label="Father's Name">
+              <Input placeholder="Enter father name (optional)" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item label="Profile Picture">
+              <Upload beforeUpload={(file) => (handleFileUpload(file, 'profile_pic'), false)}>
+                <Button>Upload Profile Picture</Button>
+              </Upload>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="ID Proof">
+              <Upload beforeUpload={(file) => (handleFileUpload(file, 'id_proof'), false)}>
+                <Button>Upload ID Proof</Button>
+              </Upload>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item label="Address Proof">
+              <Upload beforeUpload={(file) => (handleFileUpload(file, 'address_proof'), false)}>
+                <Button>Upload Address Proof</Button>
+              </Upload>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="Police Verification">
+              <Upload beforeUpload={(file) => (handleFileUpload(file, 'police_verification'), false)}>
+                <Button>Upload Police Verification</Button>
+              </Upload>
+            </Form.Item>
+          </Col>
+        </Row>
+
+
+        <Form.Item style={{ textAlign: 'right', marginTop: '20px' }}>
+
+          {/* <Button type="primary" htmlType="submit" loading={loading} style={{ padding: '0 40px' }}>
           Submit
-        </Button> */}
-        <Button
-          htmlType="submit"
-          style={{
-            marginBottom: '8px',
-            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
-            color: 'white', // White text color
-            border: 'none', // No border
-            borderRadius: '4px', // Rounded corners
-            padding: '8px 16px', // Padding for a more substantial look
-            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-            cursor: 'pointer', // Pointer cursor on hover
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-          }}
-        >
-          Create
-        </Button>
+          </Button> */}
+          <Button
+            htmlType="submit"
+            style={{
+              marginBottom: '8px',
+              background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
+              color: 'white', // White text color
+              border: 'none', // No border
+              borderRadius: '4px', // Rounded corners
+              padding: '8px 16px', // Padding for a more substantial look
+              boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+              cursor: 'pointer', // Pointer cursor on hover
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+            }}
+          >
+            Create
+          </Button>
 
-        <Button
-          href='/dashboard'
-          style={{
-            background: 'linear-gradient(90deg, #ff6f61, #d50032)', // Red gradient for Cancel
-            color: 'white',
-            marginLeft: '8px',
-            border: 'none',
-            marginRight: '4px',
-            borderRadius: '4px',
-            padding: '5px 12px',
-            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
-          }}
-        >
-          Cancel
-        </Button>
-      </Form.Item>
-    </Form>
+          <Button
+            href='/dashboard'
+            style={{
+              background: 'linear-gradient(90deg, #ff6f61, #d50032)', // Red gradient for Cancel
+              color: 'white',
+              marginLeft: '8px',
+              border: 'none',
+              marginRight: '4px',
+              borderRadius: '4px',
+              padding: '5px 12px',
+              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+              cursor: 'pointer',
+            }}
+          >
+            Cancel
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
   );
 };
 

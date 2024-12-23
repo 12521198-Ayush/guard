@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import dynamic from 'next/dynamic';
 
 const BarChart = dynamic(() => import('@/components/Charts/BarChart'), { ssr: false });

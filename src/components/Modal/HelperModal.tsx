@@ -72,52 +72,86 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
     }, [session?.user?.accessToken]);
 
     const searchHelper = async () => {
-        console.log(subPremiseId)
-        if (!cardNo) {
+        // console.log(selectedSkill)
+        let fetchedData: Helper[] = [];
+        setLoading(true);
+        if(!cardNo && !selectedSkill){
             Swal.fire({
                 icon: 'warning',
                 title: 'Warning',
-                text: 'Please enter a card number to search.',
+                text: 'Please enter a card number or select skill to search.',
                 confirmButtonColor: '#1e90ff' // Custom blue color
             });
+            setLoading(false);
             return;
         }
-
-        setLoading(true);
-        try {
-            const response = await axios.post(
-                'http://139.84.166.124:8060/staff-service/list',
-                {
-                    premise_id: premiseId,
-                    card_no: cardNo,
-                    sub_premise_id: subPremiseId  
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${session?.user?.accessToken}`,
+        else if (!cardNo) {
+            try {
+                const response = await axios.post(
+                    'http://139.84.166.124:8060/staff-service/list',
+                    {
+                        premise_id: premiseId,
+                        sub_premise_id: subPremiseId,
+                        skill: selectedSkill
                     },
-                }
-            );
-            fetchHelpers();
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session?.user?.accessToken}`,
+                        },
+                    }
+                );
+                console.log(response)
 
-            const { data } = response.data;
-            setHelpersData(data || []);
-        } catch (error) {
-            console.error('Error fetching helpers:', error);
-            Swal.fire('Error', 'Failed to fetch helpers.', 'error');
-        } finally {
-            setLoading(false);
+                const { data } = response.data;
+                fetchedData = [...fetchedData, ...data];
+                setHelpersData(fetchedData || []);
+            } catch (error) {
+                console.error('Error fetching helpers:', error);
+                Swal.fire('Error', 'Failed to fetch helpers.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            try {
+                const response = await axios.post(
+                    'http://139.84.166.124:8060/staff-service/list',
+                    {
+                        premise_id: premiseId,
+                        card_no: cardNo,
+                        sub_premise_id: subPremiseId
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session?.user?.accessToken}`,
+                        },
+                    }
+                );
+                // fetchHelpers();
+
+                const { data } = response.data;
+                setHelpersData(data || []);
+            } catch (error) {
+                console.error('Error fetching helpers:', error);
+                Swal.fire('Error', 'Failed to fetch helpers.', 'error');
+            } finally {
+                setLoading(false);
+            }
         }
+
+
+
     };
 
-    const tagHelper = async (helper: Helper) => {
+    const tagHelper = async (helper: any) => {
+        console.log(helper);
+        
         try {
             await axios.post(
                 'http://139.84.166.124:8060/staff-service/tag/premise_unit',
                 {
                     premise_id: premiseId,
                     premise_unit_id: premiseUnitId,
-                    qr_code: helpersData[0].qr_code
+                    qr_code: helper
                 },
                 {
                     headers: {
@@ -148,7 +182,7 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
         }
     };
 
-    const untagHelper = async (helper: Helper) => {
+    const untagHelper = async (helper: any) => {
         Swal.fire({
             title: 'Are you sure?',
             text: `Do you want to untag ${helper.name}?`,
@@ -164,7 +198,7 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
                         'http://139.84.166.124:8060/staff-service/untag/premise_unit',
                         {
                             premise_id: premiseId,
-                            qr_code: helpersData[0].qr_code,
+                            qr_code: helper,
                             premise_unit_id: premiseUnitId,
                         },
                         {
@@ -181,10 +215,10 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
                         icon: 'success',
                         confirmButtonText: 'OK',
                         customClass: {
-                          confirmButton: 'bg-blue-500 text-white hover:bg-blue-600'  // Custom blue color
+                            confirmButton: 'bg-blue-500 text-white hover:bg-blue-600'  // Custom blue color
                         }
-                      });
-                      
+                    });
+
                     searchHelper(); // Refresh data after untagging
                 } catch (error) {
                     console.error('Error untagging helper:', error);
@@ -255,7 +289,7 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
                             (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                             (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
                         }}
-                        onClick={() => untagHelper(record)}>UnTag</Button>
+                        onClick={() => untagHelper(record.qr_code)}>UnTag</Button>
                 ) : (
                     <Button
                         style={{
@@ -277,7 +311,7 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
                             (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
                             (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
                         }}
-                        onClick={() => tagHelper(record)}>Tag Helper</Button>
+                        onClick={() => tagHelper(record.qr_code)}>Tag Helper</Button>
                 );
             },
         },
@@ -296,13 +330,14 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
                     placeholder="Search by Card Number"
                     type="number"
                     value={cardNo}
+                    style={{ width: 400 }}
                     onChange={(e) => setCardNo(Number(e.target.value))}
                 />
-                 <Select
+                <Select
                     placeholder="Filter by Skill"
                     value={selectedSkill}
                     onChange={(value) => setSelectedSkill(value)}
-                    style={{ width: 200 }}
+                    style={{ width: 400 }}
                 >
                     {skills.map((skill) => (
                         <Option key={skill._id} value={skill.skill}>

@@ -42,6 +42,7 @@ const TaggedItemsModal: React.FC<TaggedItemsModalProps> = ({ isVisible, onClose,
             onCancel={onClose}
             footer={null}
         >
+           
             <Table dataSource={data} columns={columns} rowKey={(item) => item.id || item} pagination={false} />
         </Modal>
     );
