@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, Select, Row, Col, message, Upload } from 'antd';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
+const { Dragger } = Upload;
 
 type SubPremise = {
   subpremise_id: string;
@@ -29,8 +30,17 @@ const HelperCreationForm = () => {
   const handleFileUpload = async (file: File, type: keyof typeof fileKeys) => {
     const reader = new FileReader();
     reader.onload = async () => {
+      
       try {
         const base64Data = (reader.result as string).split(',')[1];
+        const payload = {
+          premise_id: premiseId,
+          filetype: file.type,
+          file_extension: file.name.split('.').pop(),
+          base64_data: base64Data,
+        }
+        console.log(payload);
+        
         const response = await axios.post(
           'http://139.84.166.124:8060/staff-service/upload/async',
           {
@@ -56,7 +66,7 @@ const HelperCreationForm = () => {
           return updatedKeys;
         });
 
-        message.success(`${type.replace('_', ' ')} uploaded successfully.`);
+        // message.success(`${type.replace('_', ' ')} uploaded successfully.`);
       } catch (error) {
         message.error(`Failed to upload ${type.replace('_', ' ')}.`);
         console.error(error);
@@ -141,6 +151,27 @@ const HelperCreationForm = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const [uploadedFiles, setUploadedFiles] = useState({
+    profile_pic: false,
+    id_proof: false,
+    address_proof: false,
+    police_verification: false,
+  });
+
+  const handleUploadChange = (info: any, key: any) => {
+    if (info.file.status === 'done') {
+      message.success(`${info.file.name} uploaded successfully!`);
+      setUploadedFiles((prev) => ({ ...prev, [key]: info.file }));
+    } else if (info.file.status === 'error') {
+      message.error(`${info.file.name} failed to upload.`);
+    }
+  };
+
+  const handleRemove = (key: any) => {
+    setUploadedFiles((prev) => ({ ...prev, [key]: null }));
+    message.info(`${key.replace('_', ' ')} file removed.`);
   };
 
   return (
@@ -238,33 +269,107 @@ const HelperCreationForm = () => {
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item label="Profile Picture">
-              <Upload beforeUpload={(file) => (handleFileUpload(file, 'profile_pic'), false)}>
-                <Button>Upload Profile Picture</Button>
-              </Upload>
+              <Dragger
+                accept=".jpg,.jpeg,.png"
+                beforeUpload={(file) => {
+                  const isImage = file.type.startsWith("image/");
+                  if (!isImage) {
+                    message.error("You can only upload image files!");
+                  }
+                  return isImage ? handleFileUpload(file, 'profile_pic') : false;
+                }}
+                disabled={uploadedFiles.profile_pic}
+                onChange={(info) => handleUploadChange(info, 'profile_pic')}
+                showUploadList={{ showRemoveIcon: true }}
+                multiple={false}
+              >
+                <p className="ant-upload-drag-icon">
+                  <i className="anticon anticon-upload" />
+                </p>
+                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                <p className="ant-upload-hint">Only image files (JPG, PNG) are allowed</p>
+              </Dragger>
             </Form.Item>
           </Col>
+
           <Col span={12}>
             <Form.Item label="ID Proof">
-              <Upload beforeUpload={(file) => (handleFileUpload(file, 'id_proof'), false)}>
-                <Button>Upload ID Proof</Button>
-              </Upload>
+              <Dragger
+                accept=".jpg,.jpeg,.png,.pdf"
+                beforeUpload={(file) => {
+                  const isValidType =
+                    file.type.startsWith("image/") ||
+                    file.type === "application/pdf";
+                  if (!isValidType) {
+                    message.error("You can only upload image or PDF files!");
+                  }
+                  return isValidType ? handleFileUpload(file, 'id_proof') : false;
+                }}
+                disabled={uploadedFiles.id_proof}
+                onChange={(info) => handleUploadChange(info, 'id_proof')}
+                showUploadList={{ showRemoveIcon: true }}
+                multiple={false}
+              >
+                <p className="ant-upload-drag-icon">
+                  <i className="anticon anticon-upload" />
+                </p>
+                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
+              </Dragger>
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row gutter={16}>
           <Col span={12}>
             <Form.Item label="Address Proof">
-              <Upload beforeUpload={(file) => (handleFileUpload(file, 'address_proof'), false)}>
-                <Button>Upload Address Proof</Button>
-              </Upload>
+              <Dragger
+                accept=".jpg,.jpeg,.png,.pdf"
+                beforeUpload={(file) => {
+                  const isValidType =
+                    file.type.startsWith("image/") ||
+                    file.type === "application/pdf";
+                  if (!isValidType) {
+                    message.error("You can only upload image or PDF files!");
+                  }
+                  return isValidType ? handleFileUpload(file, 'address_proof') : false;
+                }}
+                disabled={uploadedFiles.address_proof}
+                onChange={(info) => handleUploadChange(info, 'address_proof')}
+                showUploadList={{ showRemoveIcon: true }}
+                multiple={false}
+              >
+                <p className="ant-upload-drag-icon">
+                  <i className="anticon anticon-upload" />
+                </p>
+                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
+              </Dragger>
             </Form.Item>
           </Col>
+
           <Col span={12}>
             <Form.Item label="Police Verification">
-              <Upload beforeUpload={(file) => (handleFileUpload(file, 'police_verification'), false)}>
-                <Button>Upload Police Verification</Button>
-              </Upload>
+              <Dragger
+                accept=".jpg,.jpeg,.png,.pdf"
+                beforeUpload={(file) => {
+                  const isValidType =
+                    file.type.startsWith("image/") ||
+                    file.type === "application/pdf";
+                  if (!isValidType) {
+                    message.error("You can only upload image or PDF files!");
+                  }
+                  return isValidType ? handleFileUpload(file, 'police_verification') : false;
+                }}
+                // disabled={uploadedFiles.police_verification}
+                onChange={(info) => handleUploadChange(info, 'police_verification')}
+                showUploadList={{ showRemoveIcon: true }}
+                multiple={false}
+              >
+                <p className="ant-upload-drag-icon">
+                  <i className="anticon anticon-upload" />
+                </p>
+                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
+              </Dragger>
             </Form.Item>
           </Col>
         </Row>
