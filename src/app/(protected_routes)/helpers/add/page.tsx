@@ -30,7 +30,7 @@ const HelperCreationForm = () => {
   const handleFileUpload = async (file: File, type: keyof typeof fileKeys) => {
     const reader = new FileReader();
     reader.onload = async () => {
-      
+
       try {
         const base64Data = (reader.result as string).split(',')[1];
         const payload = {
@@ -39,8 +39,8 @@ const HelperCreationForm = () => {
           file_extension: file.name.split('.').pop(),
           base64_data: base64Data,
         }
-        console.log(payload);
-        
+        // console.log(payload);
+
         const response = await axios.post(
           'http://139.84.166.124:8060/staff-service/upload/async',
           {
@@ -58,7 +58,7 @@ const HelperCreationForm = () => {
         }
 
         // Log current fileKeys for debugging
-        console.log('Before update:', fileKeys);
+        // console.log('Before update:', fileKeys);
 
         setFileKeys((prev) => {
           const updatedKeys = { ...prev, [type]: fileKey };
@@ -169,11 +169,23 @@ const HelperCreationForm = () => {
     }
   };
 
-  const handleRemove = (key: any) => {
-    setUploadedFiles((prev) => ({ ...prev, [key]: null }));
-    message.info(`${key.replace('_', ' ')} file removed.`);
+  const handleRemove = (fileType: string) => {
+    // Reset the uploaded file state
+    setUploadedFiles((prevState) => ({
+      ...prevState,
+      [fileType]: null, // Clear the specific file
+    }));
+  
+    // Optionally, clear the field from Ant Design Form
+    form.setFieldsValue({
+      [fileType]: null, // Reset the file input in the form
+    });
+  
+    // Handle additional cleanup or UI changes if needed
+    message.success(`${fileType} has been removed successfully`);
   };
 
+  
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
       <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
@@ -278,10 +290,10 @@ const HelperCreationForm = () => {
                   }
                   return isImage ? handleFileUpload(file, 'profile_pic') : false;
                 }}
-                disabled={uploadedFiles.profile_pic}
                 onChange={(info) => handleUploadChange(info, 'profile_pic')}
                 showUploadList={{ showRemoveIcon: true }}
-                multiple={false}
+                maxCount = {1}
+
               >
                 <p className="ant-upload-drag-icon">
                   <i className="anticon anticon-upload" />
@@ -298,17 +310,16 @@ const HelperCreationForm = () => {
                 accept=".jpg,.jpeg,.png,.pdf"
                 beforeUpload={(file) => {
                   const isValidType =
-                    file.type.startsWith("image/") ||
-                    file.type === "application/pdf";
+                    file.type.startsWith("image/") || file.type === "application/pdf";
                   if (!isValidType) {
                     message.error("You can only upload image or PDF files!");
                   }
                   return isValidType ? handleFileUpload(file, 'id_proof') : false;
                 }}
-                disabled={uploadedFiles.id_proof}
+               
                 onChange={(info) => handleUploadChange(info, 'id_proof')}
                 showUploadList={{ showRemoveIcon: true }}
-                multiple={false}
+                maxCount = {1}
               >
                 <p className="ant-upload-drag-icon">
                   <i className="anticon anticon-upload" />
@@ -318,6 +329,8 @@ const HelperCreationForm = () => {
               </Dragger>
             </Form.Item>
           </Col>
+
+
 
           <Col span={12}>
             <Form.Item label="Address Proof">
@@ -332,10 +345,10 @@ const HelperCreationForm = () => {
                   }
                   return isValidType ? handleFileUpload(file, 'address_proof') : false;
                 }}
-                disabled={uploadedFiles.address_proof}
+               
                 onChange={(info) => handleUploadChange(info, 'address_proof')}
                 showUploadList={{ showRemoveIcon: true }}
-                multiple={false}
+                maxCount = {1}
               >
                 <p className="ant-upload-drag-icon">
                   <i className="anticon anticon-upload" />
@@ -359,10 +372,10 @@ const HelperCreationForm = () => {
                   }
                   return isValidType ? handleFileUpload(file, 'police_verification') : false;
                 }}
-                // disabled={uploadedFiles.police_verification}
+                maxCount = {1}
                 onChange={(info) => handleUploadChange(info, 'police_verification')}
                 showUploadList={{ showRemoveIcon: true }}
-                multiple={false}
+                // multiple={false}
               >
                 <p className="ant-upload-drag-icon">
                   <i className="anticon anticon-upload" />
