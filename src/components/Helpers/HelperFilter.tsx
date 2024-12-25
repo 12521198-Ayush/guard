@@ -59,11 +59,11 @@ const HelperFilter: React.FC<{ helpersData: (data: any) => void }> = ({ helpersD
                 }
             );
 
-            console.log('Filter Response:', response.data); // For debugging
+            console.log('Filter Response:', response.data);
             helpersData(response.data?.data || []);
             Swal.fire('Success', 'Filter applied successfully!', 'success');
         } catch (error: any) {
-            console.error('Filter Error:', error); // For debugging
+            console.error('Filter Error:', error);
             Swal.fire(
                 'Error',
                 error.response?.data?.message || 'Failed to apply filter',
@@ -107,14 +107,40 @@ const HelperFilter: React.FC<{ helpersData: (data: any) => void }> = ({ helpersD
                     className="flex-1"
                 />
                 {/* Filter Button */}
-                <Button
-
+                {/* <Button
                     onClick={handleFilter}
                     disabled={loading}
-                    className="w-auto"
+                    className={`w-auto ${loading ? 'bg-gray-300 text-gray-500' : 'bg-blue-500 text-white hover:bg-blue-600'} rounded`}
+                >
+                    {loading ? <Spin /> : 'Filter'}
+                </Button> */}
+
+                <Button
+                    onClick={handleFilter}
+                    disabled={loading}
+                    style={{
+                        marginBottom: '8px',
+                        background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
+                        color: 'white', // White text color
+                        border: 'none', // No border
+                        borderRadius: '4px', // Rounded corners
+                        padding: '8px 16px', // Padding for a more substantial look
+                        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+                        cursor: 'pointer', // Pointer cursor on hover
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+                    }}
+                    onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                    }}
                 >
                     {loading ? <Spin /> : 'Filter'}
                 </Button>
+
             </div>
         </div>
 

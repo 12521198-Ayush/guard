@@ -1,15 +1,16 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { Table, Input, Spin, Button, Breakpoint, Space, Select } from 'antd';
+import { Table, Input, Spin, Button, Breakpoint, Space, Select, message } from 'antd';
 import Swal from 'sweetalert2';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import HelperCard from '../../../../components/Helpers/HelperCard';
 import TaggedItems from '../../../../components/Helpers/TaggedItems';
 import TaggedItemsModal from '../../../../components/Helpers/TaggedItemsModal';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, SafetyOutlined, IdcardOutlined, HomeOutlined } from '@ant-design/icons';
 import HelperFilter from '@/components/Helpers/HelperFilter';
 import EditStaffModal from '@/components/Helpers/EditStaffModal';
+import NewPremiseTagHM from '@/components/Helpers/NewPremiseTagHM';
 
 interface Subpremise {
     subpremise_id: string;
@@ -46,14 +47,14 @@ const HelpersTab = () => {
 
     const handleNext = () => {
         if (hasNextPage) {
-            setHelpersData([]); 
+            setHelpersData([]);
             setCurrentPage((prevPage) => prevPage + 1);
         }
     };
     const handlePrevious = () => {
         if (currentPage > 1) {
             setHelpersData([]);
-            setCurrentPage((prevPage) => prevPage - 1); 
+            setCurrentPage((prevPage) => prevPage - 1);
         }
     };
 
@@ -61,7 +62,7 @@ const HelpersTab = () => {
         setLimit(value);
         setCurrentPage(1);
         setHelpersData([]);
-        fetchHelpers(1, value); 
+        fetchHelpers(1, value);
     };
 
     const subPremises = session?.user?.subpremiseArray || [];
@@ -121,7 +122,7 @@ const HelpersTab = () => {
             payload.sub_premise_id = id;
         } else if (type === 'premise_unit') {
             payload.premise_unit_id = id;
-            payload.qr_code = qr_code; 
+            payload.qr_code = qr_code;
         }
 
         try {
@@ -141,6 +142,7 @@ const HelpersTab = () => {
         } catch (error) {
             Swal.fire('Error', `Failed to untag ${type}.`, 'error');
         }
+        // setIsModalVisible(true); 
     };
 
     const showModal = (type: 'subpremise' | 'premise_unit', data: any[], qr_code?: string) => {
@@ -205,26 +207,29 @@ const HelpersTab = () => {
             key: 'documents',
             width: 200,
             render: (record: any) => {
-                const documentTypes = ['pv_url', 'id_proof_url', 'address_proof_url'];
+                const documentTypes = [
+                    { key: 'pv_url', label: 'Police Verification', icon: <SafetyOutlined /> },
+                    { key: 'id_proof_url', label: 'ID Proof', icon: <IdcardOutlined /> },
+                    { key: 'address_proof_url', label: 'Address Proof', icon: <HomeOutlined /> },
+                ];
 
                 const fetchSignedUrl = async (fileKey: string) => {
-                    // console.log(fileKey,premiseId);
-
-                    const response = await fetch('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            premise_id: premiseId,
-                            file_key: fileKey,
-                        }),
-                        headers: {
-                            Authorization: `Bearer ${session?.user?.accessToken}`,
-                            'Content-Type': 'application/json',
-                        },
-                    });
+                    const response = await fetch(
+                        'http://139.84.166.124:8060/staff-service/upload/get_presigned_url',
+                        {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                premise_id: premiseId,
+                                file_key: fileKey,
+                            }),
+                            headers: {
+                                Authorization: `Bearer ${session?.user?.accessToken}`,
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
 
                     const data = await response.json();
-                    console.log('API Response:', response.status, data);
-
                     return data?.data?.signedURL || null;
                 };
 
@@ -235,34 +240,35 @@ const HelpersTab = () => {
                     }
                 };
 
-                const allAreDashes = documentTypes.every((docType) => record[docType] === '-');
-
                 return (
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-row gap-4">
                         {documentTypes.map((docType) => {
-                            const fileKey = record[docType];
+                            const fileKey = record[docType.key];
                             const isClickable = fileKey && fileKey !== '-';
 
-                            const textColor = allAreDashes
-                                ? 'text-red'
-                                : isClickable
-                                    ? 'text-green-500'
-                                    : 'text-red';
+                            // Determine icon color based on file state
+                            const iconColor = isClickable
+                                ? 'text-green-500'
+                                : fileKey === '-'
+                                    ? 'text-red-500'
+                                    : 'text-blue-500';
 
                             return (
-                                <span
-                                    key={docType}
-                                    className={`${textColor} ${isClickable ? 'cursor-pointer' : ''}`}
+                                <div
+                                    key={docType.key}
+                                    className={`flex items-center ${isClickable ? 'cursor-pointer' : 'cursor-default'
+                                        }`}
                                     onClick={() => isClickable && handleClick(fileKey)}
                                 >
-                                    {docType.replace('_', ' ').toUpperCase()}
-                                </span>
+                                    <div className={`text-2xl ${iconColor}`}>{docType.icon}</div>
+                                </div>
                             );
                         })}
                     </div>
                 );
             },
         },
+
         {
             title: 'Action',
             key: 'action',
@@ -273,20 +279,82 @@ const HelpersTab = () => {
                     <Button icon={<EditOutlined />}
                         onClick={() => {
                             console.log("open");
-                            
-                            setSelectedCardNumber(record.card_no); 
-                            seteditIsModalVisible(true); 
+
+                            setSelectedCardNumber(record.card_no);
+                            seteditIsModalVisible(true);
                         }}
                     />
                     <Button
                         className="ml-2"
                         style={{ backgroundColor: 'red', color: 'white' }}
                         icon={<DeleteOutlined />}
+                        onClick={
+                            () => {
+                                DeleteHelper(record.card_no, record.sub_premise_id_array)
+                            }
+                        }
                     />
                 </div>
             ),
         },
     ];
+
+    const DeleteHelper = async (card: any, sub_premise_id_array: any) => {
+        const subpremiseArray = session?.user?.subpremiseArray;
+
+        const isMatch = sub_premise_id_array.every((id: string) =>
+            subpremiseArray.some(subpremise => subpremise.subpremise_id === id)
+        );
+
+        if (isMatch) {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you want to delete the helper?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#007bff', // Custom blue color for the confirm button
+                cancelButtonColor: '#d33', // Red color for cancel button
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'No, cancel!',
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await axios.post(
+                        'http://139.84.166.124:8060/staff-service/delete',
+                        {
+                            premise_id: premiseId,
+                            card_no: card
+                        },
+                        { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+                    );
+
+                    if (response.status === 201) {
+                        fetchHelpers(currentPage, limit);
+                        Swal.fire({
+                            title: 'Helper Deleted',
+                            text: 'The helper deleted successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#007bff',
+                        });
+                    } else {
+                        message.error('Failed to delete helper.');
+                    }
+                } catch (error) {
+                    console.error('Error delete helper:', error);
+                    message.error('An error occurred while deleting helper.');
+                }
+            }
+        }else{
+            Swal.fire({
+                title: 'Sorry!',
+                text: 'You cannot delete this Helper',
+                icon: 'warning',
+                confirmButtonColor: '#007bff',
+            });
+        }
+
+    }
 
     const fiterdata = () => {
         setCurrentPage(1);
@@ -295,6 +363,12 @@ const HelpersTab = () => {
         fetchHelpers(currentPage, limit);
     }
 
+    const [newPremiseModalVisible, setnewPremiseModalVisible] = useState(false);
+
+    const newPremiseTag = () => {
+        setIsModalVisible(false);
+        setnewPremiseModalVisible(true);
+    };
 
     return (
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -303,12 +377,12 @@ const HelpersTab = () => {
                     Manage Helpers
                 </h4>
             </div>
-            <div className="p-4 bg-white rounded-lg shadow-md">
+            <div className="p-4  bg-white ">
                 <div className="flex gap-4 items-center mb-4">
                     {/* Card Number Input */}
                     <Input
                         placeholder="Enter Card Number"
-                        value={cardNo?.toString() || ''}  
+                        value={cardNo?.toString() || ''}
                         onChange={(e) => {
                             const value = e.target.value;
                             setCardNo(value ? Number(value) : undefined);
@@ -319,7 +393,7 @@ const HelpersTab = () => {
                     {/* Sub-Premise Select */}
                     <Select
                         placeholder="Select Sub-Premise"
-                        onChange={(value) => setSubPremiseId(value || undefined)} 
+                        onChange={(value) => setSubPremiseId(value || undefined)}
                         className="flex-1"
                         loading={!subPremises.length}
                         allowClear
@@ -339,18 +413,43 @@ const HelpersTab = () => {
                         className="flex-1"
                     />
                     {/* Filter Button */}
-                    <Button
+                    {/* <Button
 
                         onClick={fiterdata}
                         disabled={loading}
                         className="w-auto"
                     >
                         {loading ? <Spin /> : 'Filter'}
+                    </Button> */}
+                    <Button
+                        onClick={fiterdata}
+                        disabled={loading}
+                        style={{
+                            marginBottom: '8px',
+                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
+                            color: 'white', // White text color
+                            border: 'none', // No border
+                            borderRadius: '3px', // Rounded corners
+                            padding: '8px 16px', // Padding for a more substantial look
+                            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+                            cursor: 'pointer', // Pointer cursor on hover
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+                        }}
+                        onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                        }}
+                    >
+                        Filter
                     </Button>
                 </div>
             </div>
 
-            <div style={{ padding: '20px' }}>
+            <div style={{ padding: '12px' }}>
 
                 <Table
                     columns={columns}
@@ -386,6 +485,17 @@ const HelpersTab = () => {
                 )}
             </div>
 
+            <NewPremiseTagHM
+                premise_id={premiseId}
+                modalData={modalData}
+                isModalVisible={newPremiseModalVisible}
+                setIsModalVisible={setnewPremiseModalVisible}
+                session={session}
+                fetchHelpers={fetchHelpers}
+                currentPage={currentPage}
+                limit={limit}
+            />
+
 
             {modalData && (
                 <TaggedItemsModal
@@ -396,6 +506,7 @@ const HelpersTab = () => {
                     onUntag={(id) =>
                         unTag(modalData.type, id, modalData.type === 'premise_unit' ? modalData.qr_code : undefined)
                     }
+                    onTag={newPremiseTag}
                 />
             )}
         </div>
