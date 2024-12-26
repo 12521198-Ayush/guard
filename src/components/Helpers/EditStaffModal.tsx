@@ -17,9 +17,12 @@ interface ModalProps {
   onClose: () => void;
   cardNumber: number;
   premiseId: string;
+  fetchHelpers: (currentPage: number, limit: number) => void;
+  currentPage: any;
+  limit: any;
 }
 
-const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, premiseId }) => {
+const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, premiseId, fetchHelpers, currentPage, limit }) => {
   const [form] = Form.useForm();
   const [staffDetails, setStaffDetails] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -79,11 +82,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
           premise_id: premiseId,
           card_no: cardNumber,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`, // Or use cookie headers
-          },
-        }
+        { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
       );
       const staffData = response.data.data[0];
       setStaffDetails(staffData);
@@ -111,19 +110,24 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
         axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
           premise_id: premiseId,
           file_key: staffData.picture_url,
-        }),
+        }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+        ),
         axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
           premise_id: premiseId,
           file_key: staffData.id_proof_url,
-        }),
+        },
+          { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+        ),
         axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
           premise_id: premiseId,
           file_key: staffData.address_proof_url,
-        }),
+        }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+        ),
         axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
           premise_id: premiseId,
           file_key: staffData.pv_url,
-        }),
+        }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+        ),
       ]);
 
       setFileUrls({
@@ -206,6 +210,8 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
   const onFinish = async (values: any) => {
     // Construct the payload
     const payload: any = {
+      premise_id: premiseId,
+      card_no: cardNumber,
       name: values.name,
       address: values.address,
       skill: values.skill,
@@ -217,7 +223,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
       ...(fileKeys.police_verification && { pv_obj: fileKeys.police_verification }),
     };
 
-    console.log(payload); // You can check the payload before sending the request
+    console.log(payload);
     // form.resetFields();
     // Show a confirmation dialog
     const result = await Swal.fire({
@@ -225,8 +231,8 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
       text: 'Do you want to update the helper details?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#007bff', // Custom blue color for the confirm button
-      cancelButtonColor: '#d33', // Red color for cancel button
+      confirmButtonColor: '#007bff',
+      cancelButtonColor: '#d33',
       confirmButtonText: 'Yes, update it!',
       cancelButtonText: 'No, cancel!',
     });
@@ -241,6 +247,8 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
         );
 
         if (response.status === 201) {
+          fetchHelpers(currentPage, limit);
+          onClose();
           // Show success message with SweetAlert2 on success
           Swal.fire({
             title: 'Helper Updated',

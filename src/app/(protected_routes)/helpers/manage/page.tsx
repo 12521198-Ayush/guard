@@ -278,7 +278,7 @@ const HelpersTab = () => {
                 <div className="flex flex-wrap gap-2">
                     <Button icon={<EditOutlined />}
                         onClick={() => {
-                            console.log("open");
+                            // console.log("open");
 
                             setSelectedCardNumber(record.card_no);
                             seteditIsModalVisible(true);
@@ -345,7 +345,7 @@ const HelpersTab = () => {
                     message.error('An error occurred while deleting helper.');
                 }
             }
-        }else{
+        } else {
             Swal.fire({
                 title: 'Sorry!',
                 text: 'You cannot delete this Helper',
@@ -464,6 +464,9 @@ const HelpersTab = () => {
                     onClose={() => seteditIsModalVisible(false)}
                     cardNumber={selectedCardNumber || 0}
                     premiseId={premiseId}
+                    fetchHelpers={fetchHelpers}
+                    currentPage={currentPage}
+                    limit={limit}
                 />
                 {helpersData.length > 1 && (
                     <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between' }}>
