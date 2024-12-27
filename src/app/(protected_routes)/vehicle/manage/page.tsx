@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Form, Tooltip, Input } from 'antd';
+import { Button, Table, Form, Tooltip, Input, Select, message } from 'antd';
 import axios from 'axios';
 import { DeleteOutlined, AppstoreAddOutlined, PlusOutlined, ProfileOutlined, SearchOutlined } from '@ant-design/icons';
 import Swal from 'sweetalert2';
@@ -14,6 +14,7 @@ import RfidCardsModal from '@/components/Modal/RfidCardsModal';
 import ExistingRfidCardsModal from '@/components/Modal/ExistingRfidCardsModal';
 import NewVehicleModal from '@/components/Vehicle_manage/NewVehicleModal';
 
+
 const { Search } = Input;
 
 
@@ -22,7 +23,7 @@ interface VehicleRecord {
     slot_id: string;
     parking_area: string;
     vno: string;
-    sub_premise_id:string;
+    sub_premise_id: string;
 }
 
 const VehicleTab = ({
@@ -34,12 +35,37 @@ const VehicleTab = ({
     const [premiseUnit, setPremiseUnit] = useState('');
     const [subpremise_id, setsubpremis_id] = useState('');
     const [vno, setvno] = useState('');
+    const [premiseUnitId, setpremiseUnitId] = useState<string[]>([]);
     const [ExistingRFIDsModal, setExistingRFIDsModal] = useState(false);
     const { data: session } = useSession();
     const accessToken = session?.user?.accessToken || undefined;
     const premise_Id: string | undefined = session?.user.primary_premise_id as string | undefined;
 
-    
+
+    useEffect(() => {
+        const fetchUnit_id = async () => {
+            try {
+                const response = await axios.post(
+                    'http://139.84.166.124:8060/user-service/admin/premise_unit/list',
+                    {
+                        premise_id: premise_Id,
+                    },
+                    { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+                );
+
+                const fetchedUnits = response.data?.data?.map((item: any) => item.id) || [];
+                setpremiseUnitId(fetchedUnits);
+            } catch (error) {
+                message.error('Failed to fetch premiseUnitId.');
+                console.error(error);
+            }
+        };
+
+        if (session?.user.accessToken) {
+            fetchUnit_id();
+        }
+    }, [session?.user.accessToken]);
+
     const fetchVehicleData = async () => {
         setLoading(true);
 
@@ -48,6 +74,8 @@ const VehicleTab = ({
             ...(premiseUnit && { premise_unit_id: premiseUnit }),
             ...(vno && { vno: vno }),
         };
+
+        // console.log(requestBody)
 
         // Check if we have at least premiseId or vno to proceed  
         if (!premiseUnit && !vno) {
@@ -128,12 +156,12 @@ const VehicleTab = ({
         });
     };
 
-    const AssignRfidModal = (value:any)=>{
+    const AssignRfidModal = (value: any) => {
         setsubpremis_id(value);
         setAssignRFIDModal(true);
     }
 
-    const existRfidCardsModal = (value:any)=>{
+    const existRfidCardsModal = (value: any) => {
         setsubpremis_id(value);
         setExistingRFIDsModal(true);
     }
@@ -225,12 +253,31 @@ const VehicleTab = ({
 
             <div className="p-4 bg-white ">
                 <div className="flex gap-4 items-center ">
-                    <Input
+                    <Select
+                        placeholder="Select a Premise Unit"
+                        style={{ width: '200px' }}
+                        onChange={setPremiseUnit}
+                        value={premiseUnit || undefined} // Using undefined keeps the placeholder  
+                        disabled={premiseUnitId.length === 0}
+                    >
+                        <Select.Option value="" disabled>
+                            Select a Premise Unit
+                        </Select.Option>
+                        {premiseUnitId.length > 0 ? (
+                            premiseUnitId.map((unit) => (
+                                <Select.Option key={unit} value={unit}>
+                                    {unit}
+                                </Select.Option>
+                            ))
+                        ) : null}
+                    </Select>
+                    {/* <Input
                         value={premiseUnit}
                         onChange={(e) => setPremiseUnit(e.target.value)}
                         placeholder="Premise Unit ID"
                         className="w-50"
-                    /><Input
+                    /> */}
+                    <Input
                         value={vno}
                         onChange={(e) => setvno(e.target.value)}
                         placeholder="Vehicle Number"
@@ -285,7 +332,7 @@ const VehicleTab = ({
                     >
                         Add new
                     </Button>
-                    <NewVehicleModal    
+                    <NewVehicleModal
                         open={isNewModalVisible}
                         onClose={() => setIsNewModalVisible(false)}
                         refetchVehicleData={fetchVehicleData}
