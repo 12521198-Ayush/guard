@@ -159,6 +159,7 @@ const ExistingRfidCardsModal: React.FC<ExistingRfidCardsModalProps> = ({
                 pagination={false}
                 rowKey={(record: any) => record.seq}
                 bordered
+                scroll={{ x: 'max-content' }}
             />
             {!loading && assignedTags.length === 0 && (
                 <div style={{ textAlign: 'center', marginTop: 20 }}>

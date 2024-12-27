@@ -146,7 +146,12 @@ const VehicleTab = ({
                             },
                         }
                     );
-                    Swal.fire('Deleted!', `Vehicle ${record.vno} has been removed.`, 'success');
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: `Vehicle ${record.vno} has been removed.`,
+                        icon: 'success',
+                        confirmButtonColor: '#007bff',
+                    });
                     setVehicleData(vehicleData.filter((vehicle) => vehicle.vno !== record.vno));
                 } catch (error) {
                     console.error('Error removing vehicle:', error);
@@ -251,95 +256,83 @@ const VehicleTab = ({
                 </h4>
             </div>
 
-            <div className="p-4 bg-white ">
-                <div className="flex gap-4 items-center ">
-                    <Select
-                        placeholder="Select a Premise Unit"
-                        style={{ width: '200px' }}
-                        onChange={setPremiseUnit}
-                        value={premiseUnit || undefined} // Using undefined keeps the placeholder  
-                        disabled={premiseUnitId.length === 0}
-                    >
-                        <Select.Option value="" disabled>
-                            Select a Premise Unit
-                        </Select.Option>
-                        {premiseUnitId.length > 0 ? (
-                            premiseUnitId.map((unit) => (
+            <div className="p-4 bg-white mb-2">
+                <div className="flex flex-col gap-4 md:flex-row md:items-end">
+                    {/* Premise Unit Selector */}
+                    <div className="flex flex-col gap-2 w-full md:max-w-xs">
+                        <Select
+                            placeholder="Select a Premise Unit"
+                            className="w-full"
+                            onChange={setPremiseUnit}
+                            value={premiseUnit || undefined}
+                            disabled={premiseUnitId.length === 0}
+                        >
+
+                            <Select.Option value="" disabled>
+                                Select a Premise Unit
+                            </Select.Option>
+                            {premiseUnitId.map((unit) => (
                                 <Select.Option key={unit} value={unit}>
                                     {unit}
                                 </Select.Option>
-                            ))
-                        ) : null}
-                    </Select>
-                    {/* <Input
-                        value={premiseUnit}
-                        onChange={(e) => setPremiseUnit(e.target.value)}
-                        placeholder="Premise Unit ID"
-                        className="w-50"
-                    /> */}
-                    <Input
-                        value={vno}
-                        onChange={(e) => setvno(e.target.value)}
-                        placeholder="Vehicle Number"
-                        className="w-50"
-                    />
+                            ))}
+                        </Select>
+                    </div>
+
+                    {/* Vehicle Number Input */}
+                    <div className="flex flex-col gap-2 w-full md:max-w-xs">
+                        <Input
+                            value={vno}
+                            onChange={(e) => setvno(e.target.value)}
+                            placeholder="Vehicle Number"
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* Search Button */}
                     <Button
-                        onClick={() => { fetchVehicleData() }}
+                        onClick={fetchVehicleData}
+                        className="w-full md:w-auto"
                         style={{
-                            marginBottom: '8px',
-                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
-                            color: 'white', // White text color
-                            border: 'none', // No border
-                            borderRadius: '4px', // Rounded corners
-                            padding: '8px 16px', // Padding for a more substantial look
-                            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-                            cursor: 'pointer', // Pointer cursor on hover
-                            transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
-                        }}
-                        onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '5px 12px',
+                            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer',
                         }}
                     >
                         Search
                     </Button>
-                    <Button
-                        className='ml-auto'
-                        style={{
-                            marginBottom: '8px',
-                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
-                            color: 'white', // White text color
-                            border: 'none', // No border
-                            borderRadius: '4px', // Rounded corners
-                            padding: '8px 16px', // Padding for a more substantial look
-                            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-                            cursor: 'pointer', // Pointer cursor on hover
-                            transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
-                        }}
-                        onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-                        }}
-                        onClick={() => handlenew()}
-                    >
-                        Add new
-                    </Button>
-                    <NewVehicleModal
-                        open={isNewModalVisible}
-                        onClose={() => setIsNewModalVisible(false)}
-                        refetchVehicleData={fetchVehicleData}
-                    />
 
+                    {/* Add New Button */}
+                    <Button
+                        className="ml-auto w-full md:w-auto"
+                        onClick={handlenew}
+                        style={{
+                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '5px 12px',
+                            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        Add New
+                    </Button>
                 </div>
+
+                {/* New Vehicle Modal */}
+                <NewVehicleModal
+                    open={isNewModalVisible}
+                    onClose={() => setIsNewModalVisible(false)}
+                    refetchVehicleData={fetchVehicleData}
+                />
             </div>
+
+
             {/* <h4>Vehicle Management</h4> */}
             <div className='pl-4 pr-4 '>
 
@@ -348,6 +341,7 @@ const VehicleTab = ({
                     dataSource={vehicleData}
                     rowKey="vno"
                     pagination={false}
+                    bordered
                     scroll={{ x: 'max-content' }}
                 />
                 {selectedVehicle && (

@@ -13,7 +13,7 @@ import EditStaffModal from '@/components/Helpers/EditStaffModal';
 import NewPremiseTagHM from '@/components/Helpers/NewPremiseTagHM';
 
 interface Subpremise {
-    subpremise_id: string;
+    sub_premise_id: string;
     subpremise_name: string;
 }
 
@@ -180,7 +180,7 @@ const HelpersTab = () => {
                     onShowSubPremises={() => {
                         const subpremiseData = record.sub_premise_id_array.map((id: string) => {
                             const subpremise: Subpremise | undefined = session?.user?.subpremiseArray.find(
-                                (sub) => sub.subpremise_id === id
+                                (sub) => sub.sub_premise_id === id
                             );
 
                             return {
@@ -303,7 +303,7 @@ const HelpersTab = () => {
         const subpremiseArray = session?.user?.subpremiseArray;
 
         const isMatch = sub_premise_id_array.every((id: string) =>
-            subpremiseArray.some(subpremise => subpremise.subpremise_id === id)
+            subpremiseArray.some(subpremise => subpremise.sub_premise_id === id)
         );
 
         if (isMatch) {
@@ -377,8 +377,8 @@ const HelpersTab = () => {
                     Manage Helpers
                 </h4>
             </div>
-            <div className="p-4  bg-white ">
-                <div className="flex gap-4 items-center mb-4">
+            <div className="p-4 bg-white">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center mb-4">
                     {/* Card Number Input */}
                     <Input
                         placeholder="Enter Card Number"
@@ -387,43 +387,38 @@ const HelpersTab = () => {
                             const value = e.target.value;
                             setCardNo(value ? Number(value) : undefined);
                         }}
-                        className="flex-1"
+                        className="w-full md:flex-1"
                     />
 
                     {/* Sub-Premise Select */}
                     <Select
                         placeholder="Select Sub-Premise"
                         onChange={(value) => setSubPremiseId(value || undefined)}
-                        className="flex-1"
+                        className="w-full md:flex-1"
                         loading={!subPremises.length}
                         allowClear
                     >
                         <Option value="">None</Option>
                         {subPremises.map((subPremise) => (
-                            <Option key={subPremise.subpremise_id} value={subPremise.subpremise_id}>
+                            <Option key={subPremise.sub_premise_id} value={subPremise.sub_premise_id}>
                                 {subPremise.subpremise_name}
                             </Option>
                         ))}
                     </Select>
+
                     {/* Premise Unit ID Input */}
                     <Input
                         placeholder="Enter Premise Unit ID"
                         value={premiseUnitId}
                         onChange={(e) => setPremiseUnitId(e.target.value)}
-                        className="flex-1"
+                        className="w-full md:flex-1"
                     />
-                    {/* Filter Button */}
-                    {/* <Button
 
-                        onClick={fiterdata}
-                        disabled={loading}
-                        className="w-auto"
-                    >
-                        {loading ? <Spin /> : 'Filter'}
-                    </Button> */}
+                    {/* Filter Button */}
                     <Button
                         onClick={fiterdata}
                         disabled={loading}
+                        className="w-full md:w-auto"
                         style={{
                             marginBottom: '8px',
                             background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
@@ -444,10 +439,11 @@ const HelpersTab = () => {
                             (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
                         }}
                     >
-                        Filter
+                        {loading ? <Spin /> : 'Filter'}
                     </Button>
                 </div>
             </div>
+
 
             <div style={{ padding: '12px' }}>
 
@@ -458,6 +454,7 @@ const HelpersTab = () => {
                     pagination={false}
                     scroll={{ x: 900 }}
                     className="w-full"
+                    bordered
                 />
                 <EditStaffModal
                     visible={iseditModalVisible}
