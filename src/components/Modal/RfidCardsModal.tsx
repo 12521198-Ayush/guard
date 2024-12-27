@@ -15,7 +15,7 @@ interface Rfid {
 interface RfidCardsModalProps {
     open: boolean;
     onClose: () => void;
-    premiseId: string;
+    premiseId: any;
     subPremiseId: string;
     vno: string;
 }

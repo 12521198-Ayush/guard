@@ -26,16 +26,21 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
   const [form] = Form.useForm();
   const [staffDetails, setStaffDetails] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [fetchingFiles, setFetchingFiles] = useState(false);
+  const { data: session } = useSession();
+  const [skills, setSkills] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState({
+    profile_pic: null,
+    id_proof: null,
+    address_proof: null,
+    police_verification: null,
+  });
   const [fileUrls, setFileUrls] = useState({
     pictureUrl: '',
     idProofUrl: '',
     addressProofUrl: '',
     pvUrl: '',
   });
-  const [fetchingFiles, setFetchingFiles] = useState(false);
-
-  const { data: session } = useSession();
-  const [skills, setSkills] = useState<string[]>([]);
   const [fileKeys, setFileKeys] = useState({
     profile_pic: '',
     id_proof: '',
@@ -107,27 +112,29 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
     setFetchingFiles(true);
     try {
       const fileResponses = await Promise.all([
-        axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
-          premise_id: premiseId,
-          file_key: staffData.picture_url,
-        }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
-        ),
-        axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
-          premise_id: premiseId,
-          file_key: staffData.id_proof_url,
-        },
-          { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
-        ),
-        axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
-          premise_id: premiseId,
-          file_key: staffData.address_proof_url,
-        }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
-        ),
-        axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
-          premise_id: premiseId,
-          file_key: staffData.pv_url,
-        }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
-        ),
+        staffData.picture_url && staffData.picture_url !== "-" && staffData.picture_url !== "" ?
+          axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
+            premise_id: premiseId,
+            file_key: staffData.picture_url,
+          }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }) : Promise.resolve({ data: { data: { signedURL: "-" } } }),
+
+        staffData.id_proof_url ?
+          axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
+            premise_id: premiseId,
+            file_key: staffData.id_proof_url,
+          }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }) : Promise.resolve({ data: { data: { signedURL: "-" } } }),
+
+        staffData.address_proof_url ?
+          axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
+            premise_id: premiseId,
+            file_key: staffData.address_proof_url,
+          }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }) : Promise.resolve({ data: { data: { signedURL: "-" } } }),
+
+        staffData.pv_url ?
+          axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
+            premise_id: premiseId,
+            file_key: staffData.pv_url,
+          }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }) : Promise.resolve({ data: { data: { signedURL: "-" } } }),
       ]);
 
       setFileUrls({
@@ -142,13 +149,6 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
       setFetchingFiles(false);
     }
   };
-  const [uploadedFiles, setUploadedFiles] = useState({
-    profile_pic: false,
-    id_proof: false,
-    address_proof: false,
-    police_verification: false,
-  });
-
 
   const handleUploadChange = (info: any, key: any) => {
     if (info.file.status === 'done') {
@@ -191,7 +191,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
         }
 
         // Log current fileKeys for debugging
-        // console.log('Before update:', fileKeys);
+        console.log('Before update:', fileKeys);
 
         setFileKeys((prev) => {
           const updatedKeys = { ...prev, [type]: fileKey };
@@ -275,6 +275,16 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
     });
     onClose();
   }
+
+  const resetFiles = () => {
+    setUploadedFiles({
+      profile_pic: null,
+      id_proof: null,
+      address_proof: null,
+      police_verification: null,
+    });
+    message.success("All files have been reset.");
+  };
 
 
   return (
@@ -396,9 +406,11 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item label="Profile Picture">
-                <a href={fileUrls.pictureUrl} target="_blank" rel="noopener noreferrer">
-                  {fetchingFiles ? <Spin /> : 'View Picture'}
-                </a>
+                {fileUrls.pictureUrl && fileUrls.pictureUrl !== "-" ? (
+                  <a href={fileUrls.pictureUrl} target="_blank" rel="noopener noreferrer">
+                    {fetchingFiles ? <Spin /> : 'View Picture'}
+                  </a>
+                ) : null}
                 <Dragger
                   accept=".jpg,.jpeg,.png"
                   beforeUpload={(file) => {
@@ -423,9 +435,11 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
             </Col>
             <Col span={12}>
               <Form.Item label="ID Proof">
-                <a href={fileUrls.idProofUrl} target="_blank" rel="noopener noreferrer">
-                  {fetchingFiles ? <Spin /> : 'View ID Proof'}
-                </a>
+                {fileUrls.pictureUrl && fileUrls.pictureUrl !== "-" ? (
+                  <a href={fileUrls.pictureUrl} target="_blank" rel="noopener noreferrer">
+                    {fetchingFiles ? <Spin /> : 'View Picture'}
+                  </a>
+                ) : null}
                 <Dragger
                   accept=".jpg,.jpeg,.png,.pdf"
                   beforeUpload={(file) => {
@@ -438,7 +452,6 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
                   }}
 
                   onChange={(info) => handleUploadChange(info, 'id_proof')}
-                  showUploadList={{ showRemoveIcon: true }}
                   maxCount={1}
                 >
                   <p className="ant-upload-drag-icon">
@@ -451,9 +464,11 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
             </Col>
             <Col span={12}>
               <Form.Item label="Address Proof">
-                <a href={fileUrls.addressProofUrl} target="_blank" rel="noopener noreferrer">
-                  {fetchingFiles ? <Spin /> : 'View Address Proof'}
-                </a>
+                {fileUrls.pictureUrl && fileUrls.pictureUrl !== "-" ? (
+                  <a href={fileUrls.pictureUrl} target="_blank" rel="noopener noreferrer">
+                    {fetchingFiles ? <Spin /> : 'View Picture'}
+                  </a>
+                ) : null}
                 <Dragger
                   accept=".jpg,.jpeg,.png,.pdf"
                   beforeUpload={(file) => {
@@ -480,9 +495,11 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
             </Col>
             <Col span={12}>
               <Form.Item label="Police Verification">
-                <a href={fileUrls.pvUrl} target="_blank" rel="noopener noreferrer">
-                  {fetchingFiles ? <Spin /> : 'View Police Verification'}
-                </a>
+                {fileUrls.pictureUrl && fileUrls.pictureUrl !== "-" ? (
+                  <a href={fileUrls.pictureUrl} target="_blank" rel="noopener noreferrer">
+                    {fetchingFiles ? <Spin /> : 'View Picture'}
+                  </a>
+                ) : null}
                 <Dragger
                   accept=".jpg,.jpeg,.png,.pdf"
                   beforeUpload={(file) => {
@@ -496,7 +513,6 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
                   }}
                   maxCount={1}
                   onChange={(info) => handleUploadChange(info, 'police_verification')}
-                  showUploadList={{ showRemoveIcon: true }}
                 // multiple={false}
                 >
                   <p className="ant-upload-drag-icon">
@@ -513,6 +529,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
         <Spin />
       )}
     </Modal>
+
   );
 };
 

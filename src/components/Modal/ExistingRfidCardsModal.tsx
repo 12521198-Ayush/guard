@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 interface ExistingRfidCardsModalProps {
     open: boolean;
     onClose: () => void;
-    premiseId: string;
+    premiseId: any;
     subPremiseId: string;
     vno: string;
 }

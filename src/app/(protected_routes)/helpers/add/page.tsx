@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 const { Dragger } = Upload;
 
 type SubPremise = {
-  subpremise_id: string;
+  sub_premise_id: string;
   subpremise_name: string;
 };
 
@@ -79,7 +79,7 @@ const HelperCreationForm = () => {
   const subPremiseArray: SubPremise[] = (session?.user.subpremiseArray || []).map((sub) => {
     if (typeof sub === 'string') {
       return {
-        subpremise_id: sub,
+        sub_premise_id: sub,
         subpremise_name: sub,
       };
     }
@@ -209,7 +209,7 @@ const HelperCreationForm = () => {
             >
               <Select mode="multiple" placeholder="Select Sub-Premises">
                 {subPremiseArray.map((sub) => (
-                  <Select.Option key={sub.subpremise_id} value={sub.subpremise_id}>
+                  <Select.Option key={sub.sub_premise_id} value={sub.sub_premise_id}>
                     {sub.subpremise_name}
                   </Select.Option>
                 ))}

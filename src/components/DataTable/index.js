@@ -134,7 +134,7 @@ const DataTable = () => {
 
     const findSubpremiseName = (premise_id) => {
         for (let i = 0; i < session.user.subpremiseArray.length; i++) {
-            if (session.user.subpremiseArray[i].subpremise_id === premise_id) {
+            if (session.user.subpremiseArray[i].sub_premise_id === premise_id) {
                 return session.user.subpremiseArray[i].subpremise_name;
             }
         }
