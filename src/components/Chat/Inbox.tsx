@@ -1,8 +1,27 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Chat } from "@/types/chat";
+import { Button } from "antd";
 
 const chatData: Chat[] = [
+  {
+    avatar: "/images/user/user-04.png",
+    name: "Jhon Doe",
+    text: "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repudiandae, temporibus.",
+    body: "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sint, dolores incidunt veritatis consequuntur iusto impedit, ipsam facilis aliquam expedita temporibus quod, quas esse eius ad. Labore nihil necessitatibus fuga impedit unde esse, nisi molestias ex? Ad porro sequi saepe ab!",
+    time: 32,
+    textCount: 0,
+    dot: 3,
+  },
+  {
+    avatar: "/images/user/user-05.png",
+    name: "Jane Doe",
+    text: "Great",
+    body: "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sint, dolores incidunt veritatis consequuntur iusto impedit, ipsam facilis aliquam expedita temporibus quod, quas esse eius ad. Labore nihil necessitatibus fuga impedit unde esse, nisi molestias ex? Ad porro sequi saepe ab!",
+    time: 32,
+    textCount: 2,
+    dot: 6,
+  },
   {
     avatar: "/images/user/user-01.png",
     name: "Devid Heilo",
@@ -63,10 +82,30 @@ const chatData: Chat[] = [
 
 const Inbox = () => {
   return (
-    <div className="col-span-12 rounded-sm border border-stroke bg-white py-6 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
-      <h4 className="mb-6 px-7.5 text-xl font-semibold text-black dark:text-white">
-        Inbox
-      </h4>
+    <div className="col-span-12 rounded-sm border-none border-stroke bg-white py-2 xl:col-span-4">
+      <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+        <div className="flex justify-between items-center">
+          <h4 className="font-medium text-xl text-black dark:text-white">
+            Emails
+          </h4>
+          <Button
+            href='/emails/compose'
+            style={{
+              background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Red gradient for Cancel
+              color: 'white',
+              marginLeft: '8px',
+              border: 'none',
+              marginRight: '4px',
+              borderRadius: '4px',
+              padding: '5px 12px',
+              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+              cursor: 'pointer',
+            }}
+          >
+            Send Mail
+          </Button>
+        </div>
+      </div>
 
       <div>
         {chatData.map((chat, key) => (
@@ -80,7 +119,7 @@ const Inbox = () => {
                 time: chat.time,
               },
             }}
-            className="flex items-center gap-5 px-7.5 py-3 hover:bg-gray-3 dark:hover:bg-meta-4"
+            className="flex items-center gap-5 px-7.5 py-3 hover:bg-gray-3 dark:hover:bg-meta-8"
             key={key}
           >
             <div className="relative h-14 w-14 rounded-full">
@@ -95,9 +134,8 @@ const Inbox = () => {
                 }}
               />
               <span
-                className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${
-                  chat.dot === 6 ? "bg-meta-6" : `bg-meta-${chat.dot}`
-                } `}
+                className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${chat.dot === 6 ? "bg-meta-6" : `bg-meta-${chat.dot}`
+                  } `}
               ></span>
             </div>
 

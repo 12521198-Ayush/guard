@@ -14,7 +14,7 @@ const ChatDetail = () => {
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white py-6 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
       <div className="p-6">
-        {/* Back Button */}
+        {/* Back Button */} 
         <button 
           onClick={() => router.back()} 
           className="mb-4 text-blue-500 flex items-center gap-2"
