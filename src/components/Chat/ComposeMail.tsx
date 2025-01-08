@@ -7,23 +7,6 @@ import 'react-quill/dist/quill.snow.css';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
-const toolbarOptions: any = [
-    ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-    ['blockquote', 'code-block'],
-    ['link', 'image', 'video', 'formula'],
-
-    [{ 'header': 1 }, { 'header': 2 }],               // custom button values
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
-    [{ 'script': 'sub' }, { 'script': 'super' }],      // superscript/subscript
-    [{ 'indent': '-1' }, { 'indent': '+1' }],          // outdent/indent
-    [{ 'direction': 'rtl' }],                         // text direction
-
-    [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-
-    ['clean']                                         // remove formatting button
-];
-
 const predefinedTemplates = [
     {
         label: 'Welcome Email',
@@ -175,20 +158,25 @@ const ComposeMail: React.FC = () => {
                 </Form.Item>
                 <br />
                 <br />
-                <Form.Item>
+                <Form.Item
+                    label="Upload Attachments"
+                    name="upload"
+                >
                     <Upload.Dragger
                         listType="picture"
                         showUploadList={{ showRemoveIcon: true }}
                         accept=".png,.jpeg"
+                        maxCount={5}
                     >
                         <img
                             width="100"
                             height="100"
                             className="mx-auto"
-                            src="https://img.icons8.com/plasticine/100/upload-to-cloud--v1.png"
+                            src="https://img.icons8.com/?size=100&id=11550&format=png&color=000000"
                             alt="upload-to-cloud--v1"
                         />
-                        Click or drag file to this area to upload
+                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                        <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
                     </Upload.Dragger>
                 </Form.Item>
 

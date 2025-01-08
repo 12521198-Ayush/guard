@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Button, Select, Upload, Row, Col, DatePicker } from 'antd';
+import { Modal, Form, Input, Button, Select, Upload, Row, Col, DatePicker, message } from 'antd';
 import { UploadOutlined, StarOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import type { UploadProps } from 'antd';
 import GradientButton from '../Buttons/GradientButton';
+import { recordTraceEvents } from 'next/dist/trace';
 
 
 const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association_type }: any) => {
@@ -18,6 +19,9 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
     const [existingDocuments, setExistingDocuments] = useState<any[]>([]);
     const [supportingDocuments, setSupportingDocuments] = useState<any[]>([]);
     const [selectedDocType, setSelectedDocType] = useState<string>('');
+    const accessToken = session?.user?.accessToken || undefined;
+    const premiseId = session?.user?.primary_premise_id || '';
+    const [uploadedFile, setUploadedFile] = useState(null);
 
     useEffect(() => {
         if (open) {
@@ -26,8 +30,6 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
     }, [open]);
 
     const fetchGuardiansData = async () => {
-        const accessToken = session?.user?.accessToken || undefined;
-        const premiseId = session?.user?.primary_premise_id || '';
 
         const payload = {
             premise_id: premiseId,
@@ -49,19 +51,11 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                 setGuardianData(selectedGuardian);
                 form.setFieldsValue(selectedGuardian);
                 setSupportingDocuments(selectedGuardian.supporting_documents || []);
-
-                const combinedDocuments = selectedGuardian.supporting_documents.map((doc: any, index: number) => ({
-                    uid: `${index}`,
-                    name: doc.type,
-                    status: 'done',
-                    url: doc.url,
-                }));
-                setExistingDocuments(combinedDocuments);
                 setIsEditMode(false);
                 setIsNewRecord(false);
             } else {
                 form.resetFields();
-                setSupportingDocuments([]);
+                // setSupportingDocuments([]);
                 setIsEditMode(true);
                 setIsNewRecord(true);
             }
@@ -80,6 +74,54 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
 
     const handleEditToggle = () => {
         setIsEditMode((prevMode) => !prevMode);
+    };
+
+    const handleFileUpload = (file: any) => {
+        const reader = new FileReader();
+        setUploadedFile(file);
+        reader.onload = async () => {
+
+            try {
+                const base64Data = (reader.result as string).split(',')[1];
+                const payload = {
+                    premise_id: premiseId,
+                    filetype: file.type,
+                    file_extension: file.name.split('.').pop(),
+                    base64_data: base64Data,
+                }
+                console.log(payload);
+
+                const response = await axios.post(
+                    'http://139.84.166.124:8060/staff-service/upload/async',
+                    {
+                        premise_id: premiseId,
+                        filetype: file.type,
+                        file_extension: file.name.split('.').pop(),
+                        base64_data: base64Data,
+                    },
+                    { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+                );
+
+                const fileKey = response.data?.data?.filekey;
+                if (!fileKey) {
+                    throw new Error('File key is missing in the response.');
+                }
+                setExistingDocuments([{
+                    type: selectedDocType,
+                    url: fileKey
+                }])
+
+                console.log('document array', existingDocuments);
+
+
+
+                // message.success(`${type.replace('_', ' ')} uploaded successfully.`);
+            } catch (error) {
+                message.error(`Failed to upload.`);
+                console.error(error);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleFinish = async (values: any) => {
@@ -110,7 +152,7 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
             sub_premise_id: sub_premise_id,
             association_type: asso,
             ...values,
-            supporting_documents: existingDocuments,
+            ...(existingDocuments.length > 0 && { supporting_documents: existingDocuments }),
         };
 
         console.log(payload)
@@ -133,6 +175,8 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                 },
             });
             setIsEditMode(false);
+            setUploadedFile(null);
+            setExistingDocuments([]);
             onClose();
         } catch (error) {
             console.error('Error saving guardian data:', error);
@@ -149,12 +193,12 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
     const handleUploadChange: UploadProps['onChange'] = (info) => {
         if (info.file.status === 'done') {
             const newDocument = {
-                uid: `${existingDocuments.length + 1}`,
+                // uid: `${existingDocuments.length + 1}`,
                 name: info.file.name,
                 status: 'done',
                 url: info.file.response.url,
             };
-            setExistingDocuments((prevDocs) => [...prevDocs, newDocument]);
+            // setExistingDocuments((prevDocs) => [...prevDocs, newDocument]);
         }
     };
 
@@ -170,11 +214,17 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
         },
     };
 
+    const closeModal = () => {
+        setExistingDocuments([]);
+        setUploadedFile(null);
+        onClose();
+    }
+
     return (
         <Modal
             title={isNewRecord ? "Create Guardian" : "Edit Guardian"}
             open={open}
-            onCancel={onClose}
+            onCancel={closeModal}
             footer={null}
             width={900}
             style={{ top: 20, padding: '24px', fontFamily: 'Arial, sans-serif', fontSize: '14px' }}
@@ -289,6 +339,7 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                         <Form.Item
                             label="Document Type"
                             name="document_type"
+                            rules={[{ required: true }]}
                         //rules={[{ required: true, message: 'Please select document type!' }]}
                         >
                             <Select
@@ -302,15 +353,49 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                     </Col>
                 </Row>
 
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item label="Supporting Documents">
-                            <Upload {...uploadProps}>
-                                <Button icon={<UploadOutlined />}>Upload Document</Button>
-                            </Upload>
-                        </Form.Item>
-                    </Col>
-                </Row>
+                <Form.Item
+                    label="Upload Document"
+                    name="upload"
+                    rules={[
+                        { required: true, message: "Please upload file!" },
+                        () => ({
+                            validator(_, value) {
+                                if (uploadedFile) {
+                                    return Promise.resolve();
+                                }
+                                return Promise.reject(new Error(""));
+                            },
+                        }),
+                    ]}
+                >
+
+                    <Upload.Dragger
+                        listType="picture"
+                        disabled={!isEditMode}
+                        showUploadList={{ showRemoveIcon: true }}
+                        accept=".png,.jpeg"
+                        maxCount={1}
+                        beforeUpload={(file) => {
+                            const isImage = file.type.startsWith("image/");
+                            if (!isImage) {
+                                message.error("You can only upload image files!");
+                            }
+                            return isImage ? handleFileUpload(file) : false;
+                        }}
+                        fileList={uploadedFile ? [uploadedFile] : []}
+                        onRemove={() => setUploadedFile(null)}
+                    >
+                        <img
+                            width="100"
+                            height="100"
+                            className="mx-auto"
+                            src="https://img.icons8.com/plasticine/100/upload-to-cloud--v1.png"
+                            alt="upload-to-cloud--v1"
+                        />
+                        Click or drag file to this area to upload
+                    </Upload.Dragger>
+                </Form.Item>
+
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
                     <div
@@ -409,7 +494,7 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                 </div> */}
 
 
-                {existingDocuments.length > 0 && (
+                {/* {existingDocuments.length > 0 && (
                     <div>
                         <h4>Uploaded Documents:</h4>
                         <ul>
@@ -420,7 +505,7 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                             ))}
                         </ul>
                     </div>
-                )}
+                )} */}
             </Form>
         </Modal>
     );

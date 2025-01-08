@@ -307,6 +307,7 @@ const ResidentTab = ({
                 scroll={{ x: 900 }}
                 rowKey="_id"
                 pagination={false}
+                bordered
             />
 
 

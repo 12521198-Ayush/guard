@@ -4,440 +4,482 @@ import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, Select, Row, Col, message, Upload } from 'antd';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
+
 const { Dragger } = Upload;
 
 type SubPremise = {
-  sub_premise_id: string;
-  subpremise_name: string;
+    sub_premise_id: string;
+    subpremise_name: string;
 };
 
 const HelperCreationForm = () => {
 
+    const [loading, setLoading] = useState(false);
+    const { data: session } = useSession();
+    const [skills, setSkills] = useState<string[]>([]);
+    const premiseId = session?.user.primary_premise_id;
 
-  const { data: session } = useSession();
-  const [skills, setSkills] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [fileKeys, setFileKeys] = useState({
-    profile_pic: '',
-    id_proof: '',
-    address_proof: '',
-    police_verification: '',
-  });
-  const user = session?.user || {};
-  const premiseId = session?.user.primary_premise_id;
-  const [form] = Form.useForm();
+    const [uploadedProfile, setUploadedProfile] = useState(null);
+    const [uploadedID, setUploadedID] = useState(null);
+    const [uploadedAddress, setUploadedAddress] = useState(null);
+    const [uploadedPV, setUploadedPV] = useState(null);
 
-  const handleFileUpload = async (file: File, type: keyof typeof fileKeys) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
+    const [ProfilefileKey, setProfileFileKey] = useState('');
+    const [IDfileKey, setIdFileKey] = useState('');
+    const [AddressfileKey, setAddressFileKey] = useState('');
+    const [PVfileKey, setPVFileKey] = useState('');
 
-      try {
-        const base64Data = (reader.result as string).split(',')[1];
-        const payload = {
-          premise_id: premiseId,
-          filetype: file.type,
-          file_extension: file.name.split('.').pop(),
-          base64_data: base64Data,
-        }
-        // console.log(payload);
+    const [form] = Form.useForm();
 
-        const response = await axios.post(
-          'http://139.84.166.124:8060/staff-service/upload/async',
-          {
-            premise_id: premiseId,
-            filetype: file.type,
-            file_extension: file.name.split('.').pop(),
-            base64_data: base64Data,
-          },
-          { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
-        );
+    const handleFileUpload = (file: any, type: any) => {
+        const reader = new FileReader();
 
-        const fileKey = response.data?.data?.filekey;
-        if (!fileKey) {
-          throw new Error('File key is missing in the response.');
+        if (type === 'profile') {
+            setUploadedProfile(file);
+        } else if (type === 'id') {
+            setUploadedID(file);
+        } else if (type === 'Address') {
+            setUploadedAddress(file);
+        } else if (type === 'PV') {
+            setUploadedPV(file);
         }
 
-        // Log current fileKeys for debugging
-        // console.log('Before update:', fileKeys);
+        reader.onload = async () => {
 
-        setFileKeys((prev) => {
-          const updatedKeys = { ...prev, [type]: fileKey };
-          console.log('After update:', updatedKeys); // Log updated keys
-          return updatedKeys;
-        });
+            try {
+                const base64Data = (reader.result as string).split(',')[1];
+                const payload = {
+                    premise_id: premiseId,
+                    filetype: file.type,
+                    file_extension: file.name.split('.').pop(),
+                    base64_data: base64Data,
+                }
+                console.log(payload);
 
-        // message.success(`${type.replace('_', ' ')} uploaded successfully.`);
-      } catch (error) {
-        message.error(`Failed to upload ${type.replace('_', ' ')}.`);
-        console.error(error);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
+                const response = await axios.post(
+                    'http://139.84.166.124:8060/staff-service/upload/async',
+                    {
+                        premise_id: premiseId,
+                        filetype: file.type,
+                        file_extension: file.name.split('.').pop(),
+                        base64_data: base64Data,
+                    },
+                    { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+                );
+
+                const fileKey = response.data?.data?.filekey;
+                if (!fileKey) {
+                    throw new Error('File key is missing in the response.');
+                }
+                if (type === 'profile') {
+                    setProfileFileKey(fileKey);
+                } else if (type === 'id') {
+                    setIdFileKey(fileKey);
+                } else if (type === 'Address') {
+                    setAddressFileKey(fileKey);
+                } else if (type === 'PV') {
+                    setPVFileKey(fileKey);
+                }
 
 
-  const subPremiseArray: SubPremise[] = (session?.user.subpremiseArray || []).map((sub) => {
-    if (typeof sub === 'string') {
-      return {
-        sub_premise_id: sub,
-        subpremise_name: sub,
-      };
-    }
-    return sub;
-  });
-
-
-
-  useEffect(() => {
-    const fetchSkills = async () => {
-      try {
-        const response = await axios.post(
-          'http://139.84.166.124:8060/staff-service/skills',
-          {},
-          { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
-        );
-
-        const fetchedSkills = response.data?.data?.map((item: any) => item.skill) || [];
-        setSkills(fetchedSkills);
-      } catch (error) {
-        message.error('Failed to fetch skills.');
-        console.error(error);
-      }
+            } catch (error) {
+                message.error(`Failed to upload.`);
+                console.error(error);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
-    if (session?.user.accessToken) {
-      fetchSkills();
-    }
-  }, [session?.user.accessToken]);
 
-
-  const onFinish = async (values: any) => {
-    setLoading(true);
-
-    try {
-      const payload = {
-        premise_id: premiseId,
-        sub_premise_id_array: values.sub_premise_id_array,
-        name: values.name,
-        address: values.address,
-        skill: values.skill,
-        mobile: values.mobile,
-        father_name: values.father_name || '',
-        picture_obj: fileKeys.profile_pic,
-        id_proof_obj: fileKeys.id_proof,
-        address_proof_obj: fileKeys.address_proof,
-        pv_obj: fileKeys.police_verification,
-      };
-
-      console.log("payload**************************");
-      console.log(payload);
-
-      await axios.post('http://139.84.166.124:8060/staff-service/create', payload, {
-        headers: { Authorization: `Bearer ${session?.user.accessToken}` },
-      });
-
-
-      message.success('Helper created successfully.');
-      form.resetFields();
-      setFileKeys({
-        profile_pic: '',
-        id_proof: '',
-        address_proof: '',
-        police_verification: '',
-      });
-    } catch (error) {
-      message.error('Failed to create helper.');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const [uploadedFiles, setUploadedFiles] = useState({
-    profile_pic: false,
-    id_proof: false,
-    address_proof: false,
-    police_verification: false,
-  });
-
-  const handleUploadChange = (info: any, key: any) => {
-    if (info.file.status === 'done') {
-      message.success(`${info.file.name} uploaded successfully!`);
-      setUploadedFiles((prev) => ({ ...prev, [key]: info.file }));
-    } else if (info.file.status === 'error') {
-      message.error(`${info.file.name} failed to upload.`);
-    }
-  };
-
-  const handleRemove = (fileType: string) => {
-    // Reset the uploaded file state
-    setUploadedFiles((prevState) => ({
-      ...prevState,
-      [fileType]: null, // Clear the specific file
-    }));
-  
-    // Optionally, clear the field from Ant Design Form
-    form.setFieldsValue({
-      [fileType]: null, // Reset the file input in the form
+    const subPremiseArray: SubPremise[] = (session?.user.subpremiseArray || []).map((sub) => {
+        if (typeof sub === 'string') {
+            return {
+                sub_premise_id: sub,
+                subpremise_name: sub,
+            };
+        }
+        return sub;
     });
-  
-    // Handle additional cleanup or UI changes if needed
-    message.success(`${fileType} has been removed successfully`);
-  };
 
-  
-  return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-      <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-        <h4 className="font-medium text-xl text-black dark:text-white">
-          Add Helpers
-        </h4>
-      </div>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-        style={{ maxWidth: 'full', margin: '0 auto', padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}
-      >
 
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              name="sub_premise_id_array"
-              label="Sub-Premises"
-              rules={[{ required: true, message: 'Please select at least one sub-premise!' }]}
+
+    useEffect(() => {
+        const fetchSkills = async () => {
+            try {
+                const response = await axios.post(
+                    'http://139.84.166.124:8060/staff-service/skills',
+                    {},
+                    { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+                );
+
+                const fetchedSkills = response.data?.data?.map((item: any) => item.skill) || [];
+                setSkills(fetchedSkills);
+            } catch (error) {
+                message.error('Failed to fetch skills.');
+                console.error(error);
+            }
+        };
+
+        if (session?.user.accessToken) {
+            fetchSkills();
+        }
+    }, [session?.user.accessToken]);
+
+
+    const onFinish = async (values: any) => {
+        setLoading(true);
+        try {
+            const payload = {
+                premise_id: premiseId,
+                sub_premise_id_array: values.sub_premise_id_array,
+                name: values.name,
+                address: values.address,
+                skill: values.skill,
+                mobile: values.mobile,
+                father_name: values.father_name || '',
+                picture_obj: ProfilefileKey,
+                id_proof_obj: IDfileKey,
+                address_proof_obj: AddressfileKey,
+                pv_obj: PVfileKey,
+            };
+
+            console.log(payload);
+            await axios.post('http://139.84.166.124:8060/staff-service/create', payload, {
+                headers: { Authorization: `Bearer ${session?.user.accessToken}` },
+            });
+
+            message.success('Helper created successfully.');
+            form.resetFields();
+            setUploadedProfile(null);
+            setUploadedID(null);
+            setUploadedAddress(null);
+            setUploadedPV(null);
+            setProfileFileKey('');
+            setIdFileKey('');
+            setAddressFileKey('');
+            setPVFileKey('');
+
+        } catch (error) {
+            message.error('Failed to create helper.');
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    return (
+        <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+            <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                <h4 className="font-medium text-xl text-black dark:text-white">
+                    Add Helpers
+                </h4>
+            </div>
+            <Form
+                form={form}
+                layout="vertical"
+                onFinish={onFinish}
+                style={{ maxWidth: 'full', margin: '0 auto', padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}
             >
-              <Select mode="multiple" placeholder="Select Sub-Premises">
-                {subPremiseArray.map((sub) => (
-                  <Select.Option key={sub.sub_premise_id} value={sub.sub_premise_id}>
-                    {sub.subpremise_name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
 
-          <Col span={12}>
-            <Form.Item
-              name="name"
-              label="Name"
-              rules={[{ required: true, message: 'Please enter the helper name!' }]}
-            >
-              <Input placeholder="Enter helper name" />
-            </Form.Item>
-          </Col>
-        </Row>
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="sub_premise_id_array"
+                            label="Sub-Premises"
+                            rules={[{ required: true, message: 'Please select at least one sub-premise!' }]}
+                        >
+                            <Select mode="multiple" placeholder="Select Sub-Premises">
+                                {subPremiseArray.map((sub) => (
+                                    <Select.Option key={sub.sub_premise_id} value={sub.sub_premise_id}>
+                                        {sub.subpremise_name}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                    </Col>
 
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              name="address"
-              label="Address"
-              rules={[{ required: true, message: 'Please enter the address!' }]}
-            >
-              <Input placeholder="Enter address" />
-            </Form.Item>
-          </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="name"
+                            label="Name"
+                            rules={[{ required: true, message: 'Please enter the helper name!' }]}
+                        >
+                            <Input placeholder="Enter helper name" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-          <Col span={12}>
-            <Form.Item
-              name="skill"
-              label="Skill"
-              rules={[{ required: true, message: 'Please select a skill!' }]}
-            >
-              <Select placeholder="Select a skill">
-                {skills.length > 0 ? (
-                  skills.map((skill) => (
-                    <Select.Option key={skill} value={skill}>
-                      {skill}
-                    </Select.Option>
-                  ))
-                ) : (
-                  <Select.Option disabled>Loading skills...</Select.Option>
-                )}
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="address"
+                            label="Address"
+                            rules={[{ required: true, message: 'Please enter the address!' }]}
+                        >
+                            <Input placeholder="Enter address" />
+                        </Form.Item>
+                    </Col>
 
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              name="mobile"
-              label="Mobile Number"
-              rules={[{ required: true, message: 'Please enter a mobile number!' }]}
-            >
-              <Input placeholder="Enter mobile number" />
-            </Form.Item>
-          </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="skill"
+                            label="Skill"
+                            rules={[{ required: true, message: 'Please select a skill!' }]}
+                        >
+                            <Select placeholder="Select a skill">
+                                {skills.length > 0 ? (
+                                    skills.map((skill) => (
+                                        <Select.Option key={skill} value={skill}>
+                                            {skill}
+                                        </Select.Option>
+                                    ))
+                                ) : (
+                                    <Select.Option disabled>Loading skills...</Select.Option>
+                                )}
+                            </Select>
+                        </Form.Item>
 
-          <Col span={12}>
-            <Form.Item name="father_name" label="Father's Name">
-              <Input placeholder="Enter father name (optional)" />
-            </Form.Item>
-          </Col>
-        </Row>
+                    </Col>
+                </Row>
 
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item label="Profile Picture">
-              <Dragger
-                accept=".jpg,.jpeg,.png"
-                beforeUpload={(file) => {
-                  const isImage = file.type.startsWith("image/");
-                  if (!isImage) {
-                    message.error("You can only upload image files!");
-                  }
-                  return isImage ? handleFileUpload(file, 'profile_pic') : false;
-                }}
-                onChange={(info) => handleUploadChange(info, 'profile_pic')}
-                showUploadList={{ showRemoveIcon: true }}
-                maxCount = {1}
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="mobile"
+                            label="Mobile Number"
+                            rules={[{ required: true, message: 'Please enter a mobile number!' }]}
+                        >
+                            <Input placeholder="Enter mobile number" />
+                        </Form.Item>
+                    </Col>
 
-              >
-                <p className="ant-upload-drag-icon">
-                  <i className="anticon anticon-upload" />
-                </p>
-                <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                <p className="ant-upload-hint">Only image files (JPG, PNG) are allowed</p>
-              </Dragger>
-            </Form.Item>
-          </Col>
+                    <Col span={12}>
+                        <Form.Item name="father_name" label="Father's Name">
+                            <Input placeholder="Enter father name (optional)" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-          <Col span={12}>
-            <Form.Item label="ID Proof">
-              <Dragger
-                accept=".jpg,.jpeg,.png,.pdf"
-                beforeUpload={(file) => {
-                  const isValidType =
-                    file.type.startsWith("image/") || file.type === "application/pdf";
-                  if (!isValidType) {
-                    message.error("You can only upload image or PDF files!");
-                  }
-                  return isValidType ? handleFileUpload(file, 'id_proof') : false;
-                }}
-               
-                onChange={(info) => handleUploadChange(info, 'id_proof')}
-                showUploadList={{ showRemoveIcon: true }}
-                maxCount = {1}
-              >
-                <p className="ant-upload-drag-icon">
-                  <i className="anticon anticon-upload" />
-                </p>
-                <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
-              </Dragger>
-            </Form.Item>
-          </Col>
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Upload Profile"
+                            name="upload"
+                            rules={[
+                                { required: true, message: "Please upload profile!" },
+                                () => ({
+                                    validator(_, value) {
+                                        if (uploadedProfile) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error(""));
+                                    },
+                                }),
+                            ]}
+                        >
+                            <Upload.Dragger
+                                listType="picture"
+                                showUploadList={{ showRemoveIcon: true }}
+                                accept=".png,.jpeg"
+                                maxCount={1}
+                                beforeUpload={(file) => {
+                                    const isImage = file.type.startsWith("image/");
+                                    if (!isImage) {
+                                        message.error("You can only upload image files!");
+                                    }
+                                    const type = 'profile';
+                                    return isImage ? handleFileUpload(file, type) : false;
+                                }}
+                                fileList={uploadedProfile ? [uploadedProfile] : []}
+                                onRemove={() => setUploadedProfile(null)}
+                            >
 
+                                <img
+                                    width="60"
+                                    height="60"
+                                    className="mx-auto"
+                                    src="https://img.icons8.com/?size=100&id=7820&format=png&color=000000"
+                                    alt="upload-to-cloud--v1"
+                                />
+                                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                <p className="ant-upload-hint">Only images (JPG, PNG) are allowed</p>
+                            </Upload.Dragger>
+                        </Form.Item>
+                    </Col>
 
-
-          <Col span={12}>
-            <Form.Item label="Address Proof">
-              <Dragger
-                accept=".jpg,.jpeg,.png,.pdf"
-                beforeUpload={(file) => {
-                  const isValidType =
-                    file.type.startsWith("image/") ||
-                    file.type === "application/pdf";
-                  if (!isValidType) {
-                    message.error("You can only upload image or PDF files!");
-                  }
-                  return isValidType ? handleFileUpload(file, 'address_proof') : false;
-                }}
-               
-                onChange={(info) => handleUploadChange(info, 'address_proof')}
-                showUploadList={{ showRemoveIcon: true }}
-                maxCount = {1}
-              >
-                <p className="ant-upload-drag-icon">
-                  <i className="anticon anticon-upload" />
-                </p>
-                <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
-              </Dragger>
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item label="Police Verification">
-              <Dragger
-                accept=".jpg,.jpeg,.png,.pdf"
-                beforeUpload={(file) => {
-                  const isValidType =
-                    file.type.startsWith("image/") ||
-                    file.type === "application/pdf";
-                  if (!isValidType) {
-                    message.error("You can only upload image or PDF files!");
-                  }
-                  return isValidType ? handleFileUpload(file, 'police_verification') : false;
-                }}
-                maxCount = {1}
-                onChange={(info) => handleUploadChange(info, 'police_verification')}
-                showUploadList={{ showRemoveIcon: true }}
-                // multiple={false}
-              >
-                <p className="ant-upload-drag-icon">
-                  <i className="anticon anticon-upload" />
-                </p>
-                <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
-              </Dragger>
-            </Form.Item>
-          </Col>
-        </Row>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Upload ID"
+                            name="upload"
+                            rules={[
+                                { required: true, message: "Please upload id!" },
+                                () => ({
+                                    validator(_, value) {
+                                        if (uploadedID) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error(""));
+                                    },
+                                }),
+                            ]}
+                        >
+                            <Upload.Dragger
+                                listType="picture"
+                                showUploadList={{ showRemoveIcon: true }}
+                                accept=".jpg,.jpeg,.png,.pdf"
+                                maxCount={1}
+                                beforeUpload={(file) => {
+                                    const isValidType =
+                                        file.type.startsWith("image/") || file.type === "application/pdf";
+                                    if (!isValidType) {
+                                        message.error("You can only upload image or PDF files!");
+                                    }
+                                    const type = 'id'
+                                    return isValidType ? handleFileUpload(file, type) : false;
+                                }}
+                                fileList={uploadedID ? [uploadedID] : []}
+                                onRemove={() => setUploadedID(null)}
+                            >
+                                <img
+                                    width="60"
+                                    height="60"
+                                    className="mx-auto"
+                                    src="https://img.icons8.com/?size=100&id=39595&format=png&color=000000"
+                                    alt="upload-to-cloud--v1"
+                                />
+                                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
+                            </Upload.Dragger>
+                        </Form.Item>
+                    </Col>
 
 
-        <Form.Item style={{ textAlign: 'right', marginTop: '20px' }}>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Upload Address Proof"
+                            name="upload"
+                            rules={[
+                                { required: true, message: "Please upload Address Proof!" },
+                                () => ({
+                                    validator(_, value) {
+                                        if (uploadedAddress) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error(""));
+                                    },
+                                }),
+                            ]}
+                        >
+                            <Upload.Dragger
+                                listType="picture"
+                                showUploadList={{ showRemoveIcon: true }}
+                                accept=".png,.jpeg"
+                                maxCount={1}
+                                beforeUpload={(file) => {
+                                    const isValidType =
+                                        file.type.startsWith("image/") || file.type === "application/pdf";
+                                    if (!isValidType) {
+                                        message.error("You can only upload image or PDF files!");
+                                    }
+                                    const type = 'Address';
+                                    return isValidType ? handleFileUpload(file, type) : false;
+                                }}
+                                fileList={uploadedAddress ? [uploadedAddress] : []}
+                                onRemove={() => setUploadedAddress(null)}
+                            >
+                                <img
+                                    width="60"
+                                    height="60"
+                                    className="mx-auto"
+                                    src="https://img.icons8.com/?size=100&id=53383&format=png&color=000000"
+                                    alt="upload-to-cloud--v1"
+                                />
+                                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
+                            </Upload.Dragger>
+                        </Form.Item>
+                    </Col>
 
-          {/* <Button type="primary" htmlType="submit" loading={loading} style={{ padding: '0 40px' }}>
-          Submit
-          </Button> */}
-          <Button
-            htmlType="submit"
-            style={{
-              marginBottom: '8px',
-              background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
-              color: 'white', // White text color
-              border: 'none', // No border
-              borderRadius: '4px', // Rounded corners
-              padding: '8px 16px', // Padding for a more substantial look
-              boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-              cursor: 'pointer', // Pointer cursor on hover
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-            }}
-          >
-            Create
-          </Button>
 
-          {/* <Button
-            href='/dashboard'
-            style={{
-              background: 'linear-gradient(90deg, #ff6f61, #d50032)', // Red gradient for Cancel
-              color: 'white',
-              marginLeft: '8px',
-              border: 'none',
-              marginRight: '4px',
-              borderRadius: '4px',
-              padding: '5px 12px',
-              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-              cursor: 'pointer',
-            }}
-          >
-            Cancel
-          </Button> */}
-        </Form.Item>
-      </Form>
-    </div>
-  );
+                    <Col span={12}>
+                        <Form.Item
+                            label="Upload Police Verification"
+                            name="upload"
+                            rules={[
+                                { required: true, message: "Please upload Police Verification!" },
+                                () => ({
+                                    validator(_, value) {
+                                        if (uploadedPV) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error(""));
+                                    },
+                                }),
+                            ]}
+                        >
+                            <Upload.Dragger
+                                listType="picture"
+                                showUploadList={{ showRemoveIcon: true }}
+                                accept=".png,.jpeg"
+                                maxCount={1}
+                                beforeUpload={(file) => {
+                                    const isValidType =
+                                        file.type.startsWith("image/") || file.type === "application/pdf";
+                                    if (!isValidType) {
+                                        message.error("You can only upload image or PDF files!");
+                                    }
+                                    const type = 'PV'
+                                    return isValidType ? handleFileUpload(file, type) : false;
+                                }}
+                                fileList={uploadedPV ? [uploadedPV] : []}
+                                onRemove={() => setUploadedPV(null)}
+                            >
+                                <img
+                                    width="60"
+                                    height="60"
+                                    className="mx-auto"
+                                    src="https://img.icons8.com/?size=100&id=iWXaTX0OHmpB&format=png&color=000000"
+                                    alt="upload-to-cloud--v1"
+                                />
+                                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
+                            </Upload.Dragger>
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Form.Item style={{ textAlign: 'right', marginTop: '20px' }}>
+                    <Button
+                        htmlType="submit"
+                        style={{
+                            marginBottom: '8px',
+                            background: 'linear-gradient(90deg, #4e92ff, #1e62d0)', // Blue gradient background
+                            color: 'white', // White text color
+                            border: 'none', // No border
+                            borderRadius: '4px', // Rounded corners
+                            padding: '8px 16px', // Padding for a more substantial look
+                            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+                            cursor: 'pointer', // Pointer cursor on hover
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease', // Transition for hover effects
+                        }}
+                        onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                        }}
+                    >
+                        Create
+                    </Button>
+                </Form.Item>
+
+            </Form>
+
+        </div>
+    );
 };
 
 export default HelperCreationForm;

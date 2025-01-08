@@ -225,6 +225,7 @@ const VehicleTab = ({
                     rowKey="vno"
                     pagination={false}
                     scroll={{ x: 'max-content' }}
+                    bordered
                 />
                 {selectedVehicle && (
                     <>

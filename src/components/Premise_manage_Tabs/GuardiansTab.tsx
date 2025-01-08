@@ -58,6 +58,7 @@ const GuardiansTab = ({
                 loading={loadingGuardians}
                 rowKey="_id"
                 pagination={false}
+                bordered
             />
 
             <EditModal
@@ -131,11 +132,12 @@ const GuardiansTab = ({
                         ),
                     },
                 ]}
-                dataSource={guardiansData.filter((item: any) => item.association_type === 'tenant')}
+                dataSource={guardiansData.filter((item: any) => item.association_type === 'Tenant')}
                 loading={loadingGuardians}
                 rowKey="_id"
                 pagination={false}
                 scroll={{ x: 900 }}
+                bordered
             />
 
             <br />

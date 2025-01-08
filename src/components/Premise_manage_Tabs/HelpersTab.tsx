@@ -253,6 +253,7 @@ const HelpersTab = ({
                     pagination={false}
                     scroll={{ x: 900 }}
                     className="w-full"
+                    bordered
                 />
 
             </Spin>

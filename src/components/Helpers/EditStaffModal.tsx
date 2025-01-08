@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Button, message, Spin, Row, Col, Upload, Select } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
-
-const { Dragger } = Upload;
-
-type SubPremise = {
-  subpremise_id: string;
-  subpremise_name: string;
-};
 
 interface ModalProps {
   visible: boolean;
@@ -26,28 +18,77 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
   const [form] = Form.useForm();
   const [staffDetails, setStaffDetails] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [fetchingFiles, setFetchingFiles] = useState(false);
   const { data: session } = useSession();
   const [skills, setSkills] = useState<string[]>([]);
-  const [uploadedFiles, setUploadedFiles] = useState({
-    profile_pic: null,
-    id_proof: null,
-    address_proof: null,
-    police_verification: null,
-  });
-  const [fileUrls, setFileUrls] = useState({
-    pictureUrl: '',
-    idProofUrl: '',
-    addressProofUrl: '',
-    pvUrl: '',
-  });
-  const [fileKeys, setFileKeys] = useState({
-    profile_pic: '',
-    id_proof: '',
-    address_proof: '',
-    police_verification: '',
-  });
-  const user = session?.user || {};
+
+  const [uploadedProfile, setUploadedProfile] = useState(null);
+  const [uploadedID, setUploadedID] = useState(null);
+  const [uploadedAddress, setUploadedAddress] = useState(null);
+  const [uploadedPV, setUploadedPV] = useState(null);
+
+  const [ProfilefileKey, setProfileFileKey] = useState('');
+  const [IDfileKey, setIdFileKey] = useState('');
+  const [AddressfileKey, setAddressFileKey] = useState('');
+  const [PVfileKey, setPVFileKey] = useState('');
+
+  const handleFileUpload = (file: any, type: any) => {
+    const reader = new FileReader();
+
+    if (type === 'profile') {
+      setUploadedProfile(file);
+    } else if (type === 'id') {
+      setUploadedID(file);
+    } else if (type === 'Address') {
+      setUploadedAddress(file);
+    } else if (type === 'PV') {
+      setUploadedPV(file);
+    }
+
+    reader.onload = async () => {
+
+      try {
+        const base64Data = (reader.result as string).split(',')[1];
+        const payload = {
+          premise_id: premiseId,
+          filetype: file.type,
+          file_extension: file.name.split('.').pop(),
+          base64_data: base64Data,
+        }
+        console.log(payload);
+
+        const response = await axios.post(
+          'http://139.84.166.124:8060/staff-service/upload/async',
+          {
+            premise_id: premiseId,
+            filetype: file.type,
+            file_extension: file.name.split('.').pop(),
+            base64_data: base64Data,
+          },
+          { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
+        );
+
+        const fileKey = response.data?.data?.filekey;
+        if (!fileKey) {
+          throw new Error('File key is missing in the response.');
+        }
+        if (type === 'profile') {
+          setProfileFileKey(fileKey);
+        } else if (type === 'id') {
+          setIdFileKey(fileKey);
+        } else if (type === 'Address') {
+          setAddressFileKey(fileKey);
+        } else if (type === 'PV') {
+          setPVFileKey(fileKey);
+        }
+
+
+      } catch (error) {
+        message.error(`Failed to upload.`);
+        console.error(error);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -99,112 +140,11 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
         skill: staffData.skill,
         father_name: staffData.father_name,
       });
-
-      fetchFileUrls(staffData);
     } catch (error) {
       message.error('Failed to fetch staff details');
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchFileUrls = async (staffData: any) => {
-    setFetchingFiles(true);
-    try {
-      const fileResponses = await Promise.all([
-        staffData.picture_url && staffData.picture_url !== "-" && staffData.picture_url !== "" ?
-          axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
-            premise_id: premiseId,
-            file_key: staffData.picture_url,
-          }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }) : Promise.resolve({ data: { data: { signedURL: "-" } } }),
-
-        staffData.id_proof_url ?
-          axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
-            premise_id: premiseId,
-            file_key: staffData.id_proof_url,
-          }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }) : Promise.resolve({ data: { data: { signedURL: "-" } } }),
-
-        staffData.address_proof_url ?
-          axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
-            premise_id: premiseId,
-            file_key: staffData.address_proof_url,
-          }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }) : Promise.resolve({ data: { data: { signedURL: "-" } } }),
-
-        staffData.pv_url ?
-          axios.post('http://139.84.166.124:8060/staff-service/upload/get_presigned_url', {
-            premise_id: premiseId,
-            file_key: staffData.pv_url,
-          }, { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }) : Promise.resolve({ data: { data: { signedURL: "-" } } }),
-      ]);
-
-      setFileUrls({
-        pictureUrl: fileResponses[0].data.data.signedURL,
-        idProofUrl: fileResponses[1].data.data.signedURL,
-        addressProofUrl: fileResponses[2].data.data.signedURL,
-        pvUrl: fileResponses[3].data.data.signedURL,
-      });
-    } catch (error) {
-      message.error('Failed to fetch file URLs');
-    } finally {
-      setFetchingFiles(false);
-    }
-  };
-
-  const handleUploadChange = (info: any, key: any) => {
-    if (info.file.status === 'done') {
-      message.success(`${info.file.name} uploaded successfully!`);
-      setUploadedFiles((prev) => ({ ...prev, [key]: info.file }));
-    } else if (info.file.status === 'error') {
-      message.error(`${info.file.name} failed to upload.`);
-    }
-  };
-
-
-  const handleFileUpload = async (file: File, type: keyof typeof fileKeys) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-
-      try {
-        const base64Data = (reader.result as string).split(',')[1];
-        const payload = {
-          premise_id: premiseId,
-          filetype: file.type,
-          file_extension: file.name.split('.').pop(),
-          base64_data: base64Data,
-        }
-        // console.log(payload);
-
-        const response = await axios.post(
-          'http://139.84.166.124:8060/staff-service/upload/async',
-          {
-            premise_id: premiseId,
-            filetype: file.type,
-            file_extension: file.name.split('.').pop(),
-            base64_data: base64Data,
-          },
-          { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
-        );
-
-        const fileKey = response.data?.data?.filekey;
-        if (!fileKey) {
-          throw new Error('File key is missing in the response.');
-        }
-
-        // Log current fileKeys for debugging
-        console.log('Before update:', fileKeys);
-
-        setFileKeys((prev) => {
-          const updatedKeys = { ...prev, [type]: fileKey };
-          return updatedKeys;
-        });
-
-        // message.success(`${type.replace('_', ' ')} uploaded successfully.`);
-      } catch (error) {
-        message.error(`Failed to upload ${type.replace('_', ' ')}.`);
-        console.error(error);
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
   const onFinish = async (values: any) => {
@@ -217,15 +157,16 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
       skill: values.skill,
       mobile: values.mobile,
       father_name: values.father_name,
-      ...(fileKeys.profile_pic && { picture_obj: fileKeys.profile_pic }),
-      ...(fileKeys.id_proof && { id_proof_obj: fileKeys.id_proof }),
-      ...(fileKeys.address_proof && { address_proof_obj: fileKeys.address_proof }),
-      ...(fileKeys.police_verification && { pv_obj: fileKeys.police_verification }),
+      picture_obj: ProfilefileKey,
+      id_proof_obj: IDfileKey,
+      address_proof_obj: AddressfileKey,
+      pv_obj: PVfileKey,
     };
 
-    console.log(payload);
-    // form.resetFields();
-    // Show a confirmation dialog
+    const filteredPayload = Object.fromEntries(
+      Object.entries(payload).filter(([_, value]) => value != null && value !== '')
+    );
+
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'Do you want to update the helper details?',
@@ -238,16 +179,25 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
     });
 
     if (result.isConfirmed) {
+      console.log(filteredPayload);
       try {
         // Send the request to the API
         const response = await axios.post(
           'http://139.84.166.124:8060/staff-service/update',
-          payload,
+          filteredPayload,
           { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
         );
 
         if (response.status === 201) {
           fetchHelpers(currentPage, limit);
+          setUploadedProfile(null);
+          setUploadedID(null);
+          setUploadedAddress(null);
+          setUploadedPV(null);
+          setProfileFileKey('');
+          setIdFileKey('');
+          setAddressFileKey('');
+          setPVFileKey('');
           onClose();
           // Show success message with SweetAlert2 on success
           Swal.fire({
@@ -267,39 +217,26 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
   };
 
   const onExit = () => {
-    setFileKeys({
-      profile_pic: '',
-      id_proof: '',
-      address_proof: '',
-      police_verification: '',
-    });
+    setUploadedProfile(null);
+    setUploadedID(null);
+    setUploadedAddress(null);
+    setUploadedPV(null);
+    setProfileFileKey('');
+    setIdFileKey('');
+    setAddressFileKey('');
+    setPVFileKey('');
     onClose();
   }
-
-  const resetFiles = () => {
-    setUploadedFiles({
-      profile_pic: null,
-      id_proof: null,
-      address_proof: null,
-      police_verification: null,
-    });
-    message.success("All files have been reset.");
-  };
 
 
   return (
     <Modal
       title="Edit Helper Details"
       visible={visible}
-      onCancel={onClose}
+      style={{zIndex: '10000'}}
+      className='top-2 m-auto p-auto'
+      onCancel={onExit}
       footer={[
-        // <Button key="cancel" onClick={onClose}>
-        //   Cancel
-        // </Button>,
-
-        // <Button key="submit" type="primary" form="editForm" htmlType="submit" loading={loading}>
-        //   Save
-        // </Button>,
         <Button
           key="submit" form="editForm" htmlType="submit" loading={loading}
           style={{
@@ -342,7 +279,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
         </Button>,
       ]}
       confirmLoading={loading}
-      width={900}
+      width={1200}
     >
       {staffDetails ? (
         <Form
@@ -402,125 +339,145 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
             </Col>
           </Row>
 
-          {/* Document Preview URLs */}
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="Profile Picture">
-                {fileUrls.pictureUrl && fileUrls.pictureUrl !== "-" ? (
-                  <a href={fileUrls.pictureUrl} target="_blank" rel="noopener noreferrer">
-                    {fetchingFiles ? <Spin /> : 'View Picture'}
-                  </a>
-                ) : null}
-                <Dragger
-                  accept=".jpg,.jpeg,.png"
+              <Form.Item
+                label="Upload Profile"
+                name="upload"
+              >
+                <Upload.Dragger
+                  listType="picture"
+                  showUploadList={{ showRemoveIcon: true }}
+                  accept=".png,.jpeg"
+                  maxCount={1}
                   beforeUpload={(file) => {
                     const isImage = file.type.startsWith("image/");
                     if (!isImage) {
                       message.error("You can only upload image files!");
                     }
-                    return isImage ? handleFileUpload(file, 'profile_pic') : false;
+                    const type = 'profile';
+                    return isImage ? handleFileUpload(file, type) : false;
                   }}
-                  onChange={(info) => handleUploadChange(info, 'profile_pic')}
-                  showUploadList={{ showRemoveIcon: true }}
-                  maxCount={1}
-
+                  fileList={uploadedProfile ? [uploadedProfile] : []}
+                  onRemove={() => setUploadedProfile(null)}
                 >
-                  <p className="ant-upload-drag-icon">
-                    <i className="anticon anticon-upload" />
-                  </p>
+
+                  <img
+                    width="60"
+                    height="60"
+                    className="mx-auto"
+                    src="https://img.icons8.com/?size=100&id=7820&format=png&color=000000"
+                    alt="upload-to-cloud--v1"
+                  />
                   <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                  <p className="ant-upload-hint">Only image files (JPG, PNG) are allowed</p>
-                </Dragger>
+                  <p className="ant-upload-hint">Only images (JPG, PNG) are allowed</p>
+                </Upload.Dragger>
               </Form.Item>
             </Col>
+
             <Col span={12}>
-              <Form.Item label="ID Proof">
-                {fileUrls.pictureUrl && fileUrls.pictureUrl !== "-" ? (
-                  <a href={fileUrls.pictureUrl} target="_blank" rel="noopener noreferrer">
-                    {fetchingFiles ? <Spin /> : 'View Picture'}
-                  </a>
-                ) : null}
-                <Dragger
+              <Form.Item
+                label="Upload ID"
+                name="upload"
+              >
+                <Upload.Dragger
+                  listType="picture"
+                  showUploadList={{ showRemoveIcon: true }}
                   accept=".jpg,.jpeg,.png,.pdf"
+                  maxCount={1}
                   beforeUpload={(file) => {
                     const isValidType =
                       file.type.startsWith("image/") || file.type === "application/pdf";
                     if (!isValidType) {
                       message.error("You can only upload image or PDF files!");
                     }
-                    return isValidType ? handleFileUpload(file, 'id_proof') : false;
+                    const type = 'id'
+                    return isValidType ? handleFileUpload(file, type) : false;
                   }}
-
-                  onChange={(info) => handleUploadChange(info, 'id_proof')}
-                  maxCount={1}
+                  fileList={uploadedID ? [uploadedID] : []}
+                  onRemove={() => setUploadedID(null)}
                 >
-                  <p className="ant-upload-drag-icon">
-                    <i className="anticon anticon-upload" />
-                  </p>
+                  <img
+                    width="60"
+                    height="60"
+                    className="mx-auto"
+                    src="https://img.icons8.com/?size=100&id=39595&format=png&color=000000"
+                    alt="upload-to-cloud--v1"
+                  />
                   <p className="ant-upload-text">Click or drag file to this area to upload</p>
                   <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
-                </Dragger>
+                </Upload.Dragger>
               </Form.Item>
             </Col>
-            <Col span={12}>
-              <Form.Item label="Address Proof">
-                {fileUrls.pictureUrl && fileUrls.pictureUrl !== "-" ? (
-                  <a href={fileUrls.pictureUrl} target="_blank" rel="noopener noreferrer">
-                    {fetchingFiles ? <Spin /> : 'View Picture'}
-                  </a>
-                ) : null}
-                <Dragger
-                  accept=".jpg,.jpeg,.png,.pdf"
-                  beforeUpload={(file) => {
-                    const isValidType =
-                      file.type.startsWith("image/") ||
-                      file.type === "application/pdf";
-                    if (!isValidType) {
-                      message.error("You can only upload image or PDF files!");
-                    }
-                    return isValidType ? handleFileUpload(file, 'address_proof') : false;
-                  }}
 
-                  onChange={(info) => handleUploadChange(info, 'address_proof')}
+
+            <Col span={12}>
+              <Form.Item
+                label="Upload Address Proof"
+                name="upload"
+              >
+                <Upload.Dragger
+                  listType="picture"
                   showUploadList={{ showRemoveIcon: true }}
+                  accept=".png,.jpeg"
                   maxCount={1}
-                >
-                  <p className="ant-upload-drag-icon">
-                    <i className="anticon anticon-upload" />
-                  </p>
-                  <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                  <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
-                </Dragger>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="Police Verification">
-                {fileUrls.pictureUrl && fileUrls.pictureUrl !== "-" ? (
-                  <a href={fileUrls.pictureUrl} target="_blank" rel="noopener noreferrer">
-                    {fetchingFiles ? <Spin /> : 'View Picture'}
-                  </a>
-                ) : null}
-                <Dragger
-                  accept=".jpg,.jpeg,.png,.pdf"
                   beforeUpload={(file) => {
                     const isValidType =
-                      file.type.startsWith("image/") ||
-                      file.type === "application/pdf";
+                      file.type.startsWith("image/") || file.type === "application/pdf";
                     if (!isValidType) {
                       message.error("You can only upload image or PDF files!");
                     }
-                    return isValidType ? handleFileUpload(file, 'police_verification') : false;
+                    const type = 'Address';
+                    return isValidType ? handleFileUpload(file, type) : false;
                   }}
-                  maxCount={1}
-                  onChange={(info) => handleUploadChange(info, 'police_verification')}
-                // multiple={false}
+                  fileList={uploadedAddress ? [uploadedAddress] : []}
+                  onRemove={() => setUploadedAddress(null)}
                 >
-                  <p className="ant-upload-drag-icon">
-                    <i className="anticon anticon-upload" />
-                  </p>
+                  <img
+                    width="60"
+                    height="60"
+                    className="mx-auto"
+                    src="https://img.icons8.com/?size=100&id=53383&format=png&color=000000"
+                    alt="upload-to-cloud--v1"
+                  />
                   <p className="ant-upload-text">Click or drag file to this area to upload</p>
                   <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
-                </Dragger>
+                </Upload.Dragger>
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                label="Upload Police Verification"
+                name="upload"
+              >
+                <Upload.Dragger
+                  listType="picture"
+                  showUploadList={{ showRemoveIcon: true }}
+                  accept=".png,.jpeg"
+                  maxCount={1}
+                  beforeUpload={(file) => {
+                    const isValidType =
+                      file.type.startsWith("image/") || file.type === "application/pdf";
+                    if (!isValidType) {
+                      message.error("You can only upload image or PDF files!");
+                    }
+                    const type = 'PV'
+                    return isValidType ? handleFileUpload(file, type) : false;
+                  }}
+                  fileList={uploadedPV ? [uploadedPV] : []}
+                  onRemove={() => setUploadedPV(null)}
+                >
+                  <img
+                    width="60"
+                    height="60"
+                    className="mx-auto"
+                    src="https://img.icons8.com/?size=100&id=iWXaTX0OHmpB&format=png&color=000000"
+                    alt="upload-to-cloud--v1"
+                  />
+                  <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                  <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
+                </Upload.Dragger>
               </Form.Item>
             </Col>
           </Row>

@@ -11,6 +11,7 @@ import { EditOutlined, DeleteOutlined, SafetyOutlined, IdcardOutlined, HomeOutli
 import HelperFilter from '@/components/Helpers/HelperFilter';
 import EditStaffModal from '@/components/Helpers/EditStaffModal';
 import NewPremiseTagHM from '@/components/Helpers/NewPremiseTagHM';
+import { values } from 'lodash';
 
 interface Subpremise {
     sub_premise_id: string;
@@ -90,9 +91,6 @@ const HelpersTab = () => {
                     },
                 }
             );
-            console.log(payload);
-
-
             const { data } = response.data;
             setHasNextPage(data.length === limit);
             setHelpersData(data);
@@ -105,7 +103,7 @@ const HelpersTab = () => {
 
     useEffect(() => {
         if (premiseId) {
-            console.log('Fetching helpers for Page:', currentPage, 'Limit:', limit);
+            // console.log('Fetching helpers for Page:', currentPage, 'Limit:', limit);
             fetchHelpers(currentPage, limit);
         }
     }, [premiseId, currentPage, limit]);
@@ -208,29 +206,33 @@ const HelpersTab = () => {
             width: 200,
             render: (record: any) => {
                 const documentTypes = [
-                    { key: 'pv_url', label: 'Police Verification', icon: <SafetyOutlined /> },
-                    { key: 'id_proof_url', label: 'ID Proof', icon: <IdcardOutlined /> },
-                    { key: 'address_proof_url', label: 'Address Proof', icon: <HomeOutlined /> },
+                    { key: 'id_proof_url', value: record.id_proof_url, label: 'ID Proof', icon: <IdcardOutlined /> },
+                    { key: 'address_proof_url', value: record.address_proof_url, label: 'Address Proof', icon: <HomeOutlined /> },
+                    { key: 'pv_url', value: record.pv_url, label: 'Police Verification', icon: <SafetyOutlined /> },
                 ];
 
                 const fetchSignedUrl = async (fileKey: string) => {
-                    const response = await fetch(
-                        'http://139.84.166.124:8060/staff-service/upload/get_presigned_url',
-                        {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                premise_id: premiseId,
-                                file_key: fileKey,
-                            }),
-                            headers: {
-                                Authorization: `Bearer ${session?.user?.accessToken}`,
-                                'Content-Type': 'application/json',
-                            },
-                        }
-                    );
-
-                    const data = await response.json();
-                    return data?.data?.signedURL || null;
+                    try {
+                        const response = await fetch(
+                            'http://139.84.166.124:8060/staff-service/upload/get_presigned_url',
+                            {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    premise_id: premiseId,
+                                    file_key: fileKey,
+                                }),
+                                headers: {
+                                    Authorization: `Bearer ${session?.user?.accessToken}`,
+                                    'Content-Type': 'application/json',
+                                },
+                            }
+                        );
+                        const data = await response.json();
+                        return fileKey || null;
+                    } catch (error) {
+                        console.error('Error fetching signed URL:', error);
+                        return null;
+                    }
                 };
 
                 const handleClick = async (fileKey: string) => {
@@ -243,10 +245,9 @@ const HelpersTab = () => {
                 return (
                     <div className="flex flex-row gap-4">
                         {documentTypes.map((docType) => {
-                            const fileKey = record[docType.key];
+                            const fileKey = docType.value;
                             const isClickable = fileKey && fileKey !== '-';
 
-                            // Determine icon color based on file state
                             const iconColor = isClickable
                                 ? 'text-green-500'
                                 : fileKey === '-'
@@ -256,17 +257,17 @@ const HelpersTab = () => {
                             return (
                                 <div
                                     key={docType.key}
-                                    className={`flex items-center ${isClickable ? 'cursor-pointer' : 'cursor-default'
-                                        }`}
+                                    className={`flex items-center ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
                                     onClick={() => isClickable && handleClick(fileKey)}
                                 >
                                     <div className={`text-2xl ${iconColor}`}>{docType.icon}</div>
+                                    <span className="ml-2">{docType.label}</span>
                                 </div>
                             );
                         })}
                     </div>
                 );
-            },
+            }
         },
 
         {

@@ -17,7 +17,9 @@ export default function DefaultLayout({
           {/* <!-- ===== Page Wrapper Start ===== --> */}
           <div className="flex h-screen overflow-hidden">
             {/* <!-- ===== Sidebar Start ===== --> */}
+            <div style={{zIndex: 'auto'}}>
             <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+            </div>
             {/* <!-- ===== Sidebar End ===== --> */}
 
             {/* <!-- ===== Content Area Start ===== --> */}
