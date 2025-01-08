@@ -224,7 +224,7 @@ export default function Tickets() {
                 </div>
                 <div className="col-span-12 p-3 sm:p-3 shadow-default xl:col-span-12 bg-white rounded-sm border border-stroke">
                     <BarChart 
-                        title='Skill Wsie Status' 
+                        title='Skill Wise Status' 
                         height={220}
                         width={600}
                         stacked={true}
