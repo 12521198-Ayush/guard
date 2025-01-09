@@ -57,20 +57,31 @@ const DataTable = () => {
                     },
                 }
             );
-            const { data } = response.data;
-            if (Array.isArray(data)) {
-                setGridData(data);
-            } else {
-                console.error("Unexpected data format:", data);
+
+            const responseData = response.data;
+            if (responseData.error) {
+                console.error("Error in response:", responseData.error);
                 setGridData([]);
+                setHasNextPage(false);
+                return;
             }
-            setHasNextPage(data.length === limit);
+
+            const array = responseData.data?.array;
+            if (Array.isArray(array)) {
+                setGridData(array);
+                setHasNextPage(array.length === limit);
+            } else {
+                console.error("Unexpected data format:", array);
+                setGridData([]);
+                setHasNextPage(false);
+            }
         } catch (error) {
-            console.log(error);
+            console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
         }
     };
+
 
     const handleSearch = (e) => {
         setSearchText(e.target.value);
@@ -246,7 +257,7 @@ const DataTable = () => {
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
                 <h4 className="font-medium text-xl text-black dark:text-white">
-                    Manage Premise Unit 
+                    Manage Premise Unit
                 </h4>
             </div>
 
