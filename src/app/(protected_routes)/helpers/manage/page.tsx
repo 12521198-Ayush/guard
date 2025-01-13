@@ -11,7 +11,8 @@ import { EditOutlined, DeleteOutlined, SafetyOutlined, IdcardOutlined, HomeOutli
 import HelperFilter from '@/components/Helpers/HelperFilter';
 import EditStaffModal from '@/components/Helpers/EditStaffModal';
 import NewPremiseTagHM from '@/components/Helpers/NewPremiseTagHM';
-import { values } from 'lodash';
+import DocumentsColumn from './DocumentsColumn';
+import { Modal, Image } from 'antd';
 
 interface Subpremise {
     sub_premise_id: string;
@@ -91,14 +92,24 @@ const HelpersTab = () => {
                     },
                 }
             );
-            const { data } = response.data;
-            setHasNextPage(data.length === limit);
-            setHelpersData(data);
+
+            // Access the array directly
+            const array = response.data.data?.array;
+
+            if (Array.isArray(array)) {
+                setHasNextPage(array.length === limit); // Check if the length matches the limit
+                setHelpersData(array || []); // Update the helpers data
+            } else {
+                console.error('Unexpected response format:', response.data);
+                Swal.fire('Error', 'Unexpected response format.', 'error');
+            }
         } catch (error) {
+            console.error('Error fetching helpers data:', error);
             Swal.fire('Error', 'Failed to fetch helpers data.', 'error');
         } finally {
             setLoading(false);
         }
+
     };
 
     useEffect(() => {
@@ -204,70 +215,7 @@ const HelpersTab = () => {
             responsive: ['xxs', 'xs', 'sm', 'md', 'lg', 'xl', 'xxl'] as Breakpoint[],
             key: 'documents',
             width: 200,
-            render: (record: any) => {
-                const documentTypes = [
-                    { key: 'id_proof_url', value: record.id_proof_url, label: 'ID Proof', icon: <IdcardOutlined /> },
-                    { key: 'address_proof_url', value: record.address_proof_url, label: 'Address Proof', icon: <HomeOutlined /> },
-                    { key: 'pv_url', value: record.pv_url, label: 'Police Verification', icon: <SafetyOutlined /> },
-                ];
-
-                const fetchSignedUrl = async (fileKey: string) => {
-                    try {
-                        const response = await fetch(
-                            'http://139.84.166.124:8060/staff-service/upload/get_presigned_url',
-                            {
-                                method: 'POST',
-                                body: JSON.stringify({
-                                    premise_id: premiseId,
-                                    file_key: fileKey,
-                                }),
-                                headers: {
-                                    Authorization: `Bearer ${session?.user?.accessToken}`,
-                                    'Content-Type': 'application/json',
-                                },
-                            }
-                        );
-                        const data = await response.json();
-                        return fileKey || null;
-                    } catch (error) {
-                        console.error('Error fetching signed URL:', error);
-                        return null;
-                    }
-                };
-
-                const handleClick = async (fileKey: string) => {
-                    const url = await fetchSignedUrl(fileKey);
-                    if (url) {
-                        window.open(url, '_blank');
-                    }
-                };
-
-                return (
-                    <div className="flex flex-row gap-4">
-                        {documentTypes.map((docType) => {
-                            const fileKey = docType.value;
-                            const isClickable = fileKey && fileKey !== '-';
-
-                            const iconColor = isClickable
-                                ? 'text-green-500'
-                                : fileKey === '-'
-                                    ? 'text-red-500'
-                                    : 'text-blue-500';
-
-                            return (
-                                <div
-                                    key={docType.key}
-                                    className={`flex items-center ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
-                                    onClick={() => isClickable && handleClick(fileKey)}
-                                >
-                                    <div className={`text-2xl ${iconColor}`}>{docType.icon}</div>
-                                    <span className="ml-2">{docType.label}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                );
-            }
+            render: (record: any) => <DocumentsColumn record={record} />,
         },
 
         {

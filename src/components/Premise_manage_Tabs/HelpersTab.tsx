@@ -64,10 +64,12 @@ const HelpersTab = ({
                 }
             );
 
-            const { data } = response.data;
+            const [ data ] = response.data?.data?.array;
+            console.log(response.data?.data?.array);
+            
 
             setHasNextPage(data.length === limit);
-            setHelpersData(data);
+            setHelpersData(response.data?.data?.array);
         } catch (error) {
             console.error('Error fetching helpers:', error);
             Swal.fire('Error', 'Failed to fetch helpers data.', 'error');

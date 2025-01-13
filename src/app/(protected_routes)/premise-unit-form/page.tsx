@@ -55,7 +55,7 @@ const PremiseUnitForm = () => {
                 },
             });
 
-            const guardianList = response.data.data;
+            const guardianList = response.data.data?.array;
             setGuardiansData(guardianList);
         } catch (error) {
             console.error('Error fetching guardians data:', error);
@@ -80,8 +80,9 @@ const PremiseUnitForm = () => {
                     },
                 }
             );
-            const data = response.data.data;
-            const unit = data;
+            const responseData = response.data;
+            const array = responseData.data?.array;
+            const unit = array;
             if (unit) {
 
                 const formattedData = {

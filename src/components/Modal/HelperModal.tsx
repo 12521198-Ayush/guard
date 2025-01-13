@@ -75,7 +75,7 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
         // console.log(selectedSkill)
         let fetchedData: Helper[] = [];
         setLoading(true);
-        if(!cardNo && !selectedSkill){
+        if (!cardNo && !selectedSkill) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Warning',
@@ -92,7 +92,7 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
                     {
                         premise_id: premiseId,
                         sub_premise_id: subPremiseId,
-                        skill: selectedSkill
+                        skill: selectedSkill,
                     },
                     {
                         headers: {
@@ -100,17 +100,24 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
                         },
                     }
                 );
-                console.log(response)
 
-                const { data } = response.data;
-                fetchedData = [...fetchedData, ...data];
-                setHelpersData(fetchedData || []);
+                // Accessing the array directly from the response
+                const array = response.data.data?.array;
+
+                if (Array.isArray(array)) {
+                    fetchedData = [...fetchedData, ...array];
+                    setHelpersData(fetchedData || []);
+                } else {
+                    console.error('Unexpected data format:', response.data);
+                    Swal.fire('Error', 'Unexpected response format.', 'error');
+                }
             } catch (error) {
                 console.error('Error fetching helpers:', error);
                 Swal.fire('Error', 'Failed to fetch helpers.', 'error');
             } finally {
                 setLoading(false);
             }
+
         } else {
             try {
                 const response = await axios.post(
@@ -118,7 +125,7 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
                     {
                         premise_id: premiseId,
                         card_no: cardNo,
-                        sub_premise_id: subPremiseId
+                        sub_premise_id: subPremiseId,
                     },
                     {
                         headers: {
@@ -126,16 +133,23 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
                         },
                     }
                 );
-                // fetchHelpers();
 
-                const { data } = response.data;
-                setHelpersData(data || []);
+                // Access the array directly from the response
+                const array = response.data.data?.array;
+
+                if (Array.isArray(array)) {
+                    setHelpersData(array || []);
+                } else {
+                    console.error('Unexpected data format:', response.data);
+                    Swal.fire('Error', 'Unexpected response format.', 'error');
+                }
             } catch (error) {
                 console.error('Error fetching helpers:', error);
                 Swal.fire('Error', 'Failed to fetch helpers.', 'error');
             } finally {
                 setLoading(false);
             }
+
         }
 
 
@@ -144,7 +158,7 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
 
     const tagHelper = async (helper: any) => {
         console.log(helper);
-        
+
         try {
             await axios.post(
                 'http://139.84.166.124:8060/staff-service/tag/premise_unit',

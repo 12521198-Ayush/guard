@@ -107,8 +107,8 @@ const DataTable = () => {
                     },
                 }
             );
-            if (response.data?.data) {
-                const dataObj = response.data?.data;
+            if (response.data?.data?.array) {
+                const dataObj = response.data?.data?.array;
                 const dataArray = [dataObj];
                 setGridData(dataArray);
             } else {

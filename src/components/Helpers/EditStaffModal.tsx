@@ -130,7 +130,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
         },
         { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
       );
-      const staffData = response.data.data[0];
+      const staffData = response.data.data?.array[0];
       setStaffDetails(staffData);
 
       form.setFieldsValue({

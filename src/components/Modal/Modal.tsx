@@ -43,7 +43,7 @@ const EditModal = ({ open, guardian_id, onClose, id, sub_premise_id, association
                 },
             });
 
-            const guardianList = response.data.data;
+            const guardianList = response.data.data?.array;
             const selectedGuardian = guardianList.find((guardian: any) => guardian._id === guardian_id);
 
             if (selectedGuardian) {

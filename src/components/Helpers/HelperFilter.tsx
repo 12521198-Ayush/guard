@@ -59,8 +59,8 @@ const HelperFilter: React.FC<{ helpersData: (data: any) => void }> = ({ helpersD
                 }
             );
 
-            console.log('Filter Response:', response.data);
-            helpersData(response.data?.data || []);
+            // console.log('Filter Response:', response.data);
+            helpersData(response.data?.data?.array || []);
             Swal.fire('Success', 'Filter applied successfully!', 'success');
         } catch (error: any) {
             console.error('Filter Error:', error);

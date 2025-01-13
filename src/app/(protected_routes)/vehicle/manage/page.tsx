@@ -52,8 +52,7 @@ const VehicleTab = ({
                     },
                     { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
                 );
-
-                const fetchedUnits = response.data?.data?.map((item: any) => item.id) || [];
+                const fetchedUnits = response.data?.data?.array.map((item: any) => item.id) || [];
                 setpremiseUnitId(fetchedUnits);
             } catch (error) {
                 message.error('Failed to fetch premiseUnitId.');
