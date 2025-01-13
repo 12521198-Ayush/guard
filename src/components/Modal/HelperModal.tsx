@@ -3,6 +3,7 @@ import { Modal, Input, Button, Table, Spin, Select } from 'antd';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import Image from 'next/image';
 
 const { Option } = Select;
 
@@ -253,12 +254,12 @@ const TagNewHelper: React.FC<TagNewHelperProps> = ({
             title: 'Picture',
             key: 'picture',
             render: (record: Helper) => (
-                <img
+                <Image
                     src={record.picture_url !== '-' ? record.picture_url : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSn8_bOZNLwRTmEpl45X6dNH6IDp5xV4vfCFg&s'}
                     alt="Helper"
+                    width={60}
+                    height={60}
                     style={{
-                        width: '60px',
-                        height: '60px',
                         borderRadius: '8px',
                         border: '2px solid #ddd',
                     }}

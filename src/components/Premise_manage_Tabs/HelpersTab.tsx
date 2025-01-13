@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Button, Form, Spin, Breakpoint, Space, Select } from 'antd';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Table, Button, Form, Spin, Breakpoint, Space, Select, Image } from 'antd';
 import Swal from 'sweetalert2';
 import HelperModal from '../Modal/HelperModal';
 import { useSession } from 'next-auth/react';
@@ -33,30 +33,22 @@ const HelpersTab = ({
     const [limit, setLimit] = useState(10);
     const [hasNextPage, setHasNextPage] = useState(false);
     const [loading, setLoading] = useState<boolean>(true);
-    const [isModalVisible, setIsModalVisible] = useState(false);
     const { data: session } = useSession();
 
-    useEffect(() => {
-        if (premiseId) {
-            fetchHelpers(currentPage, limit);
-        }
-    }, [premiseId, subPremiseId, premiseUnitId, currentPage, limit]);
-    
-
-
-    const fetchHelpers = async (page: number, limit: number) => {
+    const fetchHelpers = useCallback(async (page: number, limit: number) => {
         setLoading(true);
+        const payload = {
+            premise_id: premiseId,
+            sub_premise_id: subPremiseId,
+            premise_unit_id: premiseUnitId,
+            page,
+            limit,
+        };
 
         try {
             const response = await axios.post(
                 'http://139.84.166.124:8060/staff-service/list',
-                {
-                    premise_id: premiseId,
-                    sub_premise_id: subPremiseId,
-                    premise_unit_id: premiseUnitId,
-                    page: page,
-                    limit: limit,
-                },
+                payload,
                 {
                     headers: {
                         Authorization: `Bearer ${session?.user?.accessToken}`,
@@ -64,20 +56,28 @@ const HelpersTab = ({
                 }
             );
 
-            const [ data ] = response.data?.data?.array;
-            console.log(response.data?.data?.array);
-            
+            const array = response.data.data?.array;
 
-            setHasNextPage(data.length === limit);
-            setHelpersData(response.data?.data?.array);
+            if (Array.isArray(array)) {
+                setHasNextPage(array.length === limit);
+                setHelpersData(array || []);
+            } else {
+                console.error('Unexpected response format:', response.data);
+                Swal.fire('Error', 'Unexpected response format.', 'error');
+            }
         } catch (error) {
-            console.error('Error fetching helpers:', error);
+            console.error('Error fetching helpers data:', error);
             Swal.fire('Error', 'Failed to fetch helpers data.', 'error');
         } finally {
             setLoading(false);
         }
-    };
+    }, [premiseId, subPremiseId, premiseUnitId, session?.user?.accessToken]);
 
+    useEffect(() => {
+        if (premiseId) {
+            fetchHelpers(currentPage, limit);
+        }
+    }, [premiseId, subPremiseId, premiseUnitId, currentPage, limit, fetchHelpers]);
 
 
     const unTag = async (record: any) => {
@@ -133,7 +133,7 @@ const HelpersTab = ({
             width: 300,
             render: (record: Helper) => (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <img
+                    <Image
                         src={record.picture_url !== '-' ? record.picture_url : ''}
                         alt="Helper"
                         style={{
@@ -200,13 +200,13 @@ const HelpersTab = ({
             setCurrentPage((prevPage) => prevPage - 1); // Move to the previous page
         }
     };
-        
+
     const handleLimitChange = (value: number) => {
         setLimit(value);
         setCurrentPage(1);
         fetchHelpers(1, value); // Fetch data for the first page with new limit
     };
-    
+
     const [tagNewHelperModal, settagNewHelperModal] = useState(false);
 
 
