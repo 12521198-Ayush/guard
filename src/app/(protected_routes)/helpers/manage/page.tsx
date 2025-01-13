@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Table, Input, Spin, Button, Breakpoint, Space, Select, message } from 'antd';
 import Swal from 'sweetalert2';
 import { useSession } from 'next-auth/react';
@@ -8,11 +8,9 @@ import HelperCard from '../../../../components/Helpers/HelperCard';
 import TaggedItems from '../../../../components/Helpers/TaggedItems';
 import TaggedItemsModal from '../../../../components/Helpers/TaggedItemsModal';
 import { EditOutlined, DeleteOutlined, SafetyOutlined, IdcardOutlined, HomeOutlined } from '@ant-design/icons';
-import HelperFilter from '@/components/Helpers/HelperFilter';
 import EditStaffModal from '@/components/Helpers/EditStaffModal';
 import NewPremiseTagHM from '@/components/Helpers/NewPremiseTagHM';
 import DocumentsColumn from './DocumentsColumn';
-import { Modal, Image } from 'antd';
 
 interface Subpremise {
     sub_premise_id: string;
@@ -69,55 +67,55 @@ const HelpersTab = () => {
 
     const subPremises = session?.user?.subpremiseArray || [];
 
+    const fetchHelpers = useCallback(
+        async (page: number, limit: number) => {
+            setLoading(true);
 
-    const fetchHelpers = async (page: number, limit: number) => {
-        setLoading(true);
-        // console.log(cardNo);
-        const payload = {
-            premise_id: premiseId,
-            card_no: cardNo,
-            sub_premise_id: subPremiseId,
-            premise_unit_id: premiseUnitId,
-            page,
-            limit,
-        }
+            const payload = {
+                premise_id: premiseId,
+                card_no: cardNo,
+                sub_premise_id: subPremiseId,
+                premise_unit_id: premiseUnitId,
+                page,
+                limit,
+            };
 
-        try {
-            const response = await axios.post(
-                'http://139.84.166.124:8060/staff-service/list',
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${session?.user?.accessToken}`,
-                    },
+            try {
+                const response = await axios.post(
+                    'http://139.84.166.124:8060/staff-service/list',
+                    payload,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session?.user?.accessToken}`,
+                        },
+                    }
+                );
+
+                const array = response.data.data?.array;
+
+                if (Array.isArray(array)) {
+                    setHasNextPage(array.length === limit);
+                    setHelpersData(array || []);
+                } else {
+                    console.error('Unexpected response format:', response.data);
+                    Swal.fire('Error', 'Unexpected response format.', 'error');
                 }
-            );
-
-            // Access the array directly
-            const array = response.data.data?.array;
-
-            if (Array.isArray(array)) {
-                setHasNextPage(array.length === limit); // Check if the length matches the limit
-                setHelpersData(array || []); // Update the helpers data
-            } else {
-                console.error('Unexpected response format:', response.data);
-                Swal.fire('Error', 'Unexpected response format.', 'error');
+            } catch (error) {
+                console.error('Error fetching helpers data:', error);
+                Swal.fire('Error', 'Failed to fetch helpers data.', 'error');
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error('Error fetching helpers data:', error);
-            Swal.fire('Error', 'Failed to fetch helpers data.', 'error');
-        } finally {
-            setLoading(false);
-        }
-
-    };
+        },
+        [premiseId, cardNo, subPremiseId, premiseUnitId, session]
+    );
 
     useEffect(() => {
         if (premiseId) {
-            // console.log('Fetching helpers for Page:', currentPage, 'Limit:', limit);
             fetchHelpers(currentPage, limit);
         }
-    }, [premiseId, currentPage, limit]);
+    }, [premiseId, currentPage, limit, fetchHelpers]);
+
 
 
     const unTag = async (type: 'subpremise' | 'premise_unit', id: string, qr_code?: string) => {
