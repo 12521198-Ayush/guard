@@ -1,31 +1,20 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, message, Upload, Select, Col, Row } from 'antd';
 import dynamic from 'next/dynamic';
+import axios from 'axios';
 import 'react-quill/dist/quill.snow.css';
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
-const predefinedTemplates = [
-    {
-        label: 'Welcome Email',
-        subject: 'Welcome to Our Service!',
-        message: 'Dear [Name],<br/><br/>Thank you for joining our service. We’re excited to have you on board!',
-    },
-    {
-        label: 'Reminder Email',
-        subject: 'Reminder: Upcoming Appointment',
-        message: 'Dear [Name],<br/><br/>This is a reminder for your appointment scheduled on [Date].',
-    },
-    {
-        label: 'Thank You Email',
-        subject: 'Thank You for Your Support!',
-        message: 'Dear [Name],<br/><br/>We sincerely appreciate your support and look forward to serving you again.',
-    },
-];
-
 const recipientGroups = [
+    { label: 'All Admins', emails: ['admin@example.com', 'admin@example.com', 'admin@example.com'] },
+    { label: 'All Owners', emails: ['admin@example.com'] },
+    { label: 'All Tenants', emails: ['admin@example.com'] },
+    { label: 'All Residents', emails: ['admin@example.com'] },
+    { label: 'Tower A', emails: ['admin@example.com'] },
+    { label: 'Tower B', emails: ['admin@example.com'] },
     { label: 'Admin', emails: ['admin@example.com'] },
     { label: 'Support', emails: ['support@example.com'] },
     { label: 'Custom', emails: [] },
@@ -35,7 +24,27 @@ const ComposeMail: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [messageContent, setMessageContent] = useState('');
     const [recipients, setRecipients] = useState<string[]>([]);
+    const [emailTemplates, setEmailTemplates] = useState<any[]>([]);
     const [form] = Form.useForm();
+
+    useEffect(() => {
+        fetchEmailTemplates();
+    }, []);
+
+    // fetch templates here
+    const fetchEmailTemplates = async () => {
+        try {
+            const response = await axios.post(
+                'http://139.84.166.124:8060/communication-service-producer/communication/email/template/read',
+                { test: 'test' }
+            );
+            const templates = response.data.data || [];
+            setEmailTemplates(templates);
+        } catch (error) {
+            message.error('Failed to fetch email templates.');
+            console.error('Error fetching templates:', error);
+        }
+    };
 
     const handleRecipientsChange = (value: string[]) => {
         setRecipients(value);
@@ -52,34 +61,47 @@ const ComposeMail: React.FC = () => {
         }
     };
 
-    const handleSendMail = (values: { recipient: string; subject: string }) => {
+    // send mail function
+    const handleSendMail = async (values: { subject: string }) => {
         if (!messageContent.trim()) {
             message.error('Please enter your message.');
             return;
         }
 
         setLoading(true);
-        const mailDetails = { ...values, message: messageContent };
 
-        // Mock API call
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            await axios.post(
+                'http://139.84.166.124:8060/communication-service-producer/communication/email/send',
+                {
+                    recipient_email: recipients,
+                    recipient_type: 'individual',
+                    premise_id: null,
+                    message: messageContent,
+                    subject: values.subject,
+                    object_id_attachment_array: [],
+                }
+            );
             message.success('Mail sent successfully!');
-            console.log('Mail Details:', mailDetails);
-        }, 1000);
+        } catch (error) {
+            message.error('Failed to send email.');
+            console.error('Error sending mail:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleTemplateChange = (templateId: string) => {
+        const template = emailTemplates.find((t) => t._id === templateId);
+        if (template) {
+            form.setFieldsValue({ subject: template.template_description });
+            setMessageContent(template.template);
+        }
     };
 
     const handleFailed = (errorInfo: any) => {
         message.error('Please complete all required fields.');
         console.error('Form Validation Error:', errorInfo);
-    };
-
-    const handleTemplateChange = (templateIndex: number) => {
-        const template = predefinedTemplates[templateIndex];
-        if (template) {
-            form.setFieldsValue({ subject: template.subject });
-            setMessageContent(template.message);
-        }
     };
 
     return (
@@ -89,11 +111,11 @@ const ComposeMail: React.FC = () => {
                 layout="vertical"
                 onFinish={handleSendMail}
                 onFinishFailed={handleFailed}
-                initialValues={{ recipient: '', subject: '' }}
+                initialValues={{ subject: '' }}
             >
-                <Form.Item label="To" rules={[{ required: true, message: 'Please enter a mail.' }]}>
+                {/* Recipient Selection */}
+                <Form.Item label="To" rules={[{ required: true, message: 'Please enter a recipient.' }]}>
                     <Row gutter={16}>
-                        {/* Recipient Group Dropdown */}
                         <Col xs={24} sm={12}>
                             <Select
                                 placeholder="Select recipient group"
@@ -107,8 +129,6 @@ const ComposeMail: React.FC = () => {
                                 ))}
                             </Select>
                         </Col>
-
-                        {/* Custom Email Input */}
                         <Col xs={24} sm={12}>
                             <Select
                                 mode="tags"
@@ -128,23 +148,25 @@ const ComposeMail: React.FC = () => {
                     name="subject"
                     rules={[{ required: true, message: 'Please enter a subject.' }]}
                 >
-                    <Input placeholder="Subject" className="border-gray-300 rounded-md" />
+                    <Input placeholder="Subject" />
                 </Form.Item>
 
+                {/* Templates */}
                 <Form.Item label="Templates">
                     <Select
                         placeholder="Select a template"
                         onChange={handleTemplateChange}
+                        style={{ width: '100%' }}
                     >
-                        {predefinedTemplates.map((template, index) => (
-                            <Select.Option key={index} value={index}>
-                                {template.label}
+                        {emailTemplates.map((template) => (
+                            <Select.Option key={template._id} value={template._id}>
+                                {template.template_description}
                             </Select.Option>
                         ))}
                     </Select>
                 </Form.Item>
 
-                {/* Message Body Field */}
+                {/* Message Body */}
                 <Form.Item
                     label="Message"
                     rules={[{ required: true }]} // Validation handled separately
@@ -156,40 +178,18 @@ const ComposeMail: React.FC = () => {
                         className="h-60"
                     />
                 </Form.Item>
+
                 <br />
                 <br />
-                <Form.Item
-                    label="Upload Attachments"
-                    name="upload"
-                >
-                    <Upload.Dragger
-                        listType="picture"
-                        showUploadList={{ showRemoveIcon: true }}
-                        accept=".png,.jpeg"
-                        maxCount={5}
-                    >
-                        <img
-                            width="100"
-                            height="100"
-                            className="mx-auto"
-                            src="https://img.icons8.com/?size=100&id=11550&format=png&color=000000"
-                            alt="upload-to-cloud--v1"
-                        />
-                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                        <p className="ant-upload-hint">Only images (JPG, PNG) or PDFs are allowed</p>
-                    </Upload.Dragger>
-                </Form.Item>
 
                 {/* Send Button */}
                 <Form.Item>
                     <Button
                         htmlType="submit"
                         loading={loading}
-                        className="ml-auto"
                         style={{
                             background: 'linear-gradient(90deg, #4e92ff, #1e62d0)',
                             color: 'white',
-                            marginLeft: '8px',
                             border: 'none',
                             marginRight: '4px',
                             borderRadius: '4px',
