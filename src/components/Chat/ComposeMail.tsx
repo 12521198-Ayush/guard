@@ -181,10 +181,12 @@ const ComposeMail: React.FC = () => {
 
                 <br />
                 <br />
+                <br />
 
                 {/* Send Button */}
                 <Form.Item>
                     <Button
+                        // className='w-full'
                         htmlType="submit"
                         loading={loading}
                         style={{

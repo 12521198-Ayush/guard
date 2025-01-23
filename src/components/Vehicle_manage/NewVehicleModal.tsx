@@ -170,11 +170,14 @@ const NewVehicleModal: React.FC<NewVehicleModalProps> = ({
                     { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
                 );
 
-                const fetchedUnits = response.data?.data?.map((item: any) => item.id) || [];
+                // console.log(response.data); // Inspect the full response for debugging
+
+                const fetchedUnits = Array.isArray(response.data?.data?.array)
+                    ? response.data.data.array.map((item: any) => item.id)
+                    : [];
                 setpremiseUnitId(fetchedUnits);
             } catch (error) {
-                message.error('Failed to fetch premiseUnitId.');
-                console.error(error);
+                console.error("Failed to fetch premiseUnitId:", error);
             }
         };
 
@@ -182,6 +185,7 @@ const NewVehicleModal: React.FC<NewVehicleModalProps> = ({
             fetchUnit_id();
         }
     }, [session?.user.accessToken, subPremiseId]);
+
 
     useEffect(() => {
         if (open) {
@@ -292,7 +296,7 @@ const NewVehicleModal: React.FC<NewVehicleModalProps> = ({
         form.setFieldsValue({ slot_id: '' });
 
     };
-    
+
 
     return (
         <Modal
@@ -340,7 +344,7 @@ const NewVehicleModal: React.FC<NewVehicleModalProps> = ({
                         onChange={handleUnitChange}
                         placeholder="Select a Premise Unit"
                         value={unitID}
-                        disabled={premiseUnitId.length === 0}  
+                        disabled={premiseUnitId.length === 0}
                     >
                         {Array.isArray(premiseUnitId) && premiseUnitId.length > 0 ? (
                             premiseUnitId.map((unit) => (

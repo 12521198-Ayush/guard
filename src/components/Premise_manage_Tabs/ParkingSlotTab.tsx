@@ -156,13 +156,14 @@ const ParkingTab = ({
             });
 
             const result = await response.json();
+            
             if (result.error) {
                 throw new Error(result.error);
             }
             setData(result.data);
             setlength(result.data.length());
         } catch (error: any) {
-            console.error('Failed to fetch parking slots: ' + error.message);
+           // console.error('Failed to fetch parking slots: ' + error.message);
         } finally {
             setLoading(false);
         }

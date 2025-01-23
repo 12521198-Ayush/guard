@@ -9,8 +9,15 @@ import HomeSharpIcon from '@mui/icons-material/HomeSharp';
 import ManageAccountsSharpIcon from '@mui/icons-material/ManageAccountsSharp';
 import AdminPanelSettingsSharpIcon from '@mui/icons-material/AdminPanelSettingsSharp';
 import StorageIcon from '@mui/icons-material/Storage';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import PsychologyAltIcon from '@mui/icons-material/PsychologyAlt';
+import ClassIcon from '@mui/icons-material/Class';
 import CarRepairIcon from '@mui/icons-material/CarRepair';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import { MailOutlined } from "@ant-design/icons";
+
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -27,6 +34,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     storedSidebarExpanded === null ? false : storedSidebarExpanded === "true",
   );
 
+  // close on click outside
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
       if (!sidebar.current || !trigger.current) return;
@@ -42,6 +50,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     return () => document.removeEventListener("click", clickHandler);
   });
 
+  // close if the esc key is pressed
   useEffect(() => {
     const keyHandler = ({ key }: KeyboardEvent) => {
       if (!sidebarOpen || key !== "Escape") return;
@@ -136,6 +145,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   Manage Premise
                 </Link>
               </li>
+
+              <li>
+                <Link
+                  href="/manage-tickets"
+                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                    }`}
+                >
+                  <SupportAgentIcon />
+                  Manage Tickets
+                </Link>
+              </li>              
 
               {/* helpers menu  */}
               <SidebarLinkGroup
@@ -386,11 +406,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                           <li>
                             <Link
-                              href="/gate-logs/other"
+                              href="/gate-logs/visitor"
                               className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-flats" && "text-white"
                                 }`}
                             >
-                              Other Visitor Logs
+                              Visitor Logs
                             </Link>
                           </li>
                         </ul>
@@ -411,7 +431,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   return (
                     <React.Fragment>
                       <Link
-                        href="/emails"
+                        href="/emailS"
                         className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/flats-residents" ||
                           pathname.includes("manage-helpers")) &&
                           "bg-graydark dark:bg-meta-4"
@@ -450,7 +470,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
                           <li>
                             <Link
-                              href="/emails/inbox"
+                              href="/emailS/inbox"
                               className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-resident-owner" && "text-white"
                                 }`}
                             >
@@ -473,6 +493,790 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   );
                 }}
               </SidebarLinkGroup>
+
+
+              {/* <li>
+                <Link
+                  href="/flats-residents/manage-helpers"
+                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                    }`}
+                >
+                  <ManageAccountsSharpIcon/>
+                
+                  Manage Helpers 
+                </Link>
+              </li> */}
+              {/* <li>
+                <Link
+                  href="/flats-residents/manage-flats"
+                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                    }`}
+                >
+                  <CarRepairIcon />
+                  Manage Vehicles
+                </Link>
+              </li> */}
+              {/* <li>
+                <Link
+                  href="/emails"
+                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                    }`}
+                >
+                  <MailOutlined />
+                  Emails
+                </Link>
+              </li> */}
+
+              {/* manage-society menu  */}
+              {/* <SidebarLinkGroup
+                activeCondition={
+                  pathname === "/society-management" || pathname.includes("society-management")
+                }
+              >
+                {(handleClick, open) => {
+                  return (
+                    <React.Fragment>
+                      <Link
+                        href="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
+                          pathname.includes("parking-management")) &&
+                          "bg-graydark dark:bg-meta-4"
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                       <AccountBalanceIcon/>
+                       Manage Premise 
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
+                            }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                            fill=""
+                          />
+                        </svg>
+                      </Link>
+                     
+                      <div
+                        className={`translate transform overflow-hidden ${!open && "hidden"
+                          }`}
+                      >
+                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <Link
+                              href="/society-management/pending-approvals"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/society-management/pending-approvals" && "text-white"
+                                }`}
+                            >
+                              Pending Approvals
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/society-management/notice-mom"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/notice-mom" && "text-white"
+                                }`}
+                            >
+                              Notice & MOM
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/society-management/management-committee"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/management-committee" && "text-white"
+                                }`}
+                            >
+                              Management Committee
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/society-management/member-directory"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/member-directory" && "text-white"
+                                }`}
+                            >
+                              Member Directory
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/society-management/complaints"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/complaints" && "text-white"
+                                }`}
+                            >
+                              Complaints
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/society-management/staff-directory"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/staff-directory" && "text-white"
+                                }`}
+                            >
+                              Staff Directory
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/society-management/vehicle-directory"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/vehicle-directory" && "text-white"
+                                }`}
+                            >
+                              Vehicle Directory
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/society-management/vendors-directory"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/vendors-directory" && "text-white"
+                                }`}
+                            >
+                              Vendors Directory
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                     
+                    </React.Fragment>
+                  );
+                }}
+              </SidebarLinkGroup> */}
+
+
+
+
+
+              {/* gate and visitors menu  */}
+              {/* <SidebarLinkGroup
+                activeCondition={
+                  pathname === "/gate-visitors" || pathname.includes("gate-visitors")
+                }
+              >
+                {(handleClick, open) => {
+                  return (
+                    <React.Fragment>
+                      <Link
+                        href="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
+                          pathname.includes("gate-visitors")) &&
+                          "bg-graydark dark:bg-meta-4"
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                       <AdminPanelSettingsSharpIcon />
+                       Gate & Visitors
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
+                            }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                            fill=""
+                          />
+                        </svg>
+                      </Link>
+                     
+                      <div
+                        className={`translate transform overflow-hidden ${!open && "hidden"
+                          }`}
+                      >
+                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <Link
+                              href="/gate-visitors/manage-staff-security"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-staff-security" && "text-white"}`}
+                            >
+                              Manage Staff/Security
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/gate-visitors/manage-daily-help"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-daily-help" && "text-white"}`}
+                            >
+                              Manage Daily Help
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/gate-visitors/in-out-records"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/in-out-records" && "text-white"}`}
+                            >
+                              In & Out Records
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/gate-visitors/attendance"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/attendance" && "text-white"}`}
+                            >
+                              Attendance
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/gate-visitors/gate-pass"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/gate-pass" && "text-white"}`}
+                            >
+                              Gate Pass
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/gate-visitors/smart-boom-barriers"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/smart-boom-barriers" && "text-white"}`}
+                            >
+                              Smart Boom Barriers
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/gate-visitors/patrolling-incidents"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/patrolling-incidents" && "text-white"}`}
+                            >
+                              Patrolling and Incidents
+                            </Link>
+                          </li>
+
+                        </ul>
+                      </div>
+                     
+                    </React.Fragment>
+                  );
+                }}
+              </SidebarLinkGroup>  */}
+
+
+              {/* inventory menu  */}
+              {/* <SidebarLinkGroup
+                activeCondition={
+                  pathname === "/inventory" || pathname.includes("inventory")
+                }
+              >
+                {(handleClick, open) => {
+                  return (
+                    <React.Fragment>
+                      <Link
+                        href="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
+                          pathname.includes("inventory")) &&
+                          "bg-graydark dark:bg-meta-4"
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                       <StorageIcon/>
+                        Inventory 
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
+                            }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                            fill=""
+                          />
+                        </svg>
+                      </Link>
+                   
+                      <div
+                        className={`translate transform overflow-hidden ${!open && "hidden"
+                          }`}
+                      >
+                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <Link
+                              href="/inventory/dashboard"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Dashboard
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/inventory/item-master"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-layout" &&
+                                "text-white"
+                                } `}
+                            >
+                              Items Master
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/inventory/stock-issue-entry"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-layout" &&
+                                "text-white"
+                                } `}
+                            >
+                              Stock/issue Entry
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/inventory/manage-category"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-layout" &&
+                                "text-white"
+                                } `}
+                            >
+                              Manage category
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/inventory/goods-note"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-layout" &&
+                                "text-white"
+                                } `}
+                            >
+                              Goods Received Notes
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                     
+                    </React.Fragment>
+                  );
+                }}
+              </SidebarLinkGroup> */}
+
+
+              {/* vendors menu  */}
+              {/* <SidebarLinkGroup
+                activeCondition={
+                  pathname === "/vedor-management" || pathname.includes("vedor-management")
+                }
+              >
+                {(handleClick, open) => {
+                  return (
+                    <React.Fragment>
+                      <Link
+                        href="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
+                          pathname.includes("vedor-management")) &&
+                          "bg-graydark dark:bg-meta-4"
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                       <LocalShippingIcon/>
+                        Vendors
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
+                            }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                            fill=""
+                          />
+                        </svg>
+                      </Link>
+                      
+                      <div
+                        className={`translate transform overflow-hidden ${!open && "hidden"
+                          }`}
+                      >
+                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <Link
+                              href="/vendor-management/vendor-service"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Manage Vendor Service
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                      
+                    </React.Fragment>
+                  );
+                }}
+              </SidebarLinkGroup> */}
+
+
+              {/* Amenities menu  */}
+              {/* <SidebarLinkGroup
+                activeCondition={
+                  pathname === "/amenities-management" || pathname.includes("amenities-management")
+                }
+              >
+                {(handleClick, open) => {
+                  return (
+                    <React.Fragment>
+                      <Link
+                        href="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
+                          pathname.includes("amenities-management")) &&
+                          "bg-graydark dark:bg-meta-4"
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                       <ClassIcon/>
+                       Amenities 
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
+                            }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                            fill=""
+                          />
+                        </svg>
+                      </Link>
+                      
+                      <div
+                        className={`translate transform overflow-hidden ${!open && "hidden"
+                          }`}
+                      >
+                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <Link
+                              href="/amenities-management/amenities-class"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Amenities & Classes
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                      
+                    </React.Fragment>
+                  );
+                }}
+              </SidebarLinkGroup> */}
+
+
+              {/* help desk menu  */}
+              {/* <SidebarLinkGroup
+                activeCondition={
+                  pathname === "/help-desk" || pathname.includes("help-desk")
+                }
+              >
+                {(handleClick, open) => {
+                  return (
+                    <React.Fragment>
+                      <Link
+                        href="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
+                          pathname.includes("help-desk")) &&
+                          "bg-graydark dark:bg-meta-4"
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                       <PsychologyAltIcon/>
+                       Help Desk 
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
+                            }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                            fill=""
+                          />
+                        </svg>
+                      </Link>
+                      
+                      <div
+                        className={`translate transform overflow-hidden ${!open && "hidden"
+                          }`}
+                      >
+                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <Link
+                              href="/help-desk/open-tickets"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Open Tickets
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/help-desk/categories"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Categories
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/help-desk/escalation"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Escalation Matrix
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/help-desk/assignment-rules"
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Assignment Rules
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                      
+                    </React.Fragment>
+                  );
+                }}
+              </SidebarLinkGroup> */}
+
+
+              {/* parking management menu  */}
+              {/* <SidebarLinkGroup
+                activeCondition={
+                  pathname === "/parking-management" || pathname.includes("parking-management")
+                }
+              >
+                {(handleClick, open) => {
+                  return (
+                    <React.Fragment>
+                      <Link
+                        href="/parking-management"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
+                          pathname.includes("parking-management")) &&
+                          "bg-graydark dark:bg-meta-4"
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                       <CarRepairIcon/>
+                       Parking 
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
+                            }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                            fill=""
+                          />
+                        </svg>
+                      </Link>
+                      
+                      <div
+                        className={`translate transform overflow-hidden ${!open && "hidden"
+                          }`}
+                      >
+                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <Link
+                              href="/parking-management/dashboard "
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Dashboard
+                            </Link>
+                          </li>
+                          
+                        </ul>
+                      </div>
+                      
+                    </React.Fragment>
+                  );
+                }}
+              </SidebarLinkGroup> */}
+
+
+              {/* financial management menu  */}
+              {/* <SidebarLinkGroup
+                activeCondition={
+                  pathname === "/financial-management" || pathname.includes("financial-management")
+                }
+              >
+                {(handleClick, open) => {
+                  return (
+                    <React.Fragment>
+                      <Link
+                        href="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
+                          pathname.includes("parking-management")) &&
+                          "bg-graydark dark:bg-meta-4"
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                       <LocalAtmIcon/>
+                       Financial 
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
+                            }`}
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                            fill=""
+                          />
+                        </svg>
+                      </Link>
+                      
+                      <div
+                        className={`translate transform overflow-hidden ${!open && "hidden"
+                          }`}
+                      >
+                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                          <li>
+                            <Link
+                              href="/financial-management/master "
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Master
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/financial-management/billing "
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Billing
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/financial-management/report "
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Report
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/financial-management/transaction "
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Transaction
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/financial-management/vendors "
+                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
+                                "text-white"
+                                }`}
+                            >
+                              Vendors
+                            </Link>
+                          </li>
+                          
+                        </ul>
+                      </div>
+                      
+                    </React.Fragment>
+                  );
+                }}
+              </SidebarLinkGroup> */}
 
             </ul>
           </div>

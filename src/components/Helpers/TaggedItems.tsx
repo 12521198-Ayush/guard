@@ -25,7 +25,7 @@ const TaggedItems: React.FC<TaggedItemsProps> = ({
                 onClick={onShowSubPremises}
             >
                 <HomeOutlined className="text-2xl text-blue-500" />
-                <span className="text-lg">
+                <span className="">
                     Sub-Premises ({subPremiseCount})
                 </span>
             </div>
@@ -36,7 +36,7 @@ const TaggedItems: React.FC<TaggedItemsProps> = ({
                 onClick={onShowPremiseUnits}
             >
                 <ApartmentOutlined className="text-2xl text-green-500" />
-                <span className="text-lg">
+                <span className="">
                     Premise Units ({premiseUnitCount})
                 </span>
             </div>

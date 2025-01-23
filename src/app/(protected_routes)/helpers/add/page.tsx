@@ -298,12 +298,13 @@ const HelperCreationForm = () => {
                                 <img
                                     width="60"
                                     height="60"
-                                    className="mx-auto"
+                                    className="mx-auto "
                                     src="https://img.icons8.com/?size=100&id=7820&format=png&color=000000"
                                     alt="upload-to-cloud--v1"
                                 />
                                 <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                                <p className="ant-upload-hint">Only images (JPG, PNG) are allowed</p>
+                                <p className="ant-upload-hint">Only images (JPG, PNG) are allowed </p>
+                                <br />
                             </Upload.Dragger>
                         </Form.Item>
                     </Col>
