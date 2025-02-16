@@ -17,6 +17,8 @@ import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import { MailOutlined } from "@ant-design/icons";
+import { signIn, useSession } from 'next-auth/react';
+import ProfileCard from "../Header/ProfileCard";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -27,6 +29,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const pathname = usePathname();
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
+  const { data: session, update, status } = useSession();
 
   let storedSidebarExpanded = "true";
 
@@ -70,1220 +73,139 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   }, [sidebarExpanded]);
 
   return (
-    <aside
-      ref={sidebar}
-      className={`absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-    >
-      {/* <!-- SIDEBAR HEADER --> */}
-      <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
-        <div className="text-white flex text-md justify-center items-center">
-          <Link href="/dashboard">
-            <Image
-              width={52}
-              height={52}
-              src="/images/logo/logo.png"
-              alt="Logo"
-              priority
+    <>
+
+      <aside
+        ref={sidebar}
+        className={`absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+      >
+
+        {/* <!-- SIDEBAR HEADER --> */}
+        <div className="flex items-center justify-between gap-2">
+          <aside className="w-64 bg-gray-900 text-white">
+            <ProfileCard
+              name="Test Resident"
+              email="test.res@servizing.com"
+              location="000, NA, JGP"
             />
-          </Link>
-          &ensp;&ensp;  SERVIZING
+            {/* Other sidebar items */}
+          </aside>
         </div>
-
-        <button
-          ref={trigger}
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-controls="sidebar"
-          aria-expanded={sidebarOpen}
-          className="block lg:hidden"
-        >
-          <svg
-            className="fill-current"
-            width="20"
-            height="18"
-            viewBox="0 0 20 18"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M19 8.175H2.98748L9.36248 1.6875C9.69998 1.35 9.69998 0.825 9.36248 0.4875C9.02498 0.15 8.49998 0.15 8.16248 0.4875L0.399976 8.3625C0.0624756 8.7 0.0624756 9.225 0.399976 9.5625L8.16248 17.4375C8.31248 17.5875 8.53748 17.7 8.76248 17.7C8.98748 17.7 9.17498 17.625 9.36248 17.475C9.69998 17.1375 9.69998 16.6125 9.36248 16.275L3.02498 9.8625H19C19.45 9.8625 19.825 9.4875 19.825 9.0375C19.825 8.55 19.45 8.175 19 8.175Z"
-              fill=""
-            />
-          </svg>
-        </button>
-      </div>
-      {/* <!-- SIDEBAR HEADER --> */}
+        <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
+          {/* <!-- Sidebar Menu --> */}
+          <nav className="mt-1 px-1 py-0 lg:mt-0 lg:px-6">
+            {/* <!-- Menu Group --> */}
+            <div>
 
 
-      <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-        {/* <!-- Sidebar Menu --> */}
-        <nav className="mt-1 px-1 py-0 lg:mt-0 lg:px-6">
-          {/* <!-- Menu Group --> */}
-          <div>
+              <ul className="mb-6 flex flex-col gap-3.5">
+                <li>
+                  <Link
+                    href="/home"
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                      }`}
+                  >
+                    <img width="30" height="48" src="https://img.icons8.com/doodle/48/ringing-phone.png" alt="ringing-phone" />
+                    Update landline
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    href="/add-photo"
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                      }`}
+                  >
+                    <img width="30" height="40" src="https://img.icons8.com/office/40/family--v3.png" alt="family--v3" />
+                    Add Family Members Photo
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    href="/emergency-contacts"
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                      }`}
+                  >
+                    <img width="30" height="50" src="https://img.icons8.com/stickers/50/new-contact.png" alt="new-contact" />
+                    Add Emergency Contact
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    href="/my-visitors"
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                      }`}
+                  >
+                    <img width="30" height="48" src="https://img.icons8.com/color/48/tourist-guide-skin-type-1.png" alt="tourist-guide-skin-type-1" />
+                    My Visitors
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    href="/search-vehicle"
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                      }`}
+                  >
+                    <img width="30" height="50" src="https://img.icons8.com/arcade/64/traffic-jam.png" alt="traffic-jam" />
+                    Search any Vehicle
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/registered-vehicle"
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                      }`}
+                  >
+                    <img width="30" height="50" src="https://img.icons8.com/dusk/64/licence.png" alt="licence" />
+                    Registered Vehicle
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/flat-switch"
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                      }`}
+                  >
+                    <img width="30" height="50" src="https://img.icons8.com/plasticine/100/replace.png" alt="replace" />
+                    Switch Flat
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    href="/add-member"
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                      }`}
+                  >
+                    <img width="30" height="50" src="https://img.icons8.com/arcade/64/plus-math.png" alt="plus-math" />
+                    Add a Member
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/"
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
+                      }`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="30" height="30" viewBox="0 0 48 48">
+                      <path fill="#2196F3" d="M37,40H11l-6,6V12c0-3.3,2.7-6,6-6h26c3.3,0,6,2.7,6,6v22C43,37.3,40.3,40,37,40z"></path><path fill="#FFF" d="M22 20H26V31H22zM24 13A2 2 0 1 0 24 17 2 2 0 1 0 24 13z"></path>
+                    </svg>
+                    About Servizing
+                  </Link>
+                </li>
 
 
-            <ul className="mb-6 flex flex-col gap-1.5">
-              {/* home menu */}
-              <li>
-                <Link
-                  href="/dashboard"
-                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                    }`}
-                >
-                  <HomeSharpIcon />
-                  Home
-                </Link>
-              </li>
+              </ul>
+            </div>
+          </nav>
 
-              <li>
-                <Link
-                  href="/manage-premise"
-                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                    }`}
-                >
-                  <AccountBalanceIcon />
-                  Manage Premise
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  href="/manage-tickets"
-                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                    }`}
-                >
-                  <SupportAgentIcon />
-                  Manage Tickets
-                </Link>
-              </li>              
-
-              {/* helpers menu  */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/helpers" || pathname.includes("helpers")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="/helpers"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/flats-residents" ||
-                          pathname.includes("manage-helpers")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <ManageAccountsSharpIcon />
-                        Manage Helpers
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/helpers/manage"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-resident-owner" && "text-white"
-                                }`}
-                            >
-                              Manage
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/helpers/add"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-flats" && "text-white"
-                                }`}
-                            >
-                              Add Helper
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/helpers/bulk"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-flats" && "text-white"
-                                }`}
-                            >
-                              Bulk Status Update
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/helpers/pass"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/change-ownership" && "text-white"
-                                }`}
-                            >
-                              Download Pass
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
-
-              {/* Vehicle menu  */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/vehicles" || pathname.includes("vehicles")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="/vehicles"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/flats-residents" ||
-                          pathname.includes("manage-helpers")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <CarRepairIcon />
-                        Vehicle Management
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/vehicle/manage"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-resident-owner" && "text-white"
-                                }`}
-                            >
-                              Manage Vehicles
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/vehicle/pass"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-flats" && "text-white"
-                                }`}
-                            >
-                              Download Passes
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
-
-              {/* Logs menu */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/gate-logs" || pathname.includes("gate-logs")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="/gate-logs"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/flats-residents" ||
-                          pathname.includes("manage-helpers")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <AdminPanelSettingsSharpIcon />
-                        Gate Logs
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/gate-logs/maid"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-resident-owner" && "text-white"
-                                }`}
-                            >
-                              Maid Logs
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-logs/vehicle"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-flats" && "text-white"
-                                }`}
-                            >
-                              Vehicle Logs
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-logs/residents"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-flats" && "text-white"
-                                }`}
-                            >
-                              Residents Logs
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-logs/providers"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-flats" && "text-white"
-                                }`}
-                            >
-                              Service Provider Logs
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-logs/visitor"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-flats" && "text-white"
-                                }`}
-                            >
-                              Visitor Logs
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
-
-
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/email" || pathname.includes("email")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="/emails"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/flats-residents" ||
-                          pathname.includes("manage-helpers")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <StorageIcon/>
-                        Email
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/emails/inbox"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-resident-owner" && "text-white"
-                                }`}
-                            >
-                              Inbox
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/emails/compose"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-flats" && "text-white"
-                                }`}
-                            >
-                              Compose mail
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
-
-
-              {/* <li>
-                <Link
-                  href="/flats-residents/manage-helpers"
-                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                    }`}
-                >
-                  <ManageAccountsSharpIcon/>
-                
-                  Manage Helpers 
-                </Link>
-              </li> */}
-              {/* <li>
-                <Link
-                  href="/flats-residents/manage-flats"
-                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                    }`}
-                >
-                  <CarRepairIcon />
-                  Manage Vehicles
-                </Link>
-              </li> */}
-              {/* <li>
-                <Link
-                  href="/emails"
-                  className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                    }`}
-                >
-                  <MailOutlined />
-                  Emails
-                </Link>
-              </li> */}
-
-              {/* manage-society menu  */}
-              {/* <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/society-management" || pathname.includes("society-management")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
-                          pathname.includes("parking-management")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                       <AccountBalanceIcon/>
-                       Manage Premise 
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-                     
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/society-management/pending-approvals"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/society-management/pending-approvals" && "text-white"
-                                }`}
-                            >
-                              Pending Approvals
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/society-management/notice-mom"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/notice-mom" && "text-white"
-                                }`}
-                            >
-                              Notice & MOM
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/society-management/management-committee"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/management-committee" && "text-white"
-                                }`}
-                            >
-                              Management Committee
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/society-management/member-directory"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/member-directory" && "text-white"
-                                }`}
-                            >
-                              Member Directory
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/society-management/complaints"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/complaints" && "text-white"
-                                }`}
-                            >
-                              Complaints
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/society-management/staff-directory"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/staff-directory" && "text-white"
-                                }`}
-                            >
-                              Staff Directory
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/society-management/vehicle-directory"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/vehicle-directory" && "text-white"
-                                }`}
-                            >
-                              Vehicle Directory
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/society-management/vendors-directory"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/vendors-directory" && "text-white"
-                                }`}
-                            >
-                              Vendors Directory
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-                     
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup> */}
-
-
-
-
-
-              {/* gate and visitors menu  */}
-              {/* <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/gate-visitors" || pathname.includes("gate-visitors")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
-                          pathname.includes("gate-visitors")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                       <AdminPanelSettingsSharpIcon />
-                       Gate & Visitors
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-                     
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/gate-visitors/manage-staff-security"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-staff-security" && "text-white"}`}
-                            >
-                              Manage Staff/Security
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-visitors/manage-daily-help"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/manage-daily-help" && "text-white"}`}
-                            >
-                              Manage Daily Help
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-visitors/in-out-records"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/in-out-records" && "text-white"}`}
-                            >
-                              In & Out Records
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-visitors/attendance"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/attendance" && "text-white"}`}
-                            >
-                              Attendance
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-visitors/gate-pass"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/gate-pass" && "text-white"}`}
-                            >
-                              Gate Pass
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-visitors/smart-boom-barriers"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/smart-boom-barriers" && "text-white"}`}
-                            >
-                              Smart Boom Barriers
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/gate-visitors/patrolling-incidents"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/patrolling-incidents" && "text-white"}`}
-                            >
-                              Patrolling and Incidents
-                            </Link>
-                          </li>
-
-                        </ul>
-                      </div>
-                     
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>  */}
-
-
-              {/* inventory menu  */}
-              {/* <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/inventory" || pathname.includes("inventory")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
-                          pathname.includes("inventory")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                       <StorageIcon/>
-                        Inventory 
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-                   
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/inventory/dashboard"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Dashboard
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/inventory/item-master"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-layout" &&
-                                "text-white"
-                                } `}
-                            >
-                              Items Master
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/inventory/stock-issue-entry"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-layout" &&
-                                "text-white"
-                                } `}
-                            >
-                              Stock/issue Entry
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/inventory/manage-category"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-layout" &&
-                                "text-white"
-                                } `}
-                            >
-                              Manage category
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/inventory/goods-note"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-layout" &&
-                                "text-white"
-                                } `}
-                            >
-                              Goods Received Notes
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-                     
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup> */}
-
-
-              {/* vendors menu  */}
-              {/* <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/vedor-management" || pathname.includes("vedor-management")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
-                          pathname.includes("vedor-management")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                       <LocalShippingIcon/>
-                        Vendors
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-                      
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/vendor-management/vendor-service"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Manage Vendor Service
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-                      
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup> */}
-
-
-              {/* Amenities menu  */}
-              {/* <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/amenities-management" || pathname.includes("amenities-management")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
-                          pathname.includes("amenities-management")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                       <ClassIcon/>
-                       Amenities 
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-                      
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/amenities-management/amenities-class"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Amenities & Classes
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-                      
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup> */}
-
-
-              {/* help desk menu  */}
-              {/* <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/help-desk" || pathname.includes("help-desk")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
-                          pathname.includes("help-desk")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                       <PsychologyAltIcon/>
-                       Help Desk 
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-                      
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/help-desk/open-tickets"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Open Tickets
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/help-desk/categories"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Categories
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/help-desk/escalation"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Escalation Matrix
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/help-desk/assignment-rules"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Assignment Rules
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
-                      
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup> */}
-
-
-              {/* parking management menu  */}
-              {/* <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/parking-management" || pathname.includes("parking-management")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="/parking-management"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
-                          pathname.includes("parking-management")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                       <CarRepairIcon/>
-                       Parking 
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-                      
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/parking-management/dashboard "
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Dashboard
-                            </Link>
-                          </li>
-                          
-                        </ul>
-                      </div>
-                      
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup> */}
-
-
-              {/* financial management menu  */}
-              {/* <SidebarLinkGroup
-                activeCondition={
-                  pathname === "/financial-management" || pathname.includes("financial-management")
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <Link
-                        href="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === "/forms" ||
-                          pathname.includes("parking-management")) &&
-                          "bg-graydark dark:bg-meta-4"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                       <LocalAtmIcon/>
-                       Financial 
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && "rotate-180"
-                            }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </Link>
-                      
-                      <div
-                        className={`translate transform overflow-hidden ${!open && "hidden"
-                          }`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/financial-management/master "
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Master
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/financial-management/billing "
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Billing
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/financial-management/report "
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Report
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/financial-management/transaction "
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Transaction
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/financial-management/vendors "
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/forms/form-elements" &&
-                                "text-white"
-                                }`}
-                            >
-                              Vendors
-                            </Link>
-                          </li>
-                          
-                        </ul>
-                      </div>
-                      
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup> */}
-
-            </ul>
-          </div>
-        </nav>
-        {/* <!-- Sidebar Menu --> */}
-      </div>
-    </aside>
+        </div>
+      </aside>
+    </>
   );
 };
 

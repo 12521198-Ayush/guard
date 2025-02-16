@@ -224,11 +224,11 @@ const DropdownUser = () => {
 
 
   return (
-    <div className="relative">
+    <div className="relative ml-auto  ">
       <Link
         ref={trigger}
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-4"
+        className="flex items-center g"
         href="#"
       >
         {/* <span className="hidden text-right lg:block">

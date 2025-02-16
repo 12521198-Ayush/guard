@@ -18,18 +18,33 @@ const Header = (props: {
       <div className="flex flex-grow items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
         <header className="bg-white p-2">
           <h1 className="text-2xl font-bold text-center text-gray-800">
-            <HomeWorkIcon />
-            &nbsp;&nbsp;
-            {session?.user?.current_premise_name || 'User'}
+            {/* <HomeWorkIcon /> */}
+            {/* &nbsp;&nbsp; */}
+            {/* {session?.user?.current_premise_name || 'User'} */}
             {/* " "
             {session?.user?.primary_premise_id || 'User'} */}
           </h1>
         </header>
+
+        <div className="text-black font-bold font-semibold flex text-md justify-center items-center">
+          <Link href="/dashboard">
+            <Image
+            className="drop-shadow-xl"
+              width={52}
+              height={52}
+              src="/images/logo/logo.png"
+              alt="Logo"
+              priority
+            />
+          </Link>
+          &ensp;&ensp;  SERVIZING
+        </div>
         {/* <div>
 
           {session?.user?.primary_premise_name || 'User'}
         </div> */}
-        <div className=" mr-5 flex items-center gap-2 sm:gap-4 lg:hidden">
+         {/* <DropdownNotification /> */}
+        <div className="ml-auto flex items-center gap-2 sm:gap-4 lg:hidden">
           {/* <!-- Hamburger Toggle BTN --> */}
           <button
             aria-controls="sidebar"
@@ -71,28 +86,13 @@ const Header = (props: {
           
         </div>
 
-       
+        {/* <DropdownNotification /> */}
 
-        <div className="flex items-center gap-3 2xsm:gap-7">
-
+        <div className="flex items-center gap-3 ml-4 2xsm:gap-7">
           <ul className="flex items-center gap-2 2xsm:gap-4">
-
-            {/* <!-- Dark Mode Toggler --> */}
-            {/* <DarkModeSwitcher /> */}
-            {/* <!-- Dark Mode Toggler --> */}
-
-            {/* <!-- Notification Menu Area --> */}
             <DropdownNotification />
-            {/* <!-- Notification Menu Area --> */}
-
-            {/* <!-- Chat Notification Area --> */}
-            <DropdownMessage />
-            {/* <!-- Chat Notification Area --> */}
           </ul>
-
-          {/* <!-- User Area --> */}
-          <DropdownUser />
-          {/* <!-- User Area --> */}
+          {/* <DropdownUser /> */}
         </div>
       </div>
     </header>
