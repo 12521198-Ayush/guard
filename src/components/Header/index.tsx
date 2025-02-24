@@ -1,17 +1,29 @@
+"use client"
 import Link from "next/link";
-import DarkModeSwitcher from "./DarkModeSwitcher";
-import DropdownMessage from "./DropdownMessage";
 import DropdownNotification from "./DropdownNotification";
-import DropdownUser from "./DropdownUser";
 import Image from "next/image";
-import HomeWorkIcon from '@mui/icons-material/HomeWork'; 
 import { useSession } from 'next-auth/react';
+import React, { useEffect, useState } from "react";
+import DropdownUser from "./DropdownUser";
 
 
 const Header = (props: {
   sidebarOpen: string | boolean | undefined;
   setSidebarOpen: (arg0: boolean) => void;
+
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    setIsMobile(window.innerWidth < 768);
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const { data: session } = useSession();
   return (
     <header className="sticky top-0 z-999 flex w-full bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
@@ -26,24 +38,26 @@ const Header = (props: {
           </h1>
         </header>
 
-        <div className="text-black font-bold font-semibold flex text-md justify-center items-center">
-          <Link href="/dashboard">
-            <Image
-            className="drop-shadow-xl"
-              width={52}
-              height={52}
-              src="/images/logo/logo.png"
-              alt="Logo"
-              priority
-            />
-          </Link>
-          &ensp;&ensp;  SERVIZING
-        </div>
+        {isMobile && (
+          <div className="text-black font-bold font-semibold flex text-md justify-center items-center">
+            <Link href="/dashboard">
+              <Image
+                className="drop-shadow-xl"
+                width={52}
+                height={52}
+                src="/images/logo/logo.png"
+                alt="Logo"
+                priority
+              />
+            </Link>
+            &ensp;&ensp;  SERVIZING
+          </div>
+        )}
         {/* <div>
 
           {session?.user?.primary_premise_name || 'User'}
         </div> */}
-         {/* <DropdownNotification /> */}
+        {/* <DropdownNotification /> */}
         <div className="ml-auto flex items-center gap-2 sm:gap-4 lg:hidden">
           {/* <!-- Hamburger Toggle BTN --> */}
           <button
@@ -83,16 +97,18 @@ const Header = (props: {
           </button>
           {/* <!-- Hamburger Toggle BTN --> */}
 
-          
+
         </div>
 
         {/* <DropdownNotification /> */}
 
         <div className="flex items-center gap-3 ml-4 2xsm:gap-7">
-          <ul className="flex items-center gap-2 2xsm:gap-4">
+          <ul className="flex items-center gap-2 2xsm:gap-">
             <DropdownNotification />
           </ul>
-          {/* <DropdownUser /> */}
+          {!isMobile && (
+            <DropdownUser />
+          )}
         </div>
       </div>
     </header>

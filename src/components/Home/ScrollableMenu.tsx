@@ -25,43 +25,6 @@ const ScrollableMenu = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    useEffect(() => {
-        if (isShaking) {
-            const style = `
-                @keyframes shake {
-                    0% { transform: translateX(0); }
-                    25% { transform: translateX(-5px); }
-                    50% { transform: translateX(5px); }
-                    75% { transform: translateX(-5px); }
-                    100% { transform: translateX(0); }
-                }
-
-                @keyframes blink {
-                    0% { opacity: 1; }
-                    50% { opacity: 0; }
-                    100% { opacity: 1; }
-                }
-
-                .animate-shake {
-                    animation: shake 1s ease-in-out;
-                }
-
-                .animate-blink {
-                    animation: blink 1s ease-in-out infinite;
-                }
-            `;
-
-            const styleTag = document.createElement("style");
-            styleTag.type = 'text/css';
-            styleTag.innerHTML = style;
-            document.head.appendChild(styleTag);
-
-            return () => {
-                document.head.removeChild(styleTag);
-            };
-        }
-    }, [isShaking]);
-
     return (
         <div className="w-full overflow-x-auto scrollbar-hide">
             <div className="flex gap-6 p-4 whitespace-nowrap">

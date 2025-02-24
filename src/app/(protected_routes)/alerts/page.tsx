@@ -41,7 +41,7 @@ const NotificationPreferences = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 rounded-lg shadow-md bg-white">
+    <div className="max-w-full mx-auto p-4 rounded-lg shadow-md bg-white">
       {/* Go Back Button */}
       {/* <button
         className="flex items-center text-blue-600 hover:text-blue-800 mb-4"

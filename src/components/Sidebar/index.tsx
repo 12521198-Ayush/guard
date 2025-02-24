@@ -4,20 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import SidebarLinkGroup from "./SidebarLinkGroup";
-import HomeSharpIcon from '@mui/icons-material/HomeSharp';
-import ManageAccountsSharpIcon from '@mui/icons-material/ManageAccountsSharp';
-import AdminPanelSettingsSharpIcon from '@mui/icons-material/AdminPanelSettingsSharp';
-import StorageIcon from '@mui/icons-material/Storage';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import PsychologyAltIcon from '@mui/icons-material/PsychologyAlt';
-import ClassIcon from '@mui/icons-material/Class';
-import CarRepairIcon from '@mui/icons-material/CarRepair';
-import LocalAtmIcon from '@mui/icons-material/LocalAtm';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import SupportAgentIcon from '@mui/icons-material/SupportAgent';
-import { MailOutlined } from "@ant-design/icons";
-import { signIn, useSession } from 'next-auth/react';
+import { useSession } from "next-auth/react";
 import ProfileCard from "../Header/ProfileCard";
 
 interface SidebarProps {
@@ -25,72 +12,111 @@ interface SidebarProps {
   setSidebarOpen: (arg: boolean) => void;
 }
 
-const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
+const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
-  const trigger = useRef<any>(null);
-  const sidebar = useRef<any>(null);
-  const { data: session, update, status } = useSession();
+  const trigger = useRef<HTMLButtonElement | null>(null);
+  const sidebar = useRef<HTMLDivElement | null>(null);
+  const { data: session } = useSession();
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
-  let storedSidebarExpanded = "true";
-
-  const [sidebarExpanded, setSidebarExpanded] = useState(
-    storedSidebarExpanded === null ? false : storedSidebarExpanded === "true",
-  );
-
-  // close on click outside
+  // Handle window resize safely
   useEffect(() => {
-    const clickHandler = ({ target }: MouseEvent) => {
+    if (typeof window === "undefined") return;
+
+    setIsMobile(window.innerWidth < 768);
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Retrieve stored sidebar state
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedSidebarExpanded = localStorage.getItem("sidebar-expanded") === "true";
+      setSidebarExpanded(storedSidebarExpanded);
+    }
+  }, []);
+
+  // Close sidebar on click outside
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const clickHandler = (event: MouseEvent) => {
       if (!sidebar.current || !trigger.current) return;
-      if (
-        !sidebarOpen ||
-        sidebar.current.contains(target) ||
-        trigger.current.contains(target)
-      )
+      if (sidebar.current.contains(event.target as Node) || trigger.current.contains(event.target as Node)) {
         return;
+      }
       setSidebarOpen(false);
     };
+
     document.addEventListener("click", clickHandler);
     return () => document.removeEventListener("click", clickHandler);
-  });
+  }, [sidebarOpen]);
 
-  // close if the esc key is pressed
+  // Close sidebar on Escape key press
   useEffect(() => {
-    const keyHandler = ({ key }: KeyboardEvent) => {
-      if (!sidebarOpen || key !== "Escape") return;
-      setSidebarOpen(false);
+    const keyHandler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSidebarOpen(false);
+      }
     };
+
     document.addEventListener("keydown", keyHandler);
     return () => document.removeEventListener("keydown", keyHandler);
-  });
+  }, [sidebarOpen]);
 
+  // Store sidebar expanded state
   useEffect(() => {
-    localStorage.setItem("sidebar-expanded", sidebarExpanded.toString());
-    if (sidebarExpanded) {
-      document.querySelector("body")?.classList.add("sidebar-expanded");
-    } else {
-      document.querySelector("body")?.classList.remove("sidebar-expanded");
+    if (typeof window !== "undefined") {
+      localStorage.setItem("sidebar-expanded", sidebarExpanded.toString());
+      document.body.classList.toggle("sidebar-expanded", sidebarExpanded);
     }
   }, [sidebarExpanded]);
+
 
   return (
     <>
 
       <aside
         ref={sidebar}
-        className={`absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`absolute left-0 top-0 z-9999 flex h-screen w-82.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
 
         {/* <!-- SIDEBAR HEADER --> */}
         <div className="flex items-center justify-between gap-2">
-          <aside className="w-64 bg-gray-900 text-white">
-            <ProfileCard
-              name="Test Resident"
-              email="test.res@servizing.com"
-              location="000, NA, JGP"
-            />
-            {/* Other sidebar items */}
-          </aside>
+
+          {!isMobile && (
+            <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
+              <div className="text-white flex text-md justify-center items-center">
+                <Link href="/dashboard">
+                  <Image
+                    width={52}
+                    height={52}
+                    src="/images/logo/logo.png"
+                    alt="Logo"
+                    priority
+                  />
+                </Link>
+                &ensp;&ensp; SERVIZING
+              </div>
+            </div>
+          )}
+
+          {/* Mobile header */}
+          {isMobile && (
+            <aside className="w-64 bg-gray-900 text-white">
+              <ProfileCard
+                name="Test Resident"
+                email="test.res@servizing.com"
+                location="000, NA, JGP"
+              />
+            </aside>
+          )}
         </div>
         <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
           {/* <!-- Sidebar Menu --> */}
@@ -99,7 +125,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             <div>
 
 
-              <ul className="mb-6 flex flex-col gap-3.5">
+              <ul className="mb-6 flex flex-col gap-1.5">
                 <li>
                   <Link
                     href="/home"
