@@ -5,7 +5,7 @@ export async function POST(request: Request) {
 
     console.log(body);
 
-    const prefix = process.env.NODE_ENV === "development" ? "__Dev-" : ""
+    const prefix = process.env.NODE_ENV === "production" ? "__Pro-" : ""
     const refreshToken = cookies().get(`${prefix}xxx.refresh-token`)?.value
     const data = {token: refreshToken};
     console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")

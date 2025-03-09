@@ -40,7 +40,7 @@ async function refreshAccessToken(token) {
 
         console.log("The token has been refreshed successfully.")
         // get some data from the new access token such as exp (expiration time)
-         console.log("Decoding token 2nd ... ")
+        console.log("Decoding token 2nd ... ")
         const decodedAccessToken = JSON.parse(Buffer.from(data.data.accessToken.split(".")[1], "base64").toString())
 
 
@@ -68,151 +68,93 @@ export const config = {
         // we use credentials provider here
         CredentialsProvider({
             credentials: {
-                username: { label: "Username", type: "text", placeholder: "Username" },
-                password: {label: "password", type: "password"},
-                mobile: { label: "Mobile", type: "text" },
-                otp: { label: "otp", type: "text" }
+                access_token: { label: "access_token", type: "text", placeholder: "access_token" },
+                refresh_token: { label: "refresh_token", type: "text" }
             },
 
 
             async authorize(credentials, req): Promise<any> {
-                const otp_json = {
-                    mobile: credentials.mobile,
-                    otp: credentials.otp
-                }
-
-                const json = {
-                    username: credentials.username,
-                    password: credentials.password,
-                }
-                const username = credentials.username as string;
-                const password = credentials.password as string;
-                const mobile = credentials.mobile as string;
-                const otp = credentials.otp as string;
-
-                // console.log("`````````````````````````````````````````````")
-                // console.log(otp_json);
-                // console.log(json);
-                // console.log("`````````````````````````````````````````````")
-
-
-                let hashedUsername:any;
-                let hashedPassword:any;
-                let hashedMobile:any;
-                let hashedOtp:any;
-                if(username!=undefined){
-                    hashedUsername = createHash('md5').update(username).digest('hex');
-                    hashedPassword = createHash('md5').update(password).digest('hex');
-                }else{
-                    hashedMobile = createHash('md5').update(mobile).digest('hex');
-                    hashedOtp = createHash('md5').update(otp).digest('hex');
-                }
+                console.log("authorization starts");
                 
-                const payload = {
-                    username: hashedUsername,
-                    password: hashedPassword,
-                };
-                const otp_payload = {
-                    mobile_hash: hashedMobile,
-                    otp_hash: hashedOtp
+                const tokens = {
+                    accessToken: credentials.access_token,
+                    refrehToken: credentials.refresh_token
                 }
 
-               // console.log("**********************")
-                //console.log(otp_payload);
-               // console.log("**********************")
 
-                const isOtpLogin = mobile && otp;
-
-                const apiEndpoint = isOtpLogin
-                    ? `${process.env.API_BASE_URL}/user-service/admin/login/otp_verify`
-                    : `${process.env.API_BASE_URL}/user-service/admin/login/password`;
-
-                const body = isOtpLogin ? JSON.stringify(otp_payload) : JSON.stringify(payload);
-
+                const apiEndpoint = "http://139.84.166.124:8060/user-service/resident/data  ";
                 const res = await fetch(apiEndpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokens.accessToken}`,
                     },
-                    body: body,
                 });
 
-
-                // external api for users to log in, change it with your own endpoint
-                // const res = await fetch(`${process.env.API_BASE_URL}/user-service/admin/login/password`, {
-                //     method: "POST",
-                //     headers: {
-                //         "Content-Type": "application/json",
-                //     },
-                //     body: JSON.stringify(payload)
-                // })
-
-                // // console.log("++++++++++++++++++++++++++++++++++")
-                //console.log("Login Response")
-                // // console.log("++++++++++++++++++++++++++++++++++")
-                // // console.log(res.ok)
-                // // console.log(res.status)
-
                 const userData = await res.json();
-
+                console.log(userData);
+                
                 if (!res.ok) {
                     throw new Error(userData.error.message)
                 }
-                // console.log("++++++++++++++++++++++++++++++++++")
-                // console.log(userData.data)
-                // console.log("++++++++++++++++++++++++++++++++++")
 
                 const expiration = new Date();
                 expiration.setHours(expiration.getHours() + 1);
-                
+
                 interface Premise {
                     premise_id: string;
                     premise_name: string;
-                    current_premise_name:string;
+                    current_premise_name: string;
                     admin_name: string;
                     admin_designation: string;
                     admin_email: string;
-                  }
-                  const premise = userData.data.premises_associated_with.find(
-                    (premise: Premise) => premise.premise_name === userData.data.primary_premise_name
-                  );
+                }
+                const premise = userData.data[0].premise_id;
                 //   console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 //   console.log(premise)
                 //   console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                  
+
                 const user = {
                     //isAdmin: true, 
-                    name: userData.data.premises_associated_with[0]?.admin_name,
-                    role: premise.admin_designation,  // Accessing the first element of the array
-                    email: userData.data.premises_associated_with[0]?.admin_email,
-                    current_premise_name:userData.data.primary_premise_name,
+                    name: userData.data[0].name,
+                    role: userData.data[0].association_type,  // Accessing the first element of the array
+                    email: userData.data[0].email,
+                    current_premise_name: "ireo",
                     img: "/avatar.png",
-                    accessToken: userData.data.accessToken,
-                    refreshToken: userData.data.refreshToken,
+                    accessToken: tokens.accessToken,
+                    refreshToken: tokens.refrehToken,
                     exp: expiration.toISOString(),
-                    primary_premise_id: userData.data.primary_premise_id,
-                    primary_premise_name:userData.data.primary_premise_name,
-                    premises_associated_with:userData.data.premises_associated_with,
-                    sub_premise_access_control_reqd: userData.data.sub_premise_access_control_reqd,
-                    subpremiseArray: userData.data.subpremiseArray
+                    primary_premise_id: premise,
+                    primary_premise_name: "ireo",
+                    premises_associated_with: [],
+                    sub_premise_access_control_reqd: "yes",
+                    subpremiseArray: []
                 };
-               // console.log(user);
+                // console.log(user);
 
                 if (res.ok && user) {
-                    const prefix = process.env.NODE_ENV === "development" ? "__Dev-" : ""
+                    const prefix = process.env.NODE_ENV === "production" ? "__Pro-" : "";
+                    // cookies().set({
+                    //     name: "test-cookie",
+                    //     value: "test-value",
+                    //     httpOnly: true,
+                    //     sameSite: "strict",
+                    //     secure: true,
+                    //   });
+                    try {
+                        cookies().set({
+                            name: `${prefix}xxx.refresh-token`,
+                            value: user.refreshToken,
+                            httpOnly: true,
+                            sameSite: "strict",
+                            secure: false,
+                        } as any);
+                        console.log("Cookie set successfully:", `${prefix}xxx.refresh-token`);
+                    } catch (error) {
+                        console.error("Error setting cookie:", error);
+                    }
 
-                    // we set http only cookie here to store refresh token information as we will not append it 
-                    // to our session to avoid maximum size warning for the session cookie (4096 bytes)
-                    cookies().set({
-                        name: `${prefix}xxx.refresh-token`,
-                        value: user.refreshToken,
-                        httpOnly: true,
-                        sameSite: "strict",
-                        secure: true,
-                    } as any)
-
-                    // // console.log("Cokkies set: ", user);
-                    return user
+                    return user;
                 }
                 return null
             }
@@ -225,25 +167,33 @@ export const config = {
         signIn: "/login",
     },
     callbacks: {
-        async jwt({ token, user, account,trigger,session  }) {
+        async jwt({ token, user, account, trigger, session }) {
             // // console.log("Inside JWT");
             // // console.log(token)
-            
 
             if (account && user) {
+                console.log("user obj", user)
+                console.log("----------------------------------------------------------------------------------------");
                 
+                console.log("account obj", account)
+
                 token.id = user.id,
-                token.accessToken = user.accessToken,
-                token.refreshToken = user.refreshToken,
-                token.role = user.role // the user role
+                    token.accessToken = user.accessToken,
+                    token.refreshToken = user.refreshToken,
+                    token.role = user.role // the user role
                 token.current_premise_name = user.current_premise_name,
-                token.primary_premise_id = user.primary_premise_id,
-                token.primary_premise_name = user.primary_premise_name,
-                token.premises_associated_with = user.premises_associated_with,
-                token.subpremiseArray = user.subpremiseArray,
-                token.sub_premise_access_control_reqd = user.sub_premise_access_control_reqd
+                    token.primary_premise_id = user.primary_premise_id,
+                    token.primary_premise_name = user.primary_premise_name,
+                    token.premises_associated_with = user.premises_associated_with,
+                    token.subpremiseArray = user.subpremiseArray,
+                    token.sub_premise_access_control_reqd = user.sub_premise_access_control_reqd
                 // // console.log("Decoding token 1st ... ")
                 const decodedAccessToken = JSON.parse(Buffer.from(user.accessToken.split(".")[1], "base64").toString())
+                console.log("----------------------------------------------------------------------------------------");
+                console.log("decode accesstoken", decodedAccessToken);
+                console.log("----------------------------------------------------------------------------------------");
+
+                
                 // // console.log("Decoded token 1st ... ")
                 if (decodedAccessToken) {
                     token.email = decodedAccessToken["email"] as string
@@ -254,13 +204,13 @@ export const config = {
                 }
             }
 
-    
-            if(trigger === 'update') {
+
+            if (trigger === 'update') {
                 token.current_premise_name = session.user.current_premise_name,
-                token.subpremiseArray = session.user.subpremiseArray
+                    token.subpremiseArray = session.user.subpremiseArray
                 token.primary_premise_id = session.user.primary_premise_id,
-                token.role = session.user.role,
-                token.sub_premise_access_control_reqd = session.user.sub_premise_access_control_reqd
+                    token.role = session.user.role,
+                    token.sub_premise_access_control_reqd = session.user.sub_premise_access_control_reqd
                 token.subpremiseArray = session.user.subpremiseArray
             }
 
@@ -274,7 +224,7 @@ export const config = {
             //if our access token has expired, refresh it and return the result
             // // console.log("Token expired calling refresh token...");
             return await refreshAccessToken(token)
-            
+
         },
 
         async session({ session, token }) {
@@ -288,7 +238,7 @@ export const config = {
                     societyList: token.societyList as string[],
                     accessToken: token.accessToken as string,
                     accessTokenExpires: token.accessTokenExpires as number,
-                    current_premise_name:token.current_premise_name as any,
+                    current_premise_name: token.current_premise_name as any,
                     role: token.role as string,
                     primary_premise_id: token.primary_premise_id as string,
                     primary_premise_name: token.primary_premise_name as string,
@@ -298,6 +248,7 @@ export const config = {
 
                 },
                 error: token.error,
+                csrf: true,
             }
             //console.log("session => ", mySession);
             return mySession;
@@ -322,14 +273,14 @@ export const config = {
             } else if (pathname.startsWith("/login") || pathname.startsWith("/forgot-password") || pathname.startsWith("/signup")) {
                 const isLoggedIn = !!auth
                 if (isLoggedIn) {
-                    return Response.redirect(new URL("/dashboard", request.nextUrl))
+                    return Response.redirect(new URL("/menu", request.nextUrl))
                 }
                 return true
             }
             return true
         },
     },
-    debug: process.env.NODE_ENV === "development",
+    debug: process.env.NODE_ENV === "production",
 } satisfies NextAuthConfig;
 
 export const { auth, handlers } = NextAuth(config);

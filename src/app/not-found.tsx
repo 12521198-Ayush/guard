@@ -11,7 +11,7 @@ const App: React.FC = () => (
         subTitle="Sorry, the page you visited does not exist."
         extra={
             <Link
-                href="/dashboard"
+                href="/menu"
             >
                 <Button >Back Home</Button>
             </Link>

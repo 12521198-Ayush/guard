@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
 import ProfileCard from "../Header/ProfileCard";
 
 interface SidebarProps {
@@ -16,7 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
   const trigger = useRef<HTMLButtonElement | null>(null);
   const sidebar = useRef<HTMLDivElement | null>(null);
-  const { data: session } = useSession();
+
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
@@ -36,8 +35,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   // Retrieve stored sidebar state
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedSidebarExpanded = localStorage.getItem("sidebar-expanded") === "true";
-      setSidebarExpanded(storedSidebarExpanded);
+      // const storedSidebarExpanded = localStorage.getItem("sidebar-expanded") === "true";
+      // setSidebarExpanded(storedSidebarExpanded);
     }
   }, []);
 
@@ -72,8 +71,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   // Store sidebar expanded state
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("sidebar-expanded", sidebarExpanded.toString());
-      document.body.classList.toggle("sidebar-expanded", sidebarExpanded);
+      // localStorage.setItem("sidebar-expanded", sidebarExpanded.toString());
+      // document.body.classList.toggle("sidebar-expanded", sidebarExpanded);
     }
   }, [sidebarExpanded]);
 
@@ -128,7 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
               <ul className="mb-6 flex flex-col gap-1.5">
                 <li>
                   <Link
-                    href="/home"
+                    href="/menu"
                     className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
                       }`}
                   >
