@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ProfileCard from "../Header/ProfileCard";
+import { useSession } from 'next-auth/react';
+
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -12,6 +14,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
+  const { data: session } = useSession();
   const pathname = usePathname();
   const trigger = useRef<HTMLButtonElement | null>(null);
   const sidebar = useRef<HTMLDivElement | null>(null);
@@ -110,9 +113,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
           {isMobile && (
             <aside className="w-64 bg-gray-900 text-white">
               <ProfileCard
-                name="Test Resident"
-                email="test.res@servizing.com"
-                location="000, NA, JGP"
+                name={session?.user?.name as string|| 'User'}
+                email={session?.user?.email as string|| 'test.res@servizing.com'}
+                role={session?.user?.role as string|| 'role'}
               />
             </aside>
           )}

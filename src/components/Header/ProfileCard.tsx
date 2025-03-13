@@ -1,12 +1,81 @@
+"use client";
+
 import Image from "next/image";
+import { useSession } from 'next-auth/react';
+import { useEffect, useCallback, useRef, useState } from "react";
+import { signOut } from 'next-auth/react';
+import Swal from "sweetalert2";
+
 
 interface ProfileCardProps {
   name: string;
   email: string;
-  location: string;
+  role: string;
 }
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, location }) => {
+const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, role }) => {
+  const { data: session, update, status } = useSession();
+
+
+
+  const logout = useCallback(() => {
+    const accessToken = session?.user?.accessToken || undefined
+
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
+      method: "POST",
+      body: JSON.stringify({ accessToken })
+    })
+      .then(res => res.json())
+      .then(data => {
+        // // console.log(data)
+        /* send log to the Sentry if the endpoint fails
+        if (!data.success)
+        notifySentry("Could not log out!")
+        */
+      })
+      .catch(error => {
+        // // console.log(error)
+        /* send log to the Sentry if an error occurs
+        notifySentry(error)
+        */
+      })
+      .finally(async () => {
+        // message.success(`Logout Successfully`);
+        await signOut({ callbackUrl: `${window.location.origin}/nativeRedirect/logout` })
+      })
+  }, [session])
+
+  useEffect(() => {
+    // // console.log('session: ', session)
+    if (session?.error === "RefreshAccessTokenError") { // remember that error?
+      // force the user to log out if the session has RefreshAccessTokenError
+      logout()
+    }
+  }, [session, logout])
+
+  const logoutConfirm = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out!",
+      icon: "warning",
+      showCancelButton: true,
+      width: '350px',
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, logout!",
+      customClass: {
+        container: "z-[99999] fixed inset-0", // Forces modal above all
+        popup: "z-[99999]", // Ensures popup is always visible
+      },
+      backdrop: true, // Ensure backdrop covers everything
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout(); // Call your logout function
+      }
+    });
+  };
+  
+
   return (
     <div className="relative bg-gray-900 text-white p-5 w-full max-w-xs mx-auto rounded-xl overflow-hidden">
       {/* Geometric Background */}
@@ -28,6 +97,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, location }) => {
 
           {/* Logout Icon */}
           <img
+            onClick={logoutConfirm}
             width="30"
             height="30"
             className="ml-auto cursor-pointer hover:opacity-80 transition"
@@ -39,7 +109,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, location }) => {
         {/* User Details */}
         <h3 className="mt-2 text-lg font-semibold">{name}</h3>
         <p className="text-gray-300 text-sm">{email}</p>
-        <p className="text-gray-400 text-xs">{location}</p>
+        <p className="text-gray-400 text-xs">{role}</p>
       </div>
     </div>
   );

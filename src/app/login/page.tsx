@@ -38,16 +38,13 @@ export default function HomePage() {
             window.location.href = '/menu';
         };
 
-        // ✅ Add event listener immediately
         window.addEventListener('message', handleMessage);
 
-        // ✅ Simulate receiving a message after 1 second (for debugging)
         setTimeout(() => {
             console.log("🚀 Simulating message event...");
             window.postMessage({ accessToken: "testAccess", refreshToken: "testRefresh" }, "*");
         }, 1000);
 
-        // ✅ Cleanup function
         return () => {
             console.log("🔴 Cleaning up: Removing message listener...");
             window.removeEventListener('message', handleMessage);
@@ -55,6 +52,19 @@ export default function HomePage() {
     }, []);
 
     return (
+        // <div>
+        //     <h2>Login Status</h2>
+        //     {access && refresh ? (
+        //         <>
+        //             <p>✅ Access token: {access}</p>
+        //             <p>✅ Refresh token: {refresh}</p>
+        //         </>
+        //     ) : (
+        //         <p>⏳ Waiting for authentication...</p>
+        //     )}
+        // </div>
+
+        
         <div className="flex h-screen items-center justify-center bg-white dark:bg-black">
             <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
         </div>
