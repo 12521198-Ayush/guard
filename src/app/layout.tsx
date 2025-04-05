@@ -2,7 +2,7 @@
 //"use client";
 import { Karla } from "next/font/google";
 import { auth } from "@/auth";
-import Provider from "@/components/Providers";
+import { Providers } from "./providers";
 import { AuthProvider } from "@/components/common/auth-wrapper";
 import "jsvectormap/dist/css/jsvectormap.css";
 import "flatpickr/dist/flatpickr.min.css";
@@ -21,7 +21,9 @@ export default async function RootLayout({ children,
     <html lang="en">
       <body suppressHydrationWarning={true}>
         <AuthProvider session={session}>
-          {children}
+          <Providers>
+            {children}
+          </Providers>
         </AuthProvider>
       </body>
     </html >

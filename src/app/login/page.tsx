@@ -1,72 +1,46 @@
-'use client';
-
+"use client"
 import { useEffect, useState } from 'react';
+import { getTokensFromWebView } from '../../utils/getTokens';
 import { signIn } from "next-auth/react";
+import { useRouter } from 'next/navigation';
 
-export default function HomePage() {
-    const [access, setAccess] = useState<string | null>(null);
-    const [refresh, setRefresh] = useState<string | null>(null);
+export default function Home() {
+    const [tokens, setTokens] = useState({ accessToken: null, refreshToken: null });
+    const router = useRouter();  // Hook for redirecting after sign-in
+
+    const signInWithCredentials = async () => {
+        if (!tokens.accessToken || !tokens.refreshToken) {
+            console.error("Access token or refresh token is missing");
+            return;
+        }
+
+        const response = await signIn("credentials", {
+            access_token: tokens.accessToken,
+            refresh_token: tokens.refreshToken,
+            redirect: false,  // Do not auto-redirect
+        });
+
+        if (response?.ok) {
+            router.push('/menu');  // Redirect to menu if sign-in is successful
+        } else {
+            console.error("Sign-in failed:", response?.error);
+        }
+    };
 
     useEffect(() => {
-        console.log("🟢 useEffect triggered: Setting up message listener...");
-
-        const handleMessage = async (event: MessageEvent) => {
-            console.log("📩 Message received:", event);
-
-            if (!event.data || typeof event.data !== "object") {
-                console.warn("⚠️ Invalid event data:", event.data);
-                return;
-            }
-
-            const { accessToken, refreshToken } = event.data;
-            if (!accessToken || !refreshToken) {
-                console.warn("⚠️ Missing tokens in message:", event.data);
-                return;
-            }
-
-            console.log("✅ Tokens received:", { accessToken, refreshToken });
-
-            setAccess(accessToken.toString());
-            setRefresh(refreshToken.toString());
-
-            await signIn("credentials", {
-                access_token: accessToken.toString(),
-                refresh_token: refreshToken.toString(),
-                redirect: false,
-            });
-
-            window.location.href = '/menu';
-        };
-
-        window.addEventListener('message', handleMessage);
-
-        setTimeout(() => {
-            console.log("🚀 Simulating message event...");
-            window.postMessage({ accessToken: "testAccess", refreshToken: "testRefresh" }, "*");
-        }, 1000);
-
-        return () => {
-            console.log("🔴 Cleaning up: Removing message listener...");
-            window.removeEventListener('message', handleMessage);
-        };
-    }, []);
+        async function fetchTokens() {
+            const { accessToken, refreshToken } = await getTokensFromWebView();
+            setTokens({ accessToken, refreshToken });
+        }
+        fetchTokens();
+        signInWithCredentials();  // Attempt sign-in with the tokens
+    }, [tokens.accessToken, tokens.refreshToken]);  // Trigger sign-in when tokens change
 
     return (
-        // <div>
-        //     <h2>Login Status</h2>
-        //     {access && refresh ? (
-        //         <>
-        //             <p>✅ Access token: {access}</p>
-        //             <p>✅ Refresh token: {refresh}</p>
-        //         </>
-        //     ) : (
-        //         <p>⏳ Waiting for authentication...</p>
-        //     )}
-        // </div>
-
-        
-        <div className="flex h-screen items-center justify-center bg-white dark:bg-black">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
+        <div>
+            <h1>Tokens from Android</h1>
+            <p>Access Token: {tokens.accessToken || 'Not available'}</p>
+            <p>Refresh Token: {tokens.refreshToken || 'Not available'}</p>
         </div>
     );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useSession } from 'next-auth/react';
 import { useEffect, useCallback, useRef, useState } from "react";
 import { signOut } from 'next-auth/react';
@@ -17,64 +16,56 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, role }) => {
   const { data: session, update, status } = useSession();
 
 
-
-  const logout = useCallback(() => {
-    const accessToken = session?.user?.accessToken || undefined
-
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
-      method: "POST",
-      body: JSON.stringify({ accessToken })
-    })
-      .then(res => res.json())
-      .then(data => {
-        // // console.log(data)
-        /* send log to the Sentry if the endpoint fails
-        if (!data.success)
-        notifySentry("Could not log out!")
-        */
-      })
-      .catch(error => {
-        // // console.log(error)
-        /* send log to the Sentry if an error occurs
-        notifySentry(error)
-        */
-      })
-      .finally(async () => {
-        // message.success(`Logout Successfully`);
-        await signOut({ callbackUrl: `${window.location.origin}/nativeRedirect/logout` })
-      })
-  }, [session])
-
-  useEffect(() => {
-    // // console.log('session: ', session)
-    if (session?.error === "RefreshAccessTokenError") { // remember that error?
-      // force the user to log out if the session has RefreshAccessTokenError
-      logout()
-    }
-  }, [session, logout])
-
-  const logoutConfirm = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You will be logged out!",
-      icon: "warning",
-      showCancelButton: true,
-      width: '350px',
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, logout!",
-      customClass: {
-        container: "z-[99999] fixed inset-0", // Forces modal above all
-        popup: "z-[99999]", // Ensures popup is always visible
-      },
-      backdrop: true, // Ensure backdrop covers everything
-    }).then((result) => {
-      if (result.isConfirmed) {
-        logout(); // Call your logout function
-      }
-    });
-  };
+  /*
+    const logout = useCallback(() => {
+      console.log("logout callback");
   
+      const accessToken = session?.user?.accessToken || undefined
+  
+      fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        body: JSON.stringify({ accessToken })
+      })
+        .then(res => res.json())
+        .then(data => {
+        })
+        .catch(error => {
+        })
+        .finally(async () => {
+          await signOut({ callbackUrl: `${window.location.origin}/nativeRedirect/logout` })
+        })
+    }, [session])
+  
+    useEffect(() => {
+      if (session?.error === "RefreshAccessTokenError") { 
+        console.log("logout useEffect");
+        logout();
+      }
+    }, [session, logout])
+  
+    const logoutConfirm = () => {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You will be logged out!",
+        icon: "warning",
+        showCancelButton: true,
+        width: '350px',
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, logout!",
+        customClass: {
+          container: "z-[99999] fixed inset-0", // Forces modal above all
+          popup: "z-[99999]", // Ensures popup is always visible
+        },
+        backdrop: true, // Ensure backdrop covers everything
+      }).then((result) => {
+        if (result.isConfirmed) {
+          logout(); // Call your logout function
+        }
+      });
+    };
+    */
+
 
   return (
     <div className="relative bg-gray-900 text-white p-5 w-full max-w-xs mx-auto rounded-xl overflow-hidden">
@@ -89,13 +80,15 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, role }) => {
 
 
           {/* User Icon */}
-          <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-12 h-12 bg-white-500 rounded-full flex items-center justify-center">
+            <img width="48" height="48" src="https://img.icons8.com/pulsar-gradient/48/user.png" alt="user" />
+            {/* <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-            </svg>
+            </svg> */}
           </div>
 
           {/* Logout Icon */}
+          {/*  
           <img
             onClick={logoutConfirm}
             width="30"
@@ -104,6 +97,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, role }) => {
             src="https://img.icons8.com/windows/32/FFFFFF/exit.png"
             alt="exit"
           />
+          */}
         </div>
 
         {/* User Details */}

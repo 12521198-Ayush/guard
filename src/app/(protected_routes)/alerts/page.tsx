@@ -1,114 +1,215 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Switch, Button, Modal } from "antd";
-import HeaderWithBack from "../../../components/Home/HeaderWithBack";
+import React, { useState } from "react";
 
-const NotificationPreferences = () => {
-  const [preferences, setPreferences] = useState({
-    maidAlerts: false,
-    visitorAlerts: false,
-    vehicleAlerts: false,
+// Explicitly define the interface for the preferences  
+interface PreferencesState {
+  maidNotifications: boolean;
+  vehicleNotifications: boolean;
+  emailNotifications: boolean;
+  whatsappNotifications: boolean;
+  smsNotifications: boolean;
+  preInvite: boolean;
+  voipMode: boolean;
+  ivrsMode: boolean;
+  manualMode: boolean;
+  serviceCenter: boolean;
+  billing: boolean;
+}
+
+const Preferences: React.FC = () => {
+  // Initialize the preferences state  
+  const [preferences, setPreferences] = useState<PreferencesState>({
+    maidNotifications: false,
+    vehicleNotifications: false,
+    emailNotifications: false,
+    whatsappNotifications: false,
+    smsNotifications: false,
+    preInvite: false,
+    voipMode: false,
+    ivrsMode: false,
+    manualMode: false,
+    serviceCenter: false,
+    billing: false,
   });
-  const [loading, setLoading] = useState(false);
 
-  const handleToggle = (type: string) => {
-    setPreferences((prev:any) => ({ ...prev, [type]: !prev[type] }));
-  };
-
-  const handleSubmit = async () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      Modal.success({
-        title: "Success",
-        content: "Preferences saved successfully!",
-        centered: true,
-        getContainer: false,
-        width: 400,
-        style: { padding: "0 20px" },
-        okButtonProps: {
-          style: {
-            backgroundColor: "#1890ff",
-            borderColor: "#1890ff",
-            color: "#fff",
-            fontWeight: "bold",
-            borderRadius: "6px",
-          },
-        },
-      });
-    }, 1500);
+  // Handle toggling preferences  
+  const handleToggle = (key: keyof PreferencesState) => {
+    setPreferences((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   return (
-    <div className="max-w-full mx-auto p-4 rounded-lg shadow-md bg-white">
-      {/* Go Back Button */}
-      {/* <button
-        className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
-        onClick={() => router.back()}
-      >
-        <LeftOutlined className="mr-2" />
+    <div className="min-h-screen py-2 bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Header Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Preferences</h1>
+          {/* <p className="text-gray-600 mt-2">Manage your notification and service preferences below.</p>   */}
+        </div>
 
-      </button> */}
+        {/* Preferences Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          {/* Notification Type */}
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Notification Type</h2>
+          <div className="space-y-4">
+            {[
+              { label: "Maid Notifications", key: "maidNotifications" },
+              { label: "Vehicle Notifications", key: "vehicleNotifications" },
+            ].map((option) => (
+              <div key={option.key} className="flex justify-between items-center p-4 rounded-lg shadow-md bg-gray-100">
+                <span className="text-gray-800">{option.label}</span>
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={preferences[option.key as keyof PreferencesState]} // Cast to keyof PreferencesState
+                    onChange={() => handleToggle(option.key as keyof PreferencesState)} // Cast to keyof PreferencesState
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+            ))}
 
-      <h2 className="mb-4">
-      <HeaderWithBack title="Notification Preferences" />
-      </h2>
+          </div>
 
-      <div className="flex justify-between items-center py-2">
-        <span>Maid Alerts</span>
-        <Switch
-          checked={preferences.maidAlerts}
-          onChange={() => handleToggle("maidAlerts")}
-          style={{ backgroundColor: preferences.maidAlerts ? "#1890ff" : "#d9d9d9" }}
-        />
+          {/* Services */}
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 mt-6">Services</h2>
+          <div className="space-y-4">
+            {[
+              { label: "Email Notifications", key: "emailNotifications" },
+              { label: "WhatsApp Notifications", key: "whatsappNotifications" },
+              { label: "SMS Notifications", key: "smsNotifications" },
+            ].map((option) => (
+              <div key={option.key} className="flex justify-between items-center p-4 rounded-lg shadow-md bg-gray-100">
+                <span className="text-gray-800">{option.label}</span>
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={preferences[option.key as keyof PreferencesState]}
+                    onChange={() => handleToggle(option.key as keyof PreferencesState)}
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          {/* Visitors */}
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 mt-6">Visitors</h2>
+          <div className="flex justify-between items-center p-4 rounded-lg shadow-md bg-gray-100">
+            <span className="text-gray-800">Pre Invite</span>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={preferences.preInvite}
+                onChange={() => handleToggle("preInvite")}
+              />
+              <span className="slider"></span>
+            </label>
+          </div>
+
+          {/* Mode */}
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 mt-6">Mode</h2>
+          <div className="space-y-4">
+            {[
+              { label: "VOIP", key: "voipMode" },
+              { label: "IVRS", key: "ivrsMode" },
+              { label: "Manual", key: "manualMode" },
+            ].map((option: any) => (
+              <div key={option.key} className="flex justify-between items-center p-4 rounded-lg shadow-md bg-gray-100">
+                <span className="text-gray-800">{option.label}</span>
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={preferences[option.key as keyof PreferencesState]}
+                    onChange={() => handleToggle(option.key as keyof PreferencesState)}
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          {/* Other Preferences */}
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 mt-6">Other</h2>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center p-4 rounded-lg shadow-md bg-gray-100">
+              <span className="text-gray-800">Service Center</span>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={preferences.serviceCenter}
+                  onChange={() => handleToggle("serviceCenter")}
+                />
+                <span className="slider"></span>
+              </label>
+            </div>
+            <div className="flex justify-between items-center p-4 rounded-lg shadow-md bg-gray-100">
+              <span className="text-gray-800">Billing</span>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={preferences.billing}
+                  onChange={() => handleToggle("billing")}
+                />
+                <span className="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="flex justify-between items-center py-2">
-        <span>Visitor Alerts</span>
-        <Switch
-          checked={preferences.visitorAlerts}
-          onChange={() => handleToggle("visitorAlerts")}
-          style={{ backgroundColor: preferences.visitorAlerts ? "#1890ff" : "#d9d9d9" }}
-        />
-      </div>
-      <div className="flex justify-between items-center py-2">
-        <span>Vehicle Alerts</span>
-        <Switch
-          checked={preferences.vehicleAlerts}
-          onChange={() => handleToggle("vehicleAlerts")}
-          style={{ backgroundColor: preferences.vehicleAlerts ? "#1890ff" : "#d9d9d9" }}
-        />
-      </div>
 
-      <Button
-        htmlType="submit"
-        disabled={loading}
-        onClick={handleSubmit}
-        className="w-full mt-4"
-        style={{
-          marginBottom: "8px",
-          background: "linear-gradient(90deg,rgb(128, 171, 241),rgb(74, 143, 255))",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          padding: "8px 16px",
-          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-          cursor: "pointer",
-          transition: "transform 0.2s ease, box-shadow 0.2s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.05)";
-          e.currentTarget.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.2)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 0.1)";
-        }}
-      >
-        {loading ? "Saving..." : "Submit"}
-      </Button>
+      {/* Styles for the switches */}
+      <style jsx>{`  
+                .switch {  
+                    position: relative;  
+                    display: inline-block;  
+                    width: 34px;  
+                    height: 20px;  
+                }  
+
+                .switch input {  
+                    opacity: 0;  
+                    width: 0;  
+                    height: 0;  
+                }  
+
+                .slider {  
+                    position: absolute;  
+                    cursor: pointer;  
+                    top: 0;  
+                    left: 0;  
+                    right: 0;  
+                    bottom: 0;  
+                    background-color: #ccc;  
+                    transition: .4s;  
+                    border-radius: 20px;  
+                }  
+
+                .slider:before {  
+                    position: absolute;  
+                    content: "";  
+                    height: 16px;  
+                    width: 16px;  
+                    left: 2px;  
+                    bottom: 2px;  
+                    background-color: white;  
+                    transition: .4s;  
+                    border-radius: 50%;  
+                }  
+
+                input:checked + .slider {  
+                    background-color: #2196F3;  
+                }  
+
+                input:checked + .slider:before {  
+                    transform: translateX(14px);  
+                }  
+            `}</style>
     </div>
   );
 };
 
-export default NotificationPreferences;
+export default Preferences;  

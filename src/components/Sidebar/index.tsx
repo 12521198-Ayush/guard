@@ -7,7 +7,6 @@ import Image from "next/image";
 import ProfileCard from "../Header/ProfileCard";
 import { useSession } from 'next-auth/react';
 
-
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -20,9 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const sidebar = useRef<HTMLDivElement | null>(null);
 
   const [isMobile, setIsMobile] = useState(false);
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
-  // Handle window resize safely
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -35,15 +32,15 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Retrieve stored sidebar state
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // const storedSidebarExpanded = localStorage.getItem("sidebar-expanded") === "true";
-      // setSidebarExpanded(storedSidebarExpanded);
-    }
-  }, []);
+    const keyHandler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSidebarOpen(false);
+    };
 
-  // Close sidebar on click outside
+    document.addEventListener("keydown", keyHandler);
+    return () => document.removeEventListener("keydown", keyHandler);
+  }, [sidebarOpen]);
+
   useEffect(() => {
     if (!sidebarOpen) return;
 
@@ -52,46 +49,34 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       if (sidebar.current.contains(event.target as Node) || trigger.current.contains(event.target as Node)) {
         return;
       }
-      setSidebarOpen(false);
+      setSidebarOpen(false); // Close the sidebar if clicked outside
     };
 
     document.addEventListener("click", clickHandler);
     return () => document.removeEventListener("click", clickHandler);
   }, [sidebarOpen]);
 
-  // Close sidebar on Escape key press
-  useEffect(() => {
-    const keyHandler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setSidebarOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", keyHandler);
-    return () => document.removeEventListener("keydown", keyHandler);
-  }, [sidebarOpen]);
-
-  // Store sidebar expanded state
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // localStorage.setItem("sidebar-expanded", sidebarExpanded.toString());
-      // document.body.classList.toggle("sidebar-expanded", sidebarExpanded);
-    }
-  }, [sidebarExpanded]);
-
+  const handleMenuClick = () => {
+    setSidebarOpen(false); // Close the sidebar when a menu item is clicked
+  };
 
   return (
     <>
+      {/* Blur effect when sidebar is open */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
+          onClick={() => setSidebarOpen(false)} // Close the sidebar when clicking on the blur
+        ></div>
+      )}
 
       <aside
         ref={sidebar}
         className={`absolute left-0 top-0 z-9999 flex h-screen w-82.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
-
-        {/* <!-- SIDEBAR HEADER --> */}
+        {/* SIDEBAR HEADER */}
         <div className="flex items-center justify-between gap-2">
-
           {!isMobile && (
             <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
               <div className="text-white flex text-md justify-center items-center">
@@ -113,124 +98,112 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
           {isMobile && (
             <aside className="w-64 bg-gray-900 text-white">
               <ProfileCard
-                name={session?.user?.name as string|| 'User'}
-                email={session?.user?.email as string|| 'test.res@servizing.com'}
-                role={session?.user?.role as string|| 'role'}
+                name={session?.user?.name as string || 'User'}
+                email={session?.user?.admin_email as string || 'admin@servizing.com'}
+                role={session?.user?.role as string || 'role'}
               />
             </aside>
           )}
         </div>
+
         <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-          {/* <!-- Sidebar Menu --> */}
+          {/* Sidebar Menu */}
           <nav className="mt-1 px-1 py-0 lg:mt-0 lg:px-6">
-            {/* <!-- Menu Group --> */}
             <div>
-
-
-              <ul className="mb-6 flex flex-col gap-1.5">
+              <ul className="mb-6 flex flex-col gap-2">
                 <li>
                   <Link
                     href="/menu"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                      }`}
+                    onClick={handleMenuClick} // Close sidebar when clicking menu
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
                   >
-                    <img width="30" height="48" src="https://img.icons8.com/doodle/48/ringing-phone.png" alt="ringing-phone" />
-                    Update landline
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    href="/add-photo"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                      }`}
-                  >
-                    <img width="30" height="40" src="https://img.icons8.com/office/40/family--v3.png" alt="family--v3" />
-                    Add Family Members Photo
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    href="/emergency-contacts"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                      }`}
-                  >
-                    <img width="30" height="50" src="https://img.icons8.com/stickers/50/new-contact.png" alt="new-contact" />
-                    Add Emergency Contact
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    href="/my-visitors"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                      }`}
-                  >
-                    <img width="30" height="48" src="https://img.icons8.com/color/48/tourist-guide-skin-type-1.png" alt="tourist-guide-skin-type-1" />
-                    My Visitors
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    href="/search-vehicle"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                      }`}
-                  >
-                    <img width="30" height="50" src="https://img.icons8.com/arcade/64/traffic-jam.png" alt="traffic-jam" />
-                    Search any Vehicle
+                    <img width="25" height="30" src="https://img.icons8.com/fluency/48/circled-menu.png" alt="circled-menu"/>
+                    Home
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/registered-vehicle"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                      }`}
+                    href="/dashboard"
+                    onClick={handleMenuClick} // Close sidebar when clicking menu
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
                   >
-                    <img width="30" height="50" src="https://img.icons8.com/dusk/64/licence.png" alt="licence" />
-                    Registered Vehicle
+                    <img width="25" height="30" src="https://img.icons8.com/fluency/48/combo-chart--v1.png" alt="combo-chart--v1"/>
+                    Dashboard
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/flat-switch"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                      }`}
+                    href="https://www.servizing.com/about.html"
+                    onClick={handleMenuClick} // Close sidebar when clicking menu
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
                   >
-                    <img width="30" height="50" src="https://img.icons8.com/plasticine/100/replace.png" alt="replace" />
-                    Switch Flat
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    href="/add-member"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                      }`}
-                  >
-                    <img width="30" height="50" src="https://img.icons8.com/arcade/64/plus-math.png" alt="plus-math" />
-                    Add a Member
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/"
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"
-                      }`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="30" height="30" viewBox="0 0 48 48">
-                      <path fill="#2196F3" d="M37,40H11l-6,6V12c0-3.3,2.7-6,6-6h26c3.3,0,6,2.7,6,6v22C43,37.3,40.3,40,37,40z"></path><path fill="#FFF" d="M22 20H26V31H22zM24 13A2 2 0 1 0 24 17 2 2 0 1 0 24 13z"></path>
-                    </svg>
+                    <img width="25" height="30" src="https://img.icons8.com/lollipop/48/about.png" alt="about"/>
                     About Servizing
                   </Link>
                 </li>
-
-
+                <li>
+                  <Link
+                    href="/premise"
+                    onClick={handleMenuClick} // Close sidebar when clicking menu
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                  >
+                    <img width="25" height="30" src="https://img.icons8.com/ultraviolet/40/front-gate-closed.png" alt="front-gate-closed"/>
+                    My Premise
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/switch-unit"
+                    onClick={handleMenuClick} // Close sidebar when clicking menu
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                  >
+                   <img width="25" height="30" src="https://img.icons8.com/external-febrian-hidayat-flat-febrian-hidayat/64/external-Reverse-user-interface-febrian-hidayat-flat-febrian-hidayat.png" alt="external-Reverse-user-interface-febrian-hidayat-flat-febrian-hidayat"/>
+                    Switch Unit
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/search-vehicle"
+                    onClick={handleMenuClick} // Close sidebar when clicking menu
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                  >
+                    <img width="25" height="30" src="https://img.icons8.com/fluency/48/car--v1.png" alt="car--v1"/>
+                    My Vehicles
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/family-members"
+                    onClick={handleMenuClick} // Close sidebar when clicking menu
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                  >
+                    <img width="25" height="30" src="https://img.icons8.com/external-flaticons-lineal-color-flat-icons/64/external-members-agile-flaticons-lineal-color-flat-icons.png" alt="external-members-agile-flaticons-lineal-color-flat-icons"/>
+                    My Family Members
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/add-society"
+                    onClick={handleMenuClick} // Close sidebar when clicking menu
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                  >
+                    <img width="25" height="30" src="https://img.icons8.com/arcade/64/plus-math.png" alt="plus-math"/>
+                    Add Premise
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/family-members"
+                    onClick={handleMenuClick} // Close sidebar when clicking menu
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                  >
+                    <img width="25" height="30" src="https://img.icons8.com/fluency/48/filled-trash.png" alt="filled-trash"/>
+                    Delete Account
+                  </Link>
+                </li>
               </ul>
             </div>
           </nav>
-
         </div>
       </aside>
     </>

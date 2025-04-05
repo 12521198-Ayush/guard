@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,29 +17,32 @@ const DropdownUser = () => {
   const [error, setError] = useState(null);
 
   const logout = useCallback(() => {
+    console.log("Logout callback");
     const accessToken = session?.user?.accessToken || undefined
-
+    console.log("2");
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
       method: "POST",
       body: JSON.stringify({ accessToken })
     })
       .then(res => res.json())
       .then(data => {
-        // // console.log(data)
+        console.log("Data")
         /* send log to the Sentry if the endpoint fails
         if (!data.success)
             notifySentry("Could not log out!")
         */
       })
       .catch(error => {
-        // // console.log(error)
+
+        console.log("Error:", error)
         /* send log to the Sentry if an error occurs
         notifySentry(error)
          */
       })
       .finally(async () => {
        // message.success(`Logout Successfully`);
-        await signOut({ callbackUrl: `${window.location.origin}/otp` })
+       console.log("Calling Signout")
+        await signOut({ callbackUrl: `${window.location.origin}/nativeRedirect/logout` })
       })
   }, [session])
 
@@ -93,10 +98,6 @@ const DropdownUser = () => {
     setIsModalVisible(false);
   };
 
-
-
-
-
   const handleSocietySelect = async (selectedSociety: any) => {
     if (!session) {
       message.error('Session is not available.');
@@ -144,7 +145,7 @@ const DropdownUser = () => {
       //session.user.current_premise_name = selectedSociety.premise_name
       //console.log(selectedSociety);
       // update({...session!.user, current_premise_name: selectedSociety.premise_name});
-      router.push('/dashboard');
+      router.push('/menu');
       message.success(`Switched to ${selectedSociety.premise_name}`);
       setIsModalVisible(false);
       return data;

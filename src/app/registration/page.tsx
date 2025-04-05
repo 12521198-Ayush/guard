@@ -3,9 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Modal } from "antd";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/store/store";
+import { setNewRegistrationToken, setMobile, resetRegistration } from "@/store/slices/registrationSlice";
 const Register = dynamic(() => import('./Register'), { ssr: false });
 
 export default function Registration() {
+    const dispatch = useDispatch();
     const [new_registration_token, setnew_registration_token] = useState<string | null>(null);
     const [mobile, setmobile] = useState<string | null>(null);
     const [data, setData] = useState<any | null>({});
@@ -19,11 +23,14 @@ export default function Registration() {
             }
 
             const { new_registration_token, mobile } = event.data;
+            dispatch(setNewRegistrationToken(new_registration_token));
+            dispatch(setMobile(mobile));
             setData(event.data);
 
             // Make sure these values are strings or numbers, not objects
             setnew_registration_token(typeof new_registration_token === 'string' ? new_registration_token : null);
             setmobile(typeof mobile === 'string' ? mobile : null);
+           
         };
 
         window.addEventListener('message', handleMessage);

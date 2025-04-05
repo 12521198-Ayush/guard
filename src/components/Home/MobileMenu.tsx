@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import ScrollableMenu from "./ScrollableMenu";
 import { Drawer, Button } from "antd";
+import { Alert } from "antd";
 
 const menuItems = [
   {
@@ -84,7 +85,7 @@ const MobileMenu = () => {
 
       <div className="fixed bottom-5 left-5 z-50">
         <Link href="#" onClick={() => setOpen(true)}>
-        <img width="70" height="70" src="https://img.icons8.com/plasticine/100/automatic.png" alt="automatic"/>
+          <img width="70" height="70" src="https://img.icons8.com/plasticine/100/automatic.png" alt="automatic" />
         </Link>
       </div>
       {isLoading ? (
@@ -117,46 +118,31 @@ const MobileMenu = () => {
             </div>
           </Drawer>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-2 bg-gray-100">
+          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-2 bg-gray-100'>
             {menuItems.map((item, index) => (
-              <div key={index} className="mb-2">
+              <div key={index} className='mb-2'>
                 <Link
                   href={item.link}
-                  className="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-lg hover:bg-gray-200 text-center transition-transform duration-300 ease-in-out hover:scale-95 active:scale-95 relative"
+                  className='flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-lg hover:bg-gray-200 text-center'
                 >
-                  <div className="text-4xl text-blue-500 transition-transform duration-500 ease-in-out hover:rotate-0">
-                    {item.icon}
-                  </div>
-                  <span className="mt-2 text-lg font-semibold text-gray-700 transition-opacity duration-300 ease-in-out hover:opacity-80">
-                    {item.name}
-                  </span>
-                  <span className="mt-1 text-sm text-gray-500">
-                    {item.description}
-                  </span>
-
-                  {item.alert && (
-                    <div className="absolute top-1 left-3 inline-flex items-center mt-2">
-                      <div
-                        onClick={() => setAlertVisible(!alertVisible)}
-                        onMouseEnter={() => setAlertVisible(true)}
-                        onMouseLeave={() => setAlertVisible(false)}
-                        className="flex items-center justify-center w-6 h-6 bg-yellow-600 text-white rounded-full cursor-pointer hover:bg-yellow-700"
-                      >
-                        <span className="text-lg">!</span>
-                      </div>
-
-                      {alertVisible && (
-                        <div className="p-1 bg-yellow-100 rounded-md text-yellow-700 shadow-md font-medium text-xs ml-2">
-                          <p>{item.alert}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {item.icon}
+                  <span className='mt-2 text-lg font-semibold'>{item.name}</span>
+                  <span className='mt-1 text-sm'>{item.description}</span>
                 </Link>
+                {item.alert && (
+                  <div className='mt-2 p-4 border border-yellow-400 rounded-lg shadow-md bg-yellow-50'>
+                    <div className='flex items-center'>
+                      <span className='text-yellow-600 font-bold'>Warning:</span>
+                      <span className='ml-2 text-yellow-700'>{item.alert}</span>
+                      <button className='ml-auto text-yellow-600 hover:text-yellow-800 focus:outline-none'>
+                        
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-
         </>
       )}
     </>

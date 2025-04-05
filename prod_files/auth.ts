@@ -68,99 +68,35 @@ export const config = {
         // we use credentials provider here
         CredentialsProvider({
             credentials: {
-                username: { label: "Username", type: "text", placeholder: "Username" },
-                password: { label: "password", type: "password" },
-                mobile: { label: "Mobile", type: "text" },
-                otp: { label: "otp", type: "text" }
+                access_token: { label: "access_token", type: "text", placeholder: "access_token" },
+                refresh_token: { label: "refresh_token", type: "text" }
             },
 
 
             async authorize(credentials, req): Promise<any> {
-                const otp_json = {
-                    mobile: credentials.mobile,
-                    otp: credentials.otp
+                console.log("authorization starts");
+
+                const tokens = {
+                    accessToken: credentials.access_token,
+                    refrehToken: credentials.refresh_token
                 }
 
-                const json = {
-                    username: credentials.username,
-                    password: credentials.password,
-                }
-                const username = credentials.username as string;
-                const password = credentials.password as string;
-                const mobile = credentials.mobile as string;
-                const otp = credentials.otp as string;
 
-                // console.log("`````````````````````````````````````````````")
-                // console.log(otp_json);
-                // console.log(json);
-                // console.log("`````````````````````````````````````````````")
-
-
-                let hashedUsername: any;
-                let hashedPassword: any;
-                let hashedMobile: any;
-                let hashedOtp: any;
-                if (username != undefined) {
-                    hashedUsername = createHash('md5').update(username).digest('hex');
-                    hashedPassword = createHash('md5').update(password).digest('hex');
-                } else {
-                    hashedMobile = createHash('md5').update(mobile).digest('hex');
-                    hashedOtp = createHash('md5').update(otp).digest('hex');
-                }
-
-                const payload = {
-                    username: hashedUsername,
-                    password: hashedPassword,
-                };
-                const otp_payload = {
-                    mobile_hash: hashedMobile,
-                    otp_hash: hashedOtp
-                }
-
-                // console.log("**********************")
-                //console.log(otp_payload);
-                // console.log("**********************")
-
-                const isOtpLogin = mobile && otp;
-
-                const apiEndpoint = isOtpLogin
-                    ? `${process.env.API_BASE_URL}/user-service/admin/login/otp_verify`
-                    : `${process.env.API_BASE_URL}/user-service/admin/login/password`;
-
-                const body = isOtpLogin ? JSON.stringify(otp_payload) : JSON.stringify(payload);
-
+                const apiEndpoint = "http://139.84.166.124:8060/user-service/resident/data  ";
                 const res = await fetch(apiEndpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokens.accessToken}`,
                     },
-                    body: body,
                 });
 
-
-                // external api for users to log in, change it with your own endpoint
-                // const res = await fetch(`${process.env.API_BASE_URL}/user-service/admin/login/password`, {
-                //     method: "POST",
-                //     headers: {
-                //         "Content-Type": "application/json",
-                //     },
-                //     body: JSON.stringify(payload)
-                // })
-
-                // // console.log("++++++++++++++++++++++++++++++++++")
-                //console.log("Login Response")
-                // // console.log("++++++++++++++++++++++++++++++++++")
-                // // console.log(res.ok)
-                // // console.log(res.status)
-
                 const userData = await res.json();
+                console.log(userData);
 
                 if (!res.ok) {
                     throw new Error(userData.error.message)
                 }
-                // console.log("++++++++++++++++++++++++++++++++++")
-                // console.log(userData.data)
-                // console.log("++++++++++++++++++++++++++++++++++")
 
                 const expiration = new Date();
                 expiration.setHours(expiration.getHours() + 1);
@@ -172,29 +108,37 @@ export const config = {
                     admin_name: string;
                     admin_designation: string;
                     admin_email: string;
+                    registration_status: string;
+                    phone: string;
+                    registration_reference: string;
                 }
-                const premise = userData.data.premises_associated_with.find(
-                    (premise: Premise) => premise.premise_name === userData.data.primary_premise_name
-                );
+                const premise = userData.data[0].premise_id;
+                const sub_premise = userData.data[0].sub_premise_id;
                 //   console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 //   console.log(premise)
                 //   console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
                 const user = {
                     //isAdmin: true, 
-                    name: userData.data.premises_associated_with[0]?.admin_name,
-                    role: premise.admin_designation,  // Accessing the first element of the array
-                    email: userData.data.premises_associated_with[0]?.admin_email,
-                    current_premise_name: userData.data.primary_premise_name,
+                    name: userData.data[0].name,
+                    role: userData.data[0].association_type,  
+                    premise_unit_id: userData.data[0].premise_unit_id, 
+                    admin_email: userData.data[0].email,
+                    phone: userData.data[0].mobile,
+                    registration_reference:userData.data[0].registration_reference,
+                    registration_status:userData.data[0].registration_status,
+
+                    current_premise_name:userData.data[0].premise_name,
                     img: "/avatar.png",
-                    accessToken: userData.data.accessToken,
-                    refreshToken: userData.data.refreshToken,
+                    accessToken: tokens.accessToken,
+                    refreshToken: tokens.refrehToken,
                     exp: expiration.toISOString(),
-                    primary_premise_id: userData.data.primary_premise_id,
-                    primary_premise_name: userData.data.primary_premise_name,
-                    premises_associated_with: userData.data.premises_associated_with,
-                    sub_premise_access_control_reqd: userData.data.sub_premise_access_control_reqd,
-                    subpremiseArray: userData.data.subpremiseArray
+                    primary_premise_id: premise,
+                    sub_premise_id: sub_premise,
+                    primary_premise_name: "ireo",
+                    premises_associated_with: [],
+                    sub_premise_access_control_reqd: "yes",
+                    subpremiseArray: []
                 };
                 // console.log(user);
 
@@ -230,26 +174,35 @@ export const config = {
     secret: process.env.AUTH_SECRET,
     // our custom login page
     pages: {
-        signIn: "/login",
+        signIn: "   ",
     },
     callbacks: {
         async jwt({ token, user, account, trigger, session }) {
             // // console.log("Inside JWT");
             // // console.log(token)
 
-
             if (account && user) {
+                console.log("user obj", user)
+                console.log("----------------------------------------------------------------------------------------");
+
+                console.log("account obj", account)
 
                 token.id = user.id,
-                    token.accessToken = user.accessToken,
-                    token.refreshToken = user.refreshToken,
-                    token.role = user.role // the user role
+                token.name = user.name,
+                token.accessToken = user.accessToken,
+                token.refreshToken = user.refreshToken,
+                token.phone = user.phone,
+                token.registration_status = user.registration_status,
+                token.registration_reference = user.registration_reference;
+                token.admin_email = user.admin_email;
+                token.role = user.role // the user role
                 token.current_premise_name = user.current_premise_name,
-                    token.primary_premise_id = user.primary_premise_id,
-                    token.primary_premise_name = user.primary_premise_name,
-                    token.premises_associated_with = user.premises_associated_with,
-                    token.subpremiseArray = user.subpremiseArray,
-                    token.sub_premise_access_control_reqd = user.sub_premise_access_control_reqd
+                token.primary_premise_id = user.primary_premise_id,
+                token.sub_premise_id = user.sub_premise_id,
+                token.primary_premise_name = user.primary_premise_name,
+                token.premises_associated_with = user.premises_associated_with,
+                token.subpremiseArray = user.subpremiseArray,
+                token.sub_premise_access_control_reqd = user.sub_premise_access_control_reqd
                 // // console.log("Decoding token 1st ... ")
                 const decodedAccessToken = JSON.parse(Buffer.from(user.accessToken.split(".")[1], "base64").toString())
                 // // console.log("Decoded token 1st ... ")
@@ -265,10 +218,10 @@ export const config = {
 
             if (trigger === 'update') {
                 token.current_premise_name = session.user.current_premise_name,
-                    token.subpremiseArray = session.user.subpremiseArray
+                token.subpremiseArray = session.user.subpremiseArray
                 token.primary_premise_id = session.user.primary_premise_id,
-                    token.role = session.user.role,
-                    token.sub_premise_access_control_reqd = session.user.sub_premise_access_control_reqd
+                token.role = session.user.role,
+                token.sub_premise_access_control_reqd = session.user.sub_premise_access_control_reqd
                 token.subpremiseArray = session.user.subpremiseArray
             }
 
@@ -292,13 +245,18 @@ export const config = {
                 user: {
                     ...session.user,
                     id: token.id as string,
-                    email: token.email as string,
+                    name: token.name as string,
+                    phone: token.phone as string,
                     societyList: token.societyList as string[],
                     accessToken: token.accessToken as string,
+                    registration_status: token.registration_status as string,
+                    admin_email: token.admin_email as string,
+                    registration_reference: token.registration_reference as string,
                     accessTokenExpires: token.accessTokenExpires as number,
                     current_premise_name: token.current_premise_name as any,
                     role: token.role as string,
                     primary_premise_id: token.primary_premise_id as string,
+                    sub_premise_id: token.sub_premise_id as string,
                     primary_premise_name: token.primary_premise_name as string,
                     premises_associated_with: token.premises_associated_with as string[],
                     sub_premise_access_control_reqd: token.sub_premise_access_control_reqd as string,
@@ -306,6 +264,7 @@ export const config = {
 
                 },
                 error: token.error,
+                csrf: true,
             }
             //console.log("session => ", mySession);
             return mySession;
@@ -325,12 +284,20 @@ export const config = {
             // if the private routes array includes the search term, we ask authorization here and forward any unauthorized users to the login page
             if (privateRoutes.includes(searchTerm)) {
                 // // console.log(`${!!auth ? "Can" : "Cannot"} access private route ${searchTerm}`)
+                if (auth?.user?.registration_status === "pending") {
+                    return Response.redirect(new URL("/pending", request.nextUrl));
+                }
                 return !!auth
                 // if the pathname starts with one of the routes below and the user is already logged in, forward the user to the home page
             } else if (pathname.startsWith("/login") || pathname.startsWith("/forgot-password") || pathname.startsWith("/signup")) {
                 const isLoggedIn = !!auth
+
+                if (auth?.user?.registration_status === "pending") {
+                    return Response.redirect(new URL("/pending", request.nextUrl));
+                }
+
                 if (isLoggedIn) {
-                    return Response.redirect(new URL("/dashboard", request.nextUrl))
+                    return Response.redirect(new URL("/menu", request.nextUrl))
                 }
                 return true
             }

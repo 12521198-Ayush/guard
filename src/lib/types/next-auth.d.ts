@@ -4,12 +4,15 @@ declare module "next-auth" {
   
   interface Session {
     user: {
-      id: string
+        registration_status: string;
+        id: string
         email: string
         name: String
+        phone: string
         img: string
         data: object
         primary_premise_id: string;
+        admin_email: string;
         primary_premise_name: string;
         premises_associated_with: string[]
         accessToken: string
