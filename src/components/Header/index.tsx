@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from "react";
 import DropdownUser from "./DropdownUser";
-import AddButton from '../Add-Modal/AddButton';  
+import AddButton from '../Add-Modal/AddButton';
 
 
 const Header = (props: {
@@ -39,11 +39,13 @@ const Header = (props: {
           </h1>
         </header>
 
+
+
         {isMobile && (
-          <div className="text-black font-bold font-semibold flex text-md justify-center items-center">
+          <div className="mr-auto text-black font-bold font-semibold flex text-md justify-center items-center">
             <Link href="/dashboard">
               <Image
-                className="drop-shadow-xl"
+                className="drop-shadow-2xl"
                 width={52}
                 height={52}
                 src="/images/logo/logo.png"
@@ -62,7 +64,7 @@ const Header = (props: {
         {/* <div className="p-2 ml-17 bg-white border-gray-300 rounded-xl shadow-lg w-12 h-12 flex items-center justify-center"> */}
         {/* <img width="30" className="ml-20" height="30" src="https://img.icons8.com/ios/50/qr-code--v1.png" alt="qr-code--v1"/> */}
         {/* </div> */}
-        <div className="ml-auto mr-auto flex items-center gap-2 sm:gap-4 lg:hidden">
+        <div className=" ml-auto flex items-center gap-2 sm:gap-4 lg:hidden">
           {/* <!-- Hamburger Toggle BTN --> */}
           <button
             aria-controls="sidebar"
@@ -103,7 +105,6 @@ const Header = (props: {
 
 
         </div>
-        
 
         {/* <DropdownNotification /> */}
 
@@ -122,4 +123,3 @@ const Header = (props: {
 };
 
 export default Header;
- 

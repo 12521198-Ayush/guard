@@ -12,10 +12,16 @@ const Page = () => {
       {session?.user.accessToken}
       refresh tken ---------------------
       {session?.user.accessToken}
+      primary_premise_id 
+      {session?.user.primary_premise_id}
+      premise_unit_id 
+      {session?.user.premise_unit_id}
+      sub_premise_id 
+      {session?.user.sub_premise_id}
       </div> */}
       <MobileMenu />
     </>
   );
 };
 
-export default Page; 
+export default Page;

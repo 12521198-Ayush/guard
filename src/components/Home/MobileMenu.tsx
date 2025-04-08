@@ -4,6 +4,7 @@ import Link from "next/link";
 import ScrollableMenu from "./ScrollableMenu";
 import { Drawer, Button } from "antd";
 import { Alert } from "antd";
+import { useSession } from 'next-auth/react';
 
 const menuItems = [
   {
@@ -46,10 +47,13 @@ const menuItems = [
 ];
 
 const MobileMenu = () => {
+
+  const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -97,8 +101,9 @@ const MobileMenu = () => {
               <div className="absolute inset-0 bg-black bg-opacity-50 rounded-xl"></div>
 
               <div className="relative z-10 text-white text-2xl font-bold drop-shadow-lg">
-                Jaipur Greens
+                {session?.user?.primary_premise_name}
               </div>
+              {session?.user?.premise_unit_id}
             </div>
           )}
 
@@ -135,7 +140,7 @@ const MobileMenu = () => {
                       <span className='text-yellow-600 font-bold'>Warning:</span>
                       <span className='ml-2 text-yellow-700'>{item.alert}</span>
                       <button className='ml-auto text-yellow-600 hover:text-yellow-800 focus:outline-none'>
-                        
+
                       </button>
                     </div>
                   </div>

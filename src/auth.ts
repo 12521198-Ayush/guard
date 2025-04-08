@@ -13,8 +13,8 @@ let refreshTokenPromise: Promise<any> | null = null;  // Holds the refresh promi
 async function refreshAccessToken(token:any) {
   // this is our refresh token method
   if (!token || token.error === "RefreshAccessTokenError") {
-    console.log("Refresh token is expired or error already set, not calling the API.");
-    console.log("All Cookies:", cookies().getAll());
+    // console.log("Refresh token is expired or error already set, not calling the API.");
+    // console.log("All Cookies:", cookies().getAll());
     return token; // Return the existing token without making the API call
   }
 
@@ -40,7 +40,7 @@ async function refreshAccessToken(token:any) {
 
     console.log("The token has been refreshed successfully.")
     // get some data from the new access token such as exp (expiration time)
-    console.log("Decoding token 2nd ... ")
+    // console.log("Decoding token 2nd ... ")
     const decodedAccessToken = JSON.parse(Buffer.from(data.data.accessToken.split(".")[1], "base64").toString())
 
 
@@ -97,6 +97,7 @@ export const config = {
 
 
         const userData = await res.json();
+        console.log(userData);
 
         if (!res.ok) {
           throw new Error(userData.error.message)
@@ -115,29 +116,29 @@ export const config = {
           registration_status: string;
           phone: string;
           registration_reference: string;
+
         }
         const premise = userData.data[0].premise_id;
         const sub_premise = userData.data[0].sub_premise_id;
         const user = {
           //isAdmin: true, 
-          name: userData.data[0].name,
-          role: userData.data[0].association_type,
+          primary_premise_id: premise,
+          premises_associated_with: userData.data,
+          sub_premise_id: sub_premise,
           premise_unit_id: userData.data[0].premise_unit_id,
-          admin_email: userData.data[0].email,
-          phone: userData.data[0].mobile,
+
+          primary_premise_name: userData.data[0].premise_name,
           registration_reference: userData.data[0].registration_reference,
           registration_status: userData.data[0].registration_status,
-          current_premise_name: userData.data[0].premise_name,
+
+          name: userData.data[0].name,
+          role: userData.data[0].association_type,
+          admin_email: userData.data[0].email,
+          phone: userData.data[0].mobile,
           img: "/avatar.png",
           accessToken: tokens.accessToken,
           refreshToken: tokens.refrehToken,
           exp: expiration.toISOString(),
-          primary_premise_id: premise,
-          sub_premise_id: sub_premise,
-          primary_premise_name: "ireo",
-          premises_associated_with: [],
-          sub_premise_access_control_reqd: "yes",
-          subpremiseArray: []
         };
 
         if (res.ok && user) {
@@ -174,17 +175,16 @@ export const config = {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.phone = user.phone;
+        token.premises_associated_with = user.premises_associated_with;
         token.registration_status = user.registration_status;
         token.registration_reference = user.registration_reference;
         token.admin_email = user.admin_email;
         token.role = user.role; // the user role
-        token.current_premise_name = user.current_premise_name;
         token.primary_premise_id = user.primary_premise_id;
         token.sub_premise_id = user.sub_premise_id;
+        token.premise_unit_id = user.premise_unit_id;
         token.primary_premise_name = user.primary_premise_name;
         token.premises_associated_with = user.premises_associated_with;
-        token.subpremiseArray = user.subpremiseArray;
-        token.sub_premise_access_control_reqd = user.sub_premise_access_control_reqd;
 
         // Decoding the access token
         const decodedAccessToken = JSON.parse(Buffer.from(user.accessToken.split(".")[1], "base64").toString());
@@ -198,13 +198,13 @@ export const config = {
       }
 
       // If the session is being updated, we update the token accordingly
-      if (trigger === 'update') {
-        token.current_premise_name = session.user.current_premise_name;
-        token.subpremiseArray = session.user.subpremiseArray;
-        token.primary_premise_id = session.user.primary_premise_id;
-        token.role = session.user.role;
-        token.sub_premise_access_control_reqd = session.user.sub_premise_access_control_reqd;
-      }
+      if (trigger === 'update' && session) {
+        token.primary_premise_id = session.primary_premise_id ?? token.primary_premise_id;
+        token.primary_premise_name = session.primary_premise_name ?? token.primary_premise_name;
+        token.premise_unit_id = session.premise_unit_id ?? token.premise_unit_id;
+        token.sub_premise_id = session.sub_premise_id ?? token.sub_premise_id;
+        token.role = session.role ?? token.role;
+      }  
 
       // If the token is not expired, return the current token
       if (token.accessTokenExpires && Date.now() < Number(token.accessTokenExpires)) {
@@ -213,12 +213,11 @@ export const config = {
       }
 
       if (isRefreshing) {
-        console.log("Refresh token request is already in progress. Returning the ongoing promise.");
+        // console.log("Refresh token request is already in progress. Returning the ongoing promise.");
         return refreshTokenPromise!;
       }
-    
       // Log that we're starting the refresh process
-      console.log("Starting refresh token process...");
+      // console.log("Starting refresh token process...");
     
       // Start the refresh process
       isRefreshing = true;
@@ -239,21 +238,20 @@ export const config = {
         user: {
           ...session.user,
           id: token.id as string,
-          email: token.email as string,
+          admin_email: token.admin_email as string,
           societyList: token.societyList as string[],
           accessToken: token.accessToken as string,
+          premise_unit_id: token.premise_unit_id as any,
+          sub_premise_id: token.sub_premise_id as any,
           accessTokenExpires: token.accessTokenExpires as number,
-          current_premise_name: token.current_premise_name as any,
           role: token.role as string,
           primary_premise_id: token.primary_premise_id as string,
           primary_premise_name: token.primary_premise_name as string,
           premises_associated_with: token.premises_associated_with as string[],
-          sub_premise_access_control_reqd: token.sub_premise_access_control_reqd as string,
-          subpremiseArray: token.subpremiseArray as string[]
-
         },
         error: token.error,
       }
+      console.log(mySession);
       return mySession;
     },
     authorized({ request, auth }) {

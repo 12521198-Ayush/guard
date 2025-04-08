@@ -16,56 +16,54 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, role }) => {
   const { data: session, update, status } = useSession();
 
 
-  /*
-    const logout = useCallback(() => {
-      console.log("logout callback");
-  
-      const accessToken = session?.user?.accessToken || undefined
-  
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
-        method: "POST",
-        body: JSON.stringify({ accessToken })
-      })
-        .then(res => res.json())
-        .then(data => {
-        })
-        .catch(error => {
-        })
-        .finally(async () => {
-          await signOut({ callbackUrl: `${window.location.origin}/nativeRedirect/logout` })
-        })
-    }, [session])
-  
-    useEffect(() => {
-      if (session?.error === "RefreshAccessTokenError") { 
-        console.log("logout useEffect");
-        logout();
-      }
-    }, [session, logout])
-  
-    const logoutConfirm = () => {
-      Swal.fire({
-        title: "Are you sure?",
-        text: "You will be logged out!",
-        icon: "warning",
-        showCancelButton: true,
-        width: '350px',
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, logout!",
-        customClass: {
-          container: "z-[99999] fixed inset-0", // Forces modal above all
-          popup: "z-[99999]", // Ensures popup is always visible
-        },
-        backdrop: true, // Ensure backdrop covers everything
-      }).then((result) => {
-        if (result.isConfirmed) {
-          logout(); // Call your logout function
-        }
-      });
-    };
-    */
 
+  const logout = useCallback(() => {
+    console.log("logout callback");
+
+    const accessToken = session?.user?.accessToken || undefined
+
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
+      method: "POST",
+      body: JSON.stringify({ accessToken })
+    })
+      .then(res => res.json())
+      .then(data => {
+      })
+      .catch(error => {
+      })
+      .finally(async () => {
+        await signOut({ callbackUrl: `${window.location.origin}/nativeRedirect/logout` })
+      })
+  }, [session])
+
+  // useEffect(() => {
+  //   if (session?.error === "RefreshAccessTokenError") {
+  //     console.log("logout useEffect");
+  //     logout();
+  //   }
+  // }, [session, logout])
+
+  const logoutConfirm = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out!",
+      icon: "warning",
+      showCancelButton: true,
+      width: '350px',
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, logout!",
+      customClass: {
+        container: "z-[99999] fixed inset-0", // Forces modal above all
+        popup: "z-[99999]", // Ensures popup is always visible
+      },
+      backdrop: true, // Ensure backdrop covers everything
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout(); // Call your logout function
+      }
+    });
+  };
 
   return (
     <div className="relative bg-gray-900 text-white p-5 w-full max-w-xs mx-auto rounded-xl overflow-hidden">
@@ -88,7 +86,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, role }) => {
           </div>
 
           {/* Logout Icon */}
-          {/*  
+           
           <img
             onClick={logoutConfirm}
             width="30"
@@ -97,7 +95,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ name, email, role }) => {
             src="https://img.icons8.com/windows/32/FFFFFF/exit.png"
             alt="exit"
           />
-          */}
+         
         </div>
 
         {/* User Details */}

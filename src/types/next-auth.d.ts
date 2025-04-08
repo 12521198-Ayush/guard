@@ -13,8 +13,9 @@ declare module "next-auth" {
         primary_premise_id: string;
         registration_status:string;
         registration_reference: string;
-        sub_premise_id: string;
+        sub_premise_id: any;
         primary_premise_name: string;
+        premise_unit_id: string;
         premises_associated_with: string[]
         accessToken: string
         current_premise_name: any;
