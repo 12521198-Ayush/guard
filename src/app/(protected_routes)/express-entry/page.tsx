@@ -1,73 +1,82 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Drawer from '@mui/material/Drawer'
-import VendorForm from './VendorForm'
-import GuestForm from './GuestForm'
-import OtherForm from './OtherForm'
-import IconButton from '@mui/material/IconButton'
-import CloseIcon from '@mui/icons-material/Close'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import VendorForm from './VendorForm';
+import GuestForm from './GuestForm';
+import OtherForm from './OtherForm';
 
 export default function VisitorEntry() {
-  const [openDrawer, setOpenDrawer] = useState<'' | 'vendor' | 'guest' | 'other'>('')
+  const router = useRouter();
+  const [open, setOpen] = useState(true);
+  const [selectedEntry, setSelectedEntry] = useState<'vendor' | 'guest' | 'other' | null>(null);
 
-  const closeDrawer = () => setOpenDrawer('')
+  const closeDrawer = () => {
+    if (selectedEntry === null) {
+      setOpen(false);
+      router.push('/menu');
+    } else {
+      setSelectedEntry(null);
+    }
+  };
 
   const renderForm = () => {
-    switch (openDrawer) {
+    switch (selectedEntry) {
       case 'vendor':
-        return <VendorForm onClose={closeDrawer} />
+        return <VendorForm onClose={closeDrawer} />;
       case 'guest':
-        return <GuestForm onClose={closeDrawer} />
+        return <GuestForm onClose={closeDrawer} />;
       case 'other':
-        return <OtherForm onClose={closeDrawer} />
+        return <OtherForm onClose={closeDrawer} />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
-    <div className="bg-gray-100 flex flex-col items-center justify-center p-6">
-      {/* <h1 className="text-3xl font-semibold text-gray-800 mb-6">Visitor Entry</h1> */}
-
-      <div className="flex flex-col gap-4 w-full max-w-sm">
-        <button
-          onClick={() => setOpenDrawer('vendor')}
-          className="bg-white shadow-md rounded-xl py-4 text-lg font-medium text-gray-700 hover:bg-blue-50 transition"
-        >
-          Vendor Entry
-        </button>
-        <button
-          onClick={() => setOpenDrawer('guest')}
-          className="bg-white shadow-md rounded-xl py-4 text-lg font-medium text-gray-700 hover:bg-green-50 transition"
-        >
-          Guest Entry
-        </button>
-        <button
-          onClick={() => setOpenDrawer('other')}
-          className="bg-white shadow-md rounded-xl py-4 text-lg font-medium text-gray-700 hover:bg-yellow-50 transition"
-        >
-          Other
-        </button>
+    <Drawer
+      anchor="bottom"
+      open={open}
+      onClose={closeDrawer}
+      PaperProps={{
+        className: 'rounded-t-2xl px-4 py-6 h-[86vh] overflow-y-auto shadow-xl',
+      }}
+    >
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold text-gray-800">
+          {selectedEntry
+            ? `${selectedEntry.charAt(0).toUpperCase() + selectedEntry.slice(1)} Entry`
+            : 'Visitor Entry'}
+        </h2>
+        <IconButton onClick={closeDrawer}>
+          <CloseIcon className="text-gray-500" />
+        </IconButton>
       </div>
 
-      {/* MUI Bottom Drawer */}
-      <Drawer
-        anchor="bottom"
-        open={!!openDrawer}
-        onClose={closeDrawer}
-        PaperProps={{
-          className: 'rounded-t-2xl px-4 py-6 h-[86vh] overflow-y-auto shadow-lg',
-        }}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-800 capitalize">{openDrawer} Entry</h2>
-          <IconButton onClick={closeDrawer}>
-            <CloseIcon className="text-gray-500" />
-          </IconButton>
+      {selectedEntry === null ? (
+        <div className="grid gap-4">
+          {[
+            { key: 'vendor', label: 'Vendor Entry' },
+            { key: 'guest', label: 'Guest Entry' },
+            { key: 'other', label: 'Other Entry' },
+          ].map((entry) => (
+            <button
+              key={entry.key}
+              onClick={() =>
+                setSelectedEntry(entry.key as 'vendor' | 'guest' | 'other')
+              }
+              className="w-full text-left p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
+            >
+              <span className="text-base font-medium text-gray-800">{entry.label}</span>
+            </button>
+          ))}
         </div>
-        {renderForm()}
-      </Drawer>
-    </div>
-  )
+      ) : (
+        renderForm()
+      )}
+    </Drawer>
+  );
 }
