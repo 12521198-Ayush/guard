@@ -42,9 +42,26 @@ export default function VisitorEntry() {
       open={open}
       onClose={closeDrawer}
       PaperProps={{
-        className: 'rounded-t-2xl px-4 py-6 h-[86vh] overflow-y-auto shadow-xl',
+        className:
+          'rounded-t-3xl px-5 py-6 h-[86vh] max-h-[90vh] overflow-y-auto shadow-xl bg-gray-50 animate-slideUp',
       }}
     >
+      <style jsx global>{`
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0%);
+            opacity: 1;
+          }
+        }
+        .animate-slideUp {
+          animation: slideUp 0.35s ease-out;
+        }
+      `}</style>
+
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-gray-800">
           {selectedEntry
@@ -57,20 +74,36 @@ export default function VisitorEntry() {
       </div>
 
       {selectedEntry === null ? (
-        <div className="grid gap-4">
+        <div className="grid gap-5">
           {[
-            { key: 'vendor', label: 'Vendor Entry' },
-            { key: 'guest', label: 'Guest Entry' },
-            { key: 'other', label: 'Other Entry' },
+            {
+              key: 'vendor',
+              label: 'Vendor Entry',
+              about: 'Allow delivery agents, repairmen, or other service providers.',
+              color: 'from-indigo-100 to-white',
+            },
+            {
+              key: 'guest',
+              label: 'Guest Entry',
+              about: 'Invite your friends or family to visit your home.',
+              color: 'from-green-100 to-white',
+            },
+            {
+              key: 'other',
+              label: 'Other Entry',
+              about: 'Allow access to people not listed above.',
+              color: 'from-yellow-100 to-white',
+            },
           ].map((entry) => (
             <button
               key={entry.key}
               onClick={() =>
                 setSelectedEntry(entry.key as 'vendor' | 'guest' | 'other')
               }
-              className="w-full text-left p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
+              className={`w-full text-left rounded-xl p-4 bg-gradient-to-tr ${entry.color} shadow-md hover:shadow-lg transition-all`}
             >
-              <span className="text-base font-medium text-gray-800">{entry.label}</span>
+              <span className="block text-base font-semibold text-gray-800">{entry.label}</span>
+              <span className="mt-1 text-sm text-gray-600">{entry.about}</span>
             </button>
           ))}
         </div>

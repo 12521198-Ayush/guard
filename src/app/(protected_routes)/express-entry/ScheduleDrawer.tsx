@@ -7,6 +7,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import Image from 'next/image'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -28,13 +29,13 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [selectedHour, setSelectedHour] = useState('')
   const [selectedMinute, setSelectedMinute] = useState('')
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>([])
   const router = useRouter()
+  const { data: session } = useSession()
 
-  // ⏱️ Set default time to current hour and nearest 15-minute mark
   useEffect(() => {
     if (open) {
-      // Slight delay to wait until drawer is visible
       const timeout = setTimeout(() => {
         const now = new Date()
         const hour = now.getHours().toString().padStart(2, '0')
@@ -43,23 +44,76 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
         setSelectedMinute(minute)
         setSelectedDate(now)
         setSelectedWeekdays([])
-        setStep('option') // Reset to the first step
-      }, 100) // ⏱️ You can tweak this delay if needed
-  
+        setStep('option')
+      }, 100)
+
       return () => clearTimeout(timeout)
     }
   }, [open])
 
-  const handleNowSchedule = () => {
-    Swal.fire({
-      title: 'Success',
-      text: `Entry has been scheduled for ${selectedProduct?.title}`,
-      icon: 'success',
-      confirmButtonColor: '#22c55e',
-      width: 350
-    })
-    router.push('/menu')
-    onComplete()
+  const formatDate = (date: Date) => {
+    const dd = String(date.getDate()).padStart(2, '0')
+    const mm = String(date.getMonth() + 1).padStart(2, '0')
+    const yyyy = date.getFullYear()
+    const HH = String(date.getHours()).padStart(2, '0')
+    const MM = String(date.getMinutes()).padStart(2, '0')
+    return `${dd}${mm}${yyyy} ${HH}:${MM}`
+  }
+
+  const handleNowSchedule = async () => {
+    if (!selectedProduct || !session) return
+
+    const now = new Date()
+    const start_time = formatDate(now)
+
+    const payload = {
+      premise_id: session.user?.primary_premise_id,
+      premise_unit_id: session.user?.premise_unit_id,
+      vendor_name: selectedProduct.title,
+      resident_mobile_number: session.user?.phone,
+      duration_array: [{ start_time }]
+    }
+
+    try {
+      const res = await fetch('http://139.84.166.124:8060/vms-service/vendor/whitelist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.user?.accessToken}`
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        Swal.fire({
+          title: 'Success',
+          text: `Entry has been scheduled for ${selectedProduct.title}`,
+          icon: 'success',
+          confirmButtonColor: '#22c55e',
+          width: 350
+        })
+        router.push('/menu')
+        onComplete()
+      } else {
+        Swal.fire({
+          title: 'Failed',
+          text: data?.message || 'Something went wrong!',
+          icon: 'error',
+          confirmButtonColor: '#ef4444',
+          width: 350
+        })
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Network error. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        width: 350
+      })
+    }
   }
 
   const toggleWeekday = (day: string) => {
@@ -104,8 +158,8 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
             key={day.toDateString()}
             onClick={() => setSelectedDate(day)}
             className={`p-2 rounded-lg text-sm border ${day.toDateString() === selectedDate.toDateString()
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100'
               }`}
           >
             {day.toDateString().split(' ').slice(0, 3).join(' ')}
@@ -122,9 +176,7 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
         onChange={(e) => setSelectedHour(e.target.value)}
         className="border rounded-lg p-2 bg-white"
       >
-        {Array.from({ length: 24 }, (_, i) =>
-          i.toString().padStart(2, '0')
-        ).map((h) => (
+        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map((h) => (
           <option key={h} value={h}>
             {h}
           </option>
@@ -136,7 +188,7 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
         onChange={(e) => setSelectedMinute(e.target.value)}
         className="border rounded-lg p-2 bg-white"
       >
-        {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map((m) => ( 
+        {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map((m) => (
           <option key={m} value={m}>
             {m}
           </option>
@@ -150,16 +202,62 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
       {renderCalendar()}
       {renderTimePicker()}
       <button
-        onClick={() => {
-          Swal.fire({
-            title: 'Scheduled',
-            text: `Visit scheduled on ${selectedDate.toDateString()} at ${selectedHour}:${selectedMinute}`,
-            icon: 'success',
-            confirmButtonColor: '#22c55e',
-            width: 350
-          })
-          router.push('/menu')
-          onComplete()
+        onClick={async () => {
+          if (!selectedProduct || !session) return
+
+          const date = new Date(selectedDate)
+          date.setHours(parseInt(selectedHour), parseInt(selectedMinute))
+
+          const start_time = formatDate(date)
+
+          const payload = {
+            premise_id: session.user?.primary_premise_id,
+            premise_unit_id: session.user?.premise_unit_id,
+            vendor_name: selectedProduct.title,
+            resident_mobile_number: session.user?.phone,
+            duration_array: [{ start_time }]
+          }
+
+          try {
+            const res = await fetch('http://139.84.166.124:8060/vms-service/vendor/whitelist', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.user?.accessToken}`
+              },
+              body: JSON.stringify(payload)
+            })
+
+            const data = await res.json()
+
+            if (res.ok) {
+              Swal.fire({
+                title: 'Scheduled',
+                text: `Visit scheduled on ${selectedDate.toDateString()} at ${selectedHour}:${selectedMinute}`,
+                icon: 'success',
+                confirmButtonColor: '#22c55e',
+                width: 350
+              })
+              router.push('/menu')
+              onComplete()
+            } else {
+              Swal.fire({
+                title: 'Failed',
+                text: data?.message || 'Something went wrong!',
+                icon: 'error',
+                confirmButtonColor: '#ef4444',
+                width: 350
+              })
+            }
+          } catch (err) {
+            Swal.fire({
+              title: 'Error',
+              text: 'Network error. Please try again.',
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              width: 350
+            })
+          }
         }}
         className="w-full bg-green-500 text-white py-3 rounded-lg shadow hover:bg-green-600"
       >
@@ -168,38 +266,155 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
     </div>
   )
 
+  const MultipleRenderCalendar = () => {
+    const today = new Date();
+    const days = Array.from({ length: 16 }, (_, i) => new Date(today.getTime() + i * 86400000));
+
+    const toggleDate = (date: Date) => {
+      const exists = selectedDates.some(d => d.toDateString() === date.toDateString());
+      if (exists) {
+        setSelectedDates(prev => prev.filter(d => d.toDateString() !== date.toDateString()));
+      } else {
+        setSelectedDates(prev => [...prev, date]);
+      }
+    };
+
+    return (
+      <div className="grid grid-cols-4 gap-2">
+        {days.map((day) => {
+          const isSelected = selectedDates.some(d => d.toDateString() === day.toDateString());
+          return (
+            <button
+              key={day.toDateString()}
+              onClick={() => toggleDate(day)}
+              className={`p-2 rounded-lg text-sm border text-center ${isSelected ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                }`}
+            >
+              {day.toDateString().split(' ').slice(0, 3).join(' ')}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const MultipleRenderTimePicker = () => (
+    <div className="flex gap-4 items-center">
+      <select
+        value={selectedHour}
+        onChange={(e) => setSelectedHour(e.target.value)}
+        className="border rounded-lg p-2 bg-white"
+      >
+        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map((h) => (
+          <option key={h} value={h}>
+            {h}
+          </option>
+        ))}
+      </select>
+      <span>:</span>
+      <select
+        value={selectedMinute}
+        onChange={(e) => setSelectedMinute(e.target.value)}
+        className="border rounded-lg p-2 bg-white"
+      >
+        {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map((m) => (
+          <option key={m} value={m}>
+            {m}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+
+  const handleConfirm = async () => {
+    if (!selectedProduct || !session) return;
+  
+    // Check if dates and time values are selected
+    if (!selectedDates.length || selectedHour === '' || selectedMinute === '') {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing info',
+        text: 'Please select at least one date and both hour and minute',
+        confirmButtonColor: '#f59e0b',
+      });
+      return;
+    }
+  
+    try {
+      // Format date to "ddMMyyyy HH:mm"
+      const formatDateTime = (date: Date, hour: string, minute: string) => {
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        return `${dd}${mm}${yyyy} ${hour}:${minute}`;
+      };
+  
+      const duration_array = selectedDates.map((date) => ({
+        start_time: formatDateTime(date, selectedHour, selectedMinute),
+      }));
+  
+      const payload = {
+        premise_id: session?.user?.primary_premise_id,
+        premise_unit_id: session?.user?.premise_unit_id,
+        vendor_name: selectedProduct.title,
+        resident_mobile_number: session?.user?.phone,
+        duration_array,
+      };
+  
+      const response = await fetch('http://139.84.166.124:8060/vms-service/vendor/whitelist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.user?.accessToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        Swal.fire({
+          title: 'Scheduled',
+          text: 'Recurring vendor visit has been scheduled successfully!',
+          icon: 'success',
+          confirmButtonColor: '#22c55e',
+          width: 350,
+        });
+        router.push('/menu');
+        onComplete();
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed',
+          text: result?.message || 'Something went wrong!',
+          confirmButtonColor: '#ef4444',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An unexpected error occurred.',
+        confirmButtonColor: '#ef4444',
+      });
+    }
+  };
+  
+
   const renderRecurringStep = () => (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2">
-        {weekdays.map((day) => (
-          <button
-            key={day}
-            onClick={() => toggleWeekday(day)}
-            className={`p-2 rounded-lg text-sm border ${selectedWeekdays.includes(day) ? 'bg-purple-500 text-white' : 'bg-gray-100'
-              }`}
-          >
-            {day}
-          </button>
-        ))}
-      </div>
+      <MultipleRenderCalendar />
+      {MultipleRenderTimePicker()}
       <button
-        onClick={() => {
-          Swal.fire({
-            title: 'Scheduled',
-            text: `Recurring schedule set for ${selectedWeekdays.join(', ')}`,
-            icon: 'success',
-            confirmButtonColor: '#22c55e',
-            width: 350
-          })
-          router.push('/menu')
-          onComplete()
-        }}
+        onClick={handleConfirm}
         className="w-full bg-green-600 text-white py-3 rounded-lg shadow hover:bg-green-700"
       >
         Confirm
       </button>
     </div>
-  )
+  );
+
 
   return (
     <Drawer

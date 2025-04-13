@@ -239,6 +239,7 @@ export const config = {
           ...session.user,
           id: token.id as string,
           admin_email: token.admin_email as string,
+          phone: token.phone as string,
           societyList: token.societyList as string[],
           accessToken: token.accessToken as string,
           premise_unit_id: token.premise_unit_id as any,
@@ -251,7 +252,6 @@ export const config = {
         },
         error: token.error,
       }
-      console.log(mySession);
       return mySession;
     },
     authorized({ request, auth }) {
