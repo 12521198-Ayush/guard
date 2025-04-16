@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash, BookUser, CheckCircle, Circle, StickyNote } from 'lucide-react';
 import * as React from 'react';
 import { Slider } from 'antd';
+import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 type Visitor = {
   name: string;
@@ -30,6 +33,9 @@ export default function InviteVisitorsForm({ onClose }: Props) {
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState('');
   const [validity, setValidity] = useState<number>(1);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter()
+  const { data: session } = useSession()
 
   const filteredContacts = contacts.filter((contact) =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -106,52 +112,38 @@ export default function InviteVisitorsForm({ onClose }: Props) {
       return;
     }
 
-    // Example session object (replace with actual session logic)
-    const session = {
-      premise_id: 'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af',
-      premise_unit_id: 'D-0005',
-      resident_mobile_number: '000918588868604',
-      sub_premise_id: '0aad0a20-6b21-11ef-b2cb-13f201b16993',
-    };
-
-    const now = new Date();
-    const future = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // 3 days later
-
-    const formatDate = (date: Date) => {
-      const dd = String(date.getDate()).padStart(2, '0');
-      const mm = String(date.getMonth() + 1).padStart(2, '0');
-      const yyyy = date.getFullYear();
-      const hh = String(date.getHours()).padStart(2, '0');
-      const min = String(date.getMinutes()).padStart(2, '0');
-      return `${dd}${mm}${yyyy} ${hh}${min}`;
-    };
-
     const contact_array = visitors.map((visitor) => {
-      const rawNumber = visitor.phone.replace(/\D/g, '').slice(-10); // get last 10 digits
+      const rawNumber = visitor.phone.replace(/\D/g, '').slice(-10); // Extract last 10 digits
       return {
         contact_name: visitor.name.trim(),
-        contact_number: `00091${rawNumber}`,
+        contact_number: rawNumber,
       };
     });
 
+    const now = new Date();
+    const future = new Date(now.getTime() + validity * 24 * 60 * 60 * 1000); // validity days later
+
+    if (!session?.user) return;
     const payload: any = {
-      premise_id: session.premise_id,
-      premise_unit_id: session.premise_unit_id,
-      resident_mobile_number: session.resident_mobile_number,
-      sub_premise_id: session.sub_premise_id,
+      premise_id: session.user?.primary_premise_id,
+      premise_unit_id: session.user?.premise_unit_id,
+      sub_premise_id: session.user?.sub_premise_id,
+      resident_mobile_number: session.user?.phone,
       invite_type: 'PERSONAL',
-      start_date_ddmmyyyy_hhmm: formatDate(now),
-      end_date_ddmmyyyy_hhmm: formatDate(future),
+      start_date_iso: now.toISOString(),
+      end_date_iso: future.toISOString(),
       contact_array,
     };
-    
+
+
     if (note?.trim()) {
       payload.note_for_guest = note.trim();
     }
-    
+
     console.log(payload);
 
     try {
+      setLoading(true);
       const res = await fetch('http://139.84.166.124:8060/vms-service/guest/preinvite', {
         method: 'POST',
         headers: {
@@ -166,13 +158,137 @@ export default function InviteVisitorsForm({ onClose }: Props) {
         return;
       }
 
+      onClose();
+
+      if (res.status === 201) {
+        const result = await res.json();
+
+        const htmlContent = result.data
+          .map(
+            // @ts-ignore
+            (visitor) => `
+              <div class="qr-card flex-shrink-0 w-full max-w-xs p-3 bg-white rounded-xl text-center space-y-2 mx-auto relative border-gray-200">
+                <p class="text-lg font-semibold text-gray-900">${visitor.contact_name}</p>
+                <p class="text-sm text-gray-700">${visitor.contact_number}</p>
+                <p class="text-sm text-gray-600">
+                  Passcode: <strong class="text-black font-semibold">${visitor.passcode}</strong>
+                </p>
+      
+                <img 
+                  src="${visitor.signed_url}" 
+                  alt="QR Code" 
+                  class="mx-auto w-48 h-48 rounded-lg shadow-md object-contain border-gray-200"
+                />
+      
+               <button 
+                class="absolute top-3 mt-4 right-3 p-1 rounded-full hover:scale-105 transition"
+                onclick="window.AndroidInterface?.shareImage?.(
+                  '${visitor.signed_url}', 
+                  'Visitor: ${visitor.contact_name}\\nMobile: ${visitor.contact_number}\\nPasscode: ${visitor.passcode}'
+                )"
+                title="Share via WhatsApp"
+                >
+                <img width="28" height="28" src="https://img.icons8.com/ios-filled/50/forward-arrow.png" alt="forward-arrow"/>
+              </button>
+
+              </div>
+            `
+          )
+          .join('');
+        Swal.fire({
+          title: 'QR Code',
+          html: `
+              <div id="qr-scroll-container" class="flex overflow-x-auto snap-x snap-mandatory gap-4 px-2 pb-4">
+                ${htmlContent}
+              </div>
+          
+              <!-- Conditionally render dots only if there are more than one QR -->
+              ${result.data.length > 1 ? `
+                <div class="flex justify-center gap-2 mt-2" id="pagination-dots">
+                  ${result.data.map((_: any, idx: any) => `
+                    <span class="dot w-2 h-2 rounded-full bg-gray-400 transition-all duration-200 ease-in-out" data-index="${idx}"></span>
+                  `).join('')}
+                </div>
+              ` : ''}
+            
+              <style>
+                #qr-scroll-container::-webkit-scrollbar {
+                  display: none;
+                }
+          
+                .qr-card {
+                  scroll-snap-align: center;
+                  flex: 0 0 100%;
+                }
+          
+                #pagination-dots .dot {
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 9999px;
+                  background-color: #cbd5e1; /* Tailwind's slate-300 */
+                  transition: all 0.2s ease-in-out;
+                }
+          
+                #pagination-dots .dot.active {
+                  width: 10px;
+                  height: 10px;
+                  background-color: #4CAF50;
+                }
+          
+                .swal2-html-container {
+                  padding: 0;
+                }
+              </style>
+            `,
+          width: '90%',
+          background: '#ffffff',
+          confirmButtonText: 'Done',
+          confirmButtonColor: '#4CAF50',
+          showCloseButton: true,
+          scrollbarPadding: false,
+          customClass: {
+            popup: 'rounded-xl',
+            confirmButton: 'text-white bg-green-500 hover:bg-green-600 text-sm px-5 py-2 rounded-md shadow',
+            title: 'text-lg font-semibold text-gray-800',
+          },
+          didOpen: () => {
+            const container = document.getElementById('qr-scroll-container');
+            const dots = document.querySelectorAll('#pagination-dots .dot');
+
+            function updateDots() {
+              const scrollLeft = container?.scrollLeft ?? 0;
+              const width = container?.offsetWidth ?? 1;
+              const index = Math.round(scrollLeft / width);
+              dots.forEach(dot => dot.classList.remove('active'));
+              if (dots[index]) dots[index].classList.add('active');
+            }
+
+            if (container) {
+              container.addEventListener('scroll', updateDots);
+              setTimeout(updateDots, 100); // Make sure the first dot gets activated
+            }
+          }
+        });
+
+        router.push('/menu');
+        onClose();
+      }
+
+
+
+      console.log(await res.json());
+
       alert('Visitors submitted successfully!');
       console.log(await res.json());
     } catch (error) {
       console.error('Submit Error:', error);
       alert('An error occurred while submitting.');
     }
+    finally {
+      setLoading(false); // Stop loader
+    }
   };
+
 
   return (
     <motion.div
@@ -388,9 +504,10 @@ export default function InviteVisitorsForm({ onClose }: Props) {
       <div className="mt-6 space-y-2 sticky bottom-0 bg-white pt-4">
         <button
           onClick={handleSubmit}
+          disabled={loading}
           className="w-full bg-green-500 text-white py-3 rounded-xl shadow-md hover:bg-green-600 transition text-base font-medium"
         >
-          Submit
+           {loading ? 'Scheduling...' : 'Confirm'}
         </button>
       </div>
     </motion.div>

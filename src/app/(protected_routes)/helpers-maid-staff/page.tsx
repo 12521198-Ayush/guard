@@ -1,161 +1,140 @@
-'use client';
+'use client'
 
-import React, { useState, Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import Swal from 'sweetalert2';
+import React, { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Drawer } from '@mui/material'
+import { useRouter } from 'next/navigation'
+import { Users, Tag, Gift, UserPlus, ChevronLeft } from 'lucide-react'
+import TagYourHelper from './TagYourHelper'
+import MyHelpers from './MyHelpers'
+import GiftList from './GiftList'
+import RecruitHelper from './RecruitHelper'
 
-const categories = ['Electrician', 'Plumber', 'Sweeper', 'Gardener', 'Painter'];
+const options = [
+  {
+    key: 'tag',
+    label: 'Tag Your Helper',
+    about: 'Assign or identify helpers linked to your premises.',
+    icon: <Tag className="h-6 w-6 text-indigo-600" />,
+    component: <TagYourHelper />,
+    color: 'from-indigo-100 to-white',
+  },
+  {
+    key: 'helpers',
+    label: 'My Helpers',
+    about: 'View all helpers currently working with you.',
+    icon: <Users className="h-6 w-6 text-teal-600" />,
+    component: <MyHelpers />,
+    color: 'from-teal-100 to-white',
+  },
+  {
+    key: 'gifts',
+    label: 'List of Gift Given',
+    about: 'Track gifts and appreciation shared with your helpers.',
+    icon: <Gift className="h-6 w-6 text-yellow-600" />,
+    component: <GiftList />,
+    color: 'from-yellow-100 to-white',
+  },
+  {
+    key: 'recruit',
+    label: 'Recruit a New Helper',
+    about: 'Onboard a new helper to assist you.',
+    icon: <UserPlus className="h-6 w-6 text-pink-600" />,
+    component: <RecruitHelper />,
+    color: 'from-pink-100 to-white',
+  },
+]
 
-const demoHelpers = [
-  'Helper 1',
-  'Helper 2',
-  'Helper 3',
-  'Helper 4',
-  'Helper 5',
-  'Helper 6',
-  'Helper 7',
-  'Helper 8',
-  'Helper 9',
-  'Helper 10',
-];
+const HelpersPage = () => {
+  const [open, setOpen] = useState(true)
+  const [selected, setSelected] = useState<number | null>(null)
+  const router = useRouter()
 
-const HelperStuff: React.FC = () => {
-  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
-  const [isRecruitModalOpen, setIsRecruitModalOpen] = useState(false);
-  const [loader, setLoader] = useState(false);
-  const [helperId, setHelperId] = useState('');
-
-  const handleTagHelper = async () => {
-    setLoader(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate loading
-    setLoader(false);
-    Swal.fire(`Helper with ID ${helperId} has been tagged!`);
-    setHelperId('');
-    setIsTagModalOpen(false);
-  };
-
-  const handleRecruitHelper = () => {
-    setIsRecruitModalOpen(false);
-    Swal.fire('Post has been created for the helper. They will contact you soon!');
-  };
+  const closeDrawer = () => {
+    setOpen(false)
+    router.push('/menu') // 👈 Push to /menu when closed
+  }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Helper Management</h1>
+    <>
+      <Drawer
+        anchor="bottom"
+        open={open}
+        onClose={closeDrawer}
+        PaperProps={{
+          className:
+            'rounded-t-3xl px-5 py-6 h-[86vh] max-h-[90vh] overflow-y-auto shadow-xl bg-gray-50 animate-slideUp',
+        }}
+      >
+        <style jsx global>{`
+          @keyframes slideUp {
+            from {
+              transform: translateY(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0%);
+              opacity: 1;
+            }
+          }
+          .animate-slideUp {
+            animation: slideUp 0.35s ease-out;
+          }
+        `}</style>
 
-      <div className="mb-6 space-y-4">
-        <button
-          onClick={() => setIsTagModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition"
-        >
-          Tag Helper
-        </button>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-800">
+            {selected === null ? 'Helpers' : options[selected].label}
+          </h2>
+        </div>
 
-        <button
-          onClick={() => setIsRecruitModalOpen(true)}
-          className="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 transition"
-        >
-          Recruit a Helper
-        </button>
-      </div>
-
-      <h2 className="text-xl font-semibold mb-2">My Helpers</h2>
-      <ul className="space-y-2">
-        {demoHelpers.map((helper, index) => (
-          <li
-            key={index}
-            className="p-3 bg-white rounded shadow hover:shadow-lg transition"
-          >
-            {helper}
-          </li>
-        ))}
-      </ul>
-
-      {/* Tag Helper Modal */}
-      <Transition appear show={isTagModalOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={() => setIsTagModalOpen(false)}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/30" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="bg-white rounded shadow-lg p-6 w-full max-w-md">
-              <Dialog.Title className="text-lg font-semibold">Tag Helper</Dialog.Title>
-              <input
-                type="text"
-                value={helperId}
-                onChange={(e) => setHelperId(e.target.value)}
-                placeholder="Enter Helper ID"
-                className="mt-2 p-2 border border-gray-300 rounded w-full"
-              />
-              <div className="mt-4">
-                <button
-                  onClick={handleTagHelper}
-                  disabled={loader}
-                  className={`px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition ${loader ? 'opacity-50' : ''}`}
+        <AnimatePresence mode="wait">
+          {selected === null ? (
+            <motion.div
+              className="grid gap-5"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+            >
+              {options.map((entry, index) => (
+                <motion.button
+                  key={entry.key}
+                  onClick={() => setSelected(index)}
+                  whileTap={{ scale: 0.97 }}
+                  className={`w-full text-left rounded-xl p-4 bg-gradient-to-tr ${entry.color} shadow-md hover:shadow-lg transition-all flex items-start gap-3`}
                 >
-                  {loader ? 'Saving...' : 'Save'}
-                </button>
-              </div>
-            </Dialog.Panel>
-          </div>
-        </Dialog>
-      </Transition>
+                  {entry.icon}
+                  <div>
+                    <span className="block text-base font-semibold text-gray-800">
+                      {entry.label}
+                    </span>
+                    <span className="mt-1 text-sm text-gray-600">{entry.about}</span>
+                  </div>
+                </motion.button>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key={selected}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -40 }}
+              className=""
+            >
+              <button
+                onClick={() => setSelected(null)}
+                className="mb-4 flex items-center gap-1 text-blue-600 font-medium"
+              >
+                <ChevronLeft size={18} />
+                Back
+              </button>
+              {options[selected].component}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Drawer>
+    </>
+  )
+}
 
-      {/* Recruit Helper Modal */}
-      <Transition appear show={isRecruitModalOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={() => setIsRecruitModalOpen(false)}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/30" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="bg-white rounded shadow-lg p-6 w-full max-w-md">
-              <Dialog.Title className="text-lg font-semibold">Recruit a Helper</Dialog.Title>
-              <select className="mt-2 p-2 border border-gray-300 rounded w-full default:text-gray-400">
-                <option disabled selected>
-                  Select Category
-                </option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              <textarea
-                placeholder="Purpose"
-                className="mt-2 p-2 border border-gray-300 rounded w-full h-24"
-              />
-              <div className="mt-4">
-                <button
-                  onClick={handleRecruitHelper}
-                  className="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 transition"
-                >
-                  Save
-                </button>
-              </div>
-            </Dialog.Panel>
-          </div>
-        </Dialog>
-      </Transition>
-    </div>
-  );
-};
-
-export default HelperStuff;
+export default HelpersPage

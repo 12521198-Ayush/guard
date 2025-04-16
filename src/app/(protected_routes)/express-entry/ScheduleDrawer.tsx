@@ -31,6 +31,7 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
   const [selectedMinute, setSelectedMinute] = useState('')
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>([])
+  const [loading, setLoading] = useState(false);
   const router = useRouter()
   const { data: session } = useSession()
 
@@ -51,40 +52,37 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
     }
   }, [open])
 
+  // @ts-ignore
   const formatDate = (date: Date) => {
-    const dd = String(date.getDate()).padStart(2, '0')
-    const mm = String(date.getMonth() + 1).padStart(2, '0')
-    const yyyy = date.getFullYear()
-    const HH = String(date.getHours()).padStart(2, '0')
-    const MM = String(date.getMinutes()).padStart(2, '0')
-    return `${dd}${mm}${yyyy} ${HH}:${MM}`
-  }
+    return date.toISOString();
+  };
+
 
   const handleNowSchedule = async () => {
-    if (!selectedProduct || !session) return
+    if (!selectedProduct || !session) return;
 
-    const now = new Date()
-    const start_time = formatDate(now)
+    const start_time_iso = new Date().toISOString(); // ISO format
 
     const payload = {
       premise_id: session.user?.primary_premise_id,
       premise_unit_id: session.user?.premise_unit_id,
-      vendor_name: selectedProduct.title,
+      sub_premise_id: session.user?.sub_premise_id,
       resident_mobile_number: session.user?.phone,
-      duration_array: [{ start_time }]
-    }
+      vendor_name: selectedProduct.title,
+      duration_array: [{ start_time_iso }]
+    };
 
     try {
-      const res = await fetch('http://139.84.166.124:8060/vms-service/vendor/whitelist', {
+      const res = await fetch('http://139.84.166.124:8060/vms-service/vendor/preinvite', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.user?.accessToken}`
         },
         body: JSON.stringify(payload)
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
       if (res.ok) {
         Swal.fire({
@@ -93,17 +91,17 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
           icon: 'success',
           confirmButtonColor: '#22c55e',
           width: 350
-        })
-        router.push('/menu')
-        onComplete()
+        });
+        router.push('/menu');
+        onComplete();
       } else {
         Swal.fire({
           title: 'Failed',
-          text: data?.message || 'Something went wrong!',
+          text: data?.error?.message || 'Something went wrong!',
           icon: 'error',
           confirmButtonColor: '#ef4444',
           width: 350
-        })
+        });
       }
     } catch (err) {
       Swal.fire({
@@ -112,9 +110,9 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
         icon: 'error',
         confirmButtonColor: '#ef4444',
         width: 350
-      })
+      });
     }
-  }
+  };
 
   const toggleWeekday = (day: string) => {
     setSelectedWeekdays((prev) =>
@@ -208,18 +206,19 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
           const date = new Date(selectedDate)
           date.setHours(parseInt(selectedHour), parseInt(selectedMinute))
 
-          const start_time = formatDate(date)
+          const start_time_iso = formatDate(date)
 
           const payload = {
             premise_id: session.user?.primary_premise_id,
             premise_unit_id: session.user?.premise_unit_id,
+            sub_premise_id: session.user?.sub_premise_id,
             vendor_name: selectedProduct.title,
             resident_mobile_number: session.user?.phone,
-            duration_array: [{ start_time }]
+            duration_array: [{ start_time_iso }]
           }
 
           try {
-            const res = await fetch('http://139.84.166.124:8060/vms-service/vendor/whitelist', {
+            const res = await fetch('http://139.84.166.124:8060/vms-service/vendor/preinvite', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -328,7 +327,7 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
 
   const handleConfirm = async () => {
     if (!selectedProduct || !session) return;
-  
+
     // Check if dates and time values are selected
     if (!selectedDates.length || selectedHour === '' || selectedMinute === '') {
       Swal.fire({
@@ -339,29 +338,33 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
       });
       return;
     }
-  
+
     try {
+      setLoading(true);
       // Format date to "ddMMyyyy HH:mm"
       const formatDateTime = (date: Date, hour: string, minute: string) => {
-        const dd = String(date.getDate()).padStart(2, '0');
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const yyyy = date.getFullYear();
-        return `${dd}${mm}${yyyy} ${hour}:${minute}`;
-      };
-  
+        const newDate = new Date(date);
+        newDate.setHours(parseInt(hour, 10));
+        newDate.setMinutes(parseInt(minute, 10));
+        newDate.setSeconds(0);
+        newDate.setMilliseconds(0);
+        return newDate.toISOString();
+      };      
+
       const duration_array = selectedDates.map((date) => ({
-        start_time: formatDateTime(date, selectedHour, selectedMinute),
+        start_time_iso: formatDateTime(date, selectedHour, selectedMinute),
       }));
-  
+
       const payload = {
         premise_id: session?.user?.primary_premise_id,
         premise_unit_id: session?.user?.premise_unit_id,
-        vendor_name: selectedProduct.title,
+        sub_premise_id: session.user?.sub_premise_id,
         resident_mobile_number: session?.user?.phone,
+        vendor_name: selectedProduct.title,
         duration_array,
       };
-  
-      const response = await fetch('http://139.84.166.124:8060/vms-service/vendor/whitelist', {
+
+      const response = await fetch('http://139.84.166.124:8060/vms-service/vendor/preinvite', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -369,9 +372,9 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
         },
         body: JSON.stringify(payload),
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok) {
         Swal.fire({
           title: 'Scheduled',
@@ -398,9 +401,11 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
         text: 'An unexpected error occurred.',
         confirmButtonColor: '#ef4444',
       });
+    } finally {
+      setLoading(false); // Stop loader
     }
   };
-  
+
 
   const renderRecurringStep = () => (
     <div className="space-y-4">
@@ -408,12 +413,14 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
       {MultipleRenderTimePicker()}
       <button
         onClick={handleConfirm}
-        className="w-full bg-green-600 text-white py-3 rounded-lg shadow hover:bg-green-700"
+        className="w-full bg-green-600 text-white py-3 rounded-lg shadow hover:bg-green-700 disabled:opacity-50"
+        disabled={loading}
       >
-        Confirm
+        {loading ? 'Scheduling...' : 'Confirm'}
       </button>
     </div>
   );
+  
 
 
   return (

@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/test-table/DataTable/index.js", "src/app/auth/login/page.js", "src/components/Signout/Signout.jsx", "src/app/api/auth/[...nextauth]/route.js", "src/components/Tables/Committee.jsx", "src/components/Login_phone/OtpLogin.jsx", "src/app/otp/page.tsx", "src/app/(protected_routes)/emails/compose/MailboxSidebar.jsx", "src/app/(protected_routes)/emails/compose/page.jsx", "src/app/otp/OtpInput.jsx", "src/app/(protected_routes)/menu/page.tsx", "src/utils/LogoutAlert.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/test-table/DataTable/index.js", "src/app/auth/login/page.js", "src/components/Signout/Signout.jsx", "src/app/api/auth/[...nextauth]/route.js", "src/components/Tables/Committee.jsx", "src/components/Login_phone/OtpLogin.jsx", "src/app/otp/page.tsx", "src/app/(protected_routes)/emails/compose/MailboxSidebar.jsx", "src/app/(protected_routes)/emails/compose/page.jsx", "src/app/otp/OtpInput.jsx", "src/app/(protected_routes)/menu/page.tsx", "src/utils/LogoutAlert.jsx", "src/app/(protected_routes)/visitor-list/page.tsx"],
   "exclude": ["node_modules"]
 }
