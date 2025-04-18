@@ -6,7 +6,6 @@ import { Drawer } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { Users, Tag, Gift, UserPlus, ChevronLeft } from 'lucide-react'
 import TagYourHelper from './TagYourHelper'
-import MyHelpers from './MyHelpers'
 import GiftList from './GiftList'
 import RecruitHelper from './RecruitHelper'
 
@@ -24,7 +23,7 @@ const options = [
     label: 'My Helpers',
     about: 'View all helpers currently working with you.',
     icon: <Users className="h-6 w-6 text-teal-600" />,
-    component: <MyHelpers />,
+    route: '/myhelpers', // 👈 Only this has route
     color: 'from-teal-100 to-white',
   },
   {
@@ -63,7 +62,7 @@ const HelpersPage = () => {
         onClose={closeDrawer}
         PaperProps={{
           className:
-            'rounded-t-3xl px-5 py-6 h-[86vh] max-h-[90vh] overflow-y-auto shadow-xl bg-gray-50 animate-slideUp',
+            'rounded-t-3xl px-2 md:px-10 py-6 h-[86vh] max-h-[90vh] overflow-y-auto shadow-xl bg-gray-50 animate-slideUp',
         }}
       >
         <style jsx global>{`
@@ -99,7 +98,14 @@ const HelpersPage = () => {
               {options.map((entry, index) => (
                 <motion.button
                   key={entry.key}
-                  onClick={() => setSelected(index)}
+                  onClick={() => {
+                    if (entry.route) {
+                      router.push(entry.route)
+                    } else {
+                      setSelected(index)
+                    }
+                  }}
+
                   whileTap={{ scale: 0.97 }}
                   className={`w-full text-left rounded-xl p-4 bg-gradient-to-tr ${entry.color} shadow-md hover:shadow-lg transition-all flex items-start gap-3`}
                 >

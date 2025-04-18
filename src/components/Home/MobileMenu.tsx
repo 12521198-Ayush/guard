@@ -97,14 +97,15 @@ const MobileMenu = () => {
       ) : (
         <>
           {isMobile && (
-            <div className="relative bg-[url(https://www.nobroker.in/blog/wp-content/uploads/2024/03/best-society-in-delhi.jpg)] bg-cover bg-center bg-no-repeat flex flex-col my-5 items-center justify-center p-4 bg-gray-100 rounded-xl shadow-md hover:bg-gray-200 text-center transition-transform duration-300 ease-in-out  w-full h-[20vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[80vh] max-w-lg mx-auto">
-              <div className="absolute inset-0 bg-black bg-opacity-50 rounded-xl"></div>
+            // <div className="relative bg-[url(https://www.nobroker.in/blog/wp-content/uploads/2024/03/best-society-in-delhi.jpg)] bg-cover bg-center bg-no-repeat flex flex-col my-5 items-center justify-center p-4 bg-gray-100 rounded-xl shadow-md hover:bg-gray-200 text-center transition-transform duration-300 ease-in-out  w-full h-[20vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[80vh] max-w-lg mx-auto">
+            //   <div className="absolute inset-0 bg-black bg-opacity-50 rounded-xl"></div>
 
-              <div className="relative z-10 text-white text-2xl font-bold drop-shadow-lg">
-                {session?.user?.primary_premise_name}
-              </div>
-              {session?.user?.premise_unit_id}
-            </div>
+            //   <div className="relative z-10 text-white text-2xl font-bold drop-shadow-lg">
+            //     {session?.user?.primary_premise_name}
+            //   </div>
+            //   {session?.user?.premise_unit_id}
+            // </div>
+            <div></div>
           )}
 
 

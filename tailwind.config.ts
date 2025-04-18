@@ -19,6 +19,7 @@ const config: Config = {
       ...defaultTheme.screens,
     },
     extend: {
+      
       colors: {
         current: "currentColor",
         transparent: "transparent",
