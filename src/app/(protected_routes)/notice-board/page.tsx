@@ -48,23 +48,23 @@ const Page = () => {
       <h2>Share & Scan Example</h2>
 
       <div style={{ marginTop: 30 }}>
-        <button onClick={shareText}>📤 Share Text</button>
+        <button onClick={shareText}>Share Text</button>
       </div>
 
       <div style={{ marginTop: 30 }}>
-        <button onClick={shareLink}>🔗 Share Link</button>
+        <button onClick={shareLink}>Share Link</button>
       </div>
 
       <div style={{ marginTop: 30 }}>
-        <button onClick={shareImage2}>🖼️ Share Image</button>
+        <button onClick={shareImage2}>Share Image</button>
       </div>
 
       <div style={{ marginTop: 30 }}>
-        <button onClick={shareFile}>📎 Share File</button>
+        <button onClick={shareFile}>Share File</button>
       </div>
 
       <div style={{ marginTop: 30 }}>
-        <button onClick={startScan}>📷 Start QR Scan</button>
+        <button onClick={startScan}>Start QR Scan</button>
       </div>
 
       <div style={{ marginTop: 50, fontWeight: 'bold' }}>

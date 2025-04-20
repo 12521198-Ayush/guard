@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
 import DropdownUser from './DropdownUser';
 import AddButton from '../Add-Modal/AddButton';
+import StatusStory from '../Home/StatusStory'
 
 const Header = (props: {
   sidebarOpen: string | boolean | undefined;
@@ -34,23 +35,26 @@ const Header = (props: {
         {/* Left logo (for mobile) */}
         {isMobile && (
           <div className="flex items-center gap-3 text-gray-800 font-semibold text-lg">
-            <Link href="/dashboard">
-              <Image
-                className="drop-shadow-md"
-                width={44}
-                height={44}
-                src="/images/logo/logo.png"
-                alt="Logo"
-                priority
-              />
-            </Link>
+            <StatusStory
+              imageUrl="https://static.wixstatic.com/media/a3eec1_276d6c8168e4476c90b451f9d9bf4b22~mv2.jpeg/v1/fill/w_480,h_854,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a3eec1_276d6c8168e4476c90b451f9d9bf4b22~mv2.jpeg"
+              title={session?.user?.primary_premise_name ?? 'Unnamed Society'}
+              subtitle={session?.user?.premise_unit_id ?? 'Unknown Unit'}
+            />
             <span className="text-base font-bold tracking-wide">SERVIZING</span>
           </div>
         )}
 
+
         {/* Right side */}
         <div className="flex items-center gap-3 ml-auto">
           <ul className="flex items-center">
+            {/* <div className="mr-4">
+              <StatusStory
+                imageUrl="https://www.nobroker.in/blog/wp-content/uploads/2024/03/best-society-in-delhi.jpg"
+                title={session?.user?.primary_premise_name ?? 'Unnamed Society'}
+                subtitle={session?.user?.premise_unit_id ?? 'Unknown Unit'}
+              />
+            </div> */}
             <DropdownNotification />
           </ul>
 

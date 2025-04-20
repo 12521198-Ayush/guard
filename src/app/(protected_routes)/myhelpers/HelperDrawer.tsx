@@ -3,8 +3,9 @@
 import { Drawer, IconButton, Box, Divider, TextField, Button, Typography } from '@mui/material'
 import { MdClose } from 'react-icons/md'
 import { HelperProps } from './HelperCard'
-import { FaStar } from 'react-icons/fa'
+import { FaStar, FaRegStar } from 'react-icons/fa';
 import { motion } from 'framer-motion'
+import { useState } from 'react';
 
 type Props = {
     open: boolean
@@ -21,6 +22,13 @@ const sectionStyle = {
 const MotionBox = motion(Box)
 
 const HelperDrawer = ({ open, onClose, helper }: Props) => {
+    const [rating, setRating] = useState<number>(0);
+    const [feedback, setFeedback] = useState<string>('');
+    const handleSubmit = () => {
+        console.log('Rating:', rating);
+        console.log('Feedback:', feedback);
+        // Optionally send to API here
+    };
     // @ts-ignore
     return (
         <Drawer
@@ -95,30 +103,70 @@ const HelperDrawer = ({ open, onClose, helper }: Props) => {
 
             {/* Scrollable Content */}
             <Box sx={{ flex: 1, overflowY: 'auto', px: 2, pt: 1 }}>
-                {/* Section: Rating */}
+
+                {/* Section: Rating + Feedback */}
                 <MotionBox
                     sx={sectionStyle}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <Typography variant="subtitle1" gutterBottom>Rate this Helper</Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        {[...Array(5)].map((_, i) => (
-                            <FaStar key={i} className="text-yellow-400" />
-                        ))}
-                    </Box>
-                </MotionBox>
+                    <Typography variant="subtitle1" gutterBottom textAlign="center">
+                        Rate & Give Feedback
+                    </Typography>
 
-                {/* Section: Logs */}
+                    {/* Feedback Input */}
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={2}
+                        placeholder="Write your feedback here..."
+                        value={feedback}
+                        onChange={(e) => setFeedback(e.target.value)}
+                        sx={{ mb: 2 }}
+                    />
+
+                    {/* Star Rating - Centered with outlined stars */}
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 2 }}>
+                        {[...Array(5)].map((_, i) =>
+                            i < rating ? (
+                                <FaStar
+                                    key={i}
+                                    onClick={() => setRating(i + 1)}
+                                    style={{ cursor: 'pointer', fontSize: '1.8rem', color: '#facc15' }}
+                                />
+                            ) : (
+                                <FaRegStar
+                                    key={i}
+                                    onClick={() => setRating(i + 1)}
+                                    style={{ cursor: 'pointer', fontSize: '1.8rem', color: 'black' }}
+                                />
+                            )
+                        )}
+                    </Box>
+
+                    <Button
+                        variant="contained"
+                        color="success"
+                        fullWidth
+                        onClick={handleSubmit}
+                        disabled={rating === 0 && feedback.trim() === ''}
+                    >
+                        Submit
+                    </Button>
+                </MotionBox>
+                {/* Section: Common Actions (Logs + Attendance) */}
                 <MotionBox
                     sx={sectionStyle}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <Typography variant="subtitle1" gutterBottom>View Logs</Typography>
-                    <Button variant="text" color="primary">Tap to view work logs</Button>
+                    <Typography variant="subtitle1" gutterBottom>Helper Activity</Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Button variant="text" color="primary">Tap to view work logs</Button>
+                        <Button variant="text" color="primary">Check attendance records</Button>
+                    </Box>
                 </MotionBox>
 
                 {/* Section: Work Location */}
@@ -132,32 +180,12 @@ const HelperDrawer = ({ open, onClose, helper }: Props) => {
                     <Typography variant="body2" color="text.secondary">Assigned to: D-0005</Typography>
                 </MotionBox>
 
-                {/* Section: Feedback */}
-                <MotionBox
-                    sx={sectionStyle}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                >
-                    <Typography variant="subtitle1" gutterBottom>Write Feedback</Typography>
-                    <TextField
-                        fullWidth
-                        multiline
-                        rows={2}
-                        placeholder="Write your feedback here..."
-                        sx={{ mb: 2 }}
-                    />
-                    <Button variant="contained" color="success" fullWidth>
-                        Submit Feedback
-                    </Button>
-                </MotionBox>
-
                 {/* Section: Recommend Job */}
                 <MotionBox
                     sx={sectionStyle}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
+                    transition={{ delay: 0.4 }}
                 >
                     <Typography variant="subtitle1" gutterBottom>Recommend a New Job</Typography>
                     <TextField
@@ -175,7 +203,7 @@ const HelperDrawer = ({ open, onClose, helper }: Props) => {
                     sx={sectionStyle}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
+                    transition={{ delay: 0.5 }}
                 >
                     <Typography variant="subtitle1" gutterBottom>Notify Gate about Gifts</Typography>
                     <Button variant="contained" color="secondary" fullWidth>
@@ -183,16 +211,6 @@ const HelperDrawer = ({ open, onClose, helper }: Props) => {
                     </Button>
                 </MotionBox>
 
-                {/* Section: View Attendance */}
-                <MotionBox
-                    sx={sectionStyle}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7 }}
-                >
-                    <Typography variant="subtitle1" gutterBottom>View Attendance</Typography>
-                    <Button variant="text" color="primary">Check attendance records</Button>
-                </MotionBox>
             </Box>
         </Drawer>
     )

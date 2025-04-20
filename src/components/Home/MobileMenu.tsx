@@ -5,6 +5,7 @@ import ScrollableMenu from "./ScrollableMenu";
 import { Drawer, Button } from "antd";
 import { Alert } from "antd";
 import { useSession } from 'next-auth/react';
+import StatusStory from './StatusStory'
 
 const menuItems = [
   {
@@ -92,24 +93,23 @@ const MobileMenu = () => {
           <img width="70" height="70" src="https://img.icons8.com/plasticine/100/automatic.png" alt="automatic" />
         </Link>
       </div>
+     
       {isLoading ? (
         <SkeletonLoader /> // Show skeleton loader while loading  
       ) : (
         <>
           {isMobile && (
-            // <div className="relative bg-[url(https://www.nobroker.in/blog/wp-content/uploads/2024/03/best-society-in-delhi.jpg)] bg-cover bg-center bg-no-repeat flex flex-col my-5 items-center justify-center p-4 bg-gray-100 rounded-xl shadow-md hover:bg-gray-200 text-center transition-transform duration-300 ease-in-out  w-full h-[20vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[80vh] max-w-lg mx-auto">
-            //   <div className="absolute inset-0 bg-black bg-opacity-50 rounded-xl"></div>
-
-            //   <div className="relative z-10 text-white text-2xl font-bold drop-shadow-lg">
-            //     {session?.user?.primary_premise_name}
-            //   </div>
-            //   {session?.user?.premise_unit_id}
-            // </div>
-            <div></div>
+            <>
+              {/* <main className="flex justify-center items-center bg-gray-100">
+                <StatusStory
+                  imageUrl="https://www.nobroker.in/blog/wp-content/uploads/2024/03/best-society-in-delhi.jpg"
+                  title={session?.user?.primary_premise_name ?? 'Unnamed Society'}
+                  subtitle={session?.user?.premise_unit_id ?? 'Unknown Unit'}
+                />
+              </main> */}
+              <div></div>
+            </>
           )}
-
-
-
           <Drawer
             title={<h2 className="text-lg font-semibold text-gray-800">Collabarative Tool</h2>}
             placement="bottom"
@@ -136,14 +136,8 @@ const MobileMenu = () => {
                   <span className='mt-1 text-sm'>{item.description}</span>
                 </Link>
                 {item.alert && (
-                  <div className='mt-2 p-4 border border-yellow-400 rounded-lg shadow-md bg-yellow-50'>
-                    <div className='flex items-center'>
-                      <span className='text-yellow-600 font-bold'>Warning:</span>
-                      <span className='ml-2 text-yellow-700'>{item.alert}</span>
-                      <button className='ml-auto text-yellow-600 hover:text-yellow-800 focus:outline-none'>
-
-                      </button>
-                    </div>
+                  <div className="mt-2 p-3 border-l-4 border-yellow-400 bg-yellow-50 shadow-sm rounded">
+                    <span className="text-yellow-800 text-sm font-medium">⚠️ {item.alert}</span>
                   </div>
                 )}
               </div>

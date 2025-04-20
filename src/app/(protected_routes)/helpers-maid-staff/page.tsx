@@ -23,7 +23,7 @@ const options = [
     label: 'My Helpers',
     about: 'View all helpers currently working with you.',
     icon: <Users className="h-6 w-6 text-teal-600" />,
-    route: '/myhelpers', // 👈 Only this has route
+    route: '/myhelpers',
     color: 'from-teal-100 to-white',
   },
   {
