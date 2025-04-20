@@ -43,12 +43,8 @@ export default function InviteVisitorsForm({ onClose }: Props) {
   );
 
   useEffect(() => {
-    // Fetch contacts from Android phonebook
-    // @ts-ignore
-    if (window.AndroidInterface && typeof window.AndroidInterface.getContacts === 'function') {
+    const processContacts = (contactsJson: string) => {
       try {
-        // @ts-ignore
-        const contactsJson = window.AndroidInterface.getContacts();
         const parsed: Contact[] = JSON.parse(contactsJson);
         const uniqueContacts = Array.from(
           new Map(parsed.map(contact => [contact.name.toLowerCase(), contact])).values()
@@ -58,8 +54,30 @@ export default function InviteVisitorsForm({ onClose }: Props) {
         console.error('Error parsing contacts:', error);
         alert('Failed to fetch contacts.');
       }
+    };
+  
+    // Android
+    // @ts-ignore
+    if (window.AndroidInterface?.getContacts) {
+      // @ts-ignore
+      const contactsJson = window.AndroidInterface.getContacts();
+      processContacts(contactsJson);
+    }
+  
+    // iOS
+    // @ts-ignore
+    else if (window.webkit?.messageHandlers?.getContacts) {
+      // iOS will call this when it has the contact data
+      // @ts-ignore
+      window.onReceiveContacts = (contactsJson: string) => {
+        processContacts(contactsJson);
+      };
+  
+      // @ts-ignore
+      window.webkit.messageHandlers.getContacts.postMessage(null);
     }
   }, []);
+  
 
   const handleChange = (index: number, field: keyof Visitor, value: string) => {
     const updated = [...visitors];
