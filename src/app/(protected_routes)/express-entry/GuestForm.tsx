@@ -43,41 +43,67 @@ export default function InviteVisitorsForm({ onClose }: Props) {
   );
 
   useEffect(() => {
-    const processContacts = (contactsJson: string) => {
+    const stringifyIfObject = (input: any) =>
+      typeof input === 'object' ? JSON.stringify(input, null, 2) : input;
+
+    const processContacts = (contactsInput: string | object) => {
+      const contactsJson = typeof contactsInput === 'string'
+        ? contactsInput
+        : JSON.stringify(contactsInput);
+
+      // message.info(`Received contacts JSON: ${stringifyIfObject(contactsInput)}`, 5);
+      console.log("Raw contacts JSON:", contactsJson);
+
       try {
         const parsed: Contact[] = JSON.parse(contactsJson);
+        console.log("Parsed contacts:", parsed);
+
         const uniqueContacts = Array.from(
           new Map(parsed.map(contact => [contact.name.toLowerCase(), contact])).values()
         );
+
+        console.log("Filtered unique contacts:", uniqueContacts);
+        // message.success(`Loaded ${uniqueContacts.length} unique contacts.`, 3);
         setContacts(uniqueContacts);
       } catch (error) {
         console.error('Error parsing contacts:', error);
-        alert('Failed to fetch contacts.');
+        // message.error('Failed to parse contacts. Check console for details.', 5);
       }
     };
-  
+
     // Android
     // @ts-ignore
     if (window.AndroidInterface?.getContacts) {
+      console.log("Android detected. Fetching contacts...");
+      // message.info("Android detected. Fetching contacts...", 3);
+
       // @ts-ignore
       const contactsJson = window.AndroidInterface.getContacts();
       processContacts(contactsJson);
     }
-  
+
     // iOS
     // @ts-ignore
     else if (window.webkit?.messageHandlers?.getContacts) {
-      // iOS will call this when it has the contact data
+      console.log("iOS detected. Requesting contacts...");
+      // message.info("iOS detected. Requesting contacts...", 3);
+
       // @ts-ignore
-      window.onReceiveContacts = (contactsJson: string) => {
+      window.onReceiveContacts = (contactsJson: any) => {
+        console.log("iOS callback received contacts:", contactsJson);
+        // message.success("Contacts received from iOS.", 3);
         processContacts(contactsJson);
       };
-  
+
       // @ts-ignore
       window.webkit.messageHandlers.getContacts.postMessage(null);
+    } else {
+      console.log("No compatible contact interface found.");
+      // message.warning("No compatible contact interface found.", 4);
     }
   }, []);
-  
+
+
 
   const handleChange = (index: number, field: keyof Visitor, value: string) => {
     const updated = [...visitors];
@@ -525,7 +551,7 @@ export default function InviteVisitorsForm({ onClose }: Props) {
           disabled={loading}
           className="w-full bg-green-500 text-white py-3 rounded-xl shadow-md hover:bg-green-600 transition text-base font-medium"
         >
-           {loading ? 'Scheduling...' : 'Confirm'}
+          {loading ? 'Scheduling...' : 'Confirm'}
         </button>
       </div>
     </motion.div>

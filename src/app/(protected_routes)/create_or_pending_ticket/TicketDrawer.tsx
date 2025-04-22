@@ -30,14 +30,103 @@ import { motion, AnimatePresence } from 'framer-motion'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber' // Emergency
 import LabelImportantIcon from '@mui/icons-material/LabelImportant' // Normal
 import NewTicketForm from './NewTicketForm'
+import { useSession } from 'next-auth/react';
 
 dayjs.extend(relativeTime)
 
-const handleCloseTicket = (orderId: string) => {
-    // Replace this with your API or mutation logic
-    console.log(`Closing ticket with order ID: ${orderId}`)
-    // Optionally show confirmation or feedback
-}
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+
+const MySwal = withReactContent(Swal)
+
+const handleCloseOrCompleteTicket = async (
+    ticket: any,
+    session: any,
+    onClose: () => void
+) => {
+    onClose();
+    const latestStatus = normalizeStatus(ticket?.order_timeline?.slice(-1)[0]?.status || '');
+    const isPending = latestStatus === 'order_initiate';
+    const buttonText = isPending ? 'Close Ticket' : 'Mark as Done';
+
+    const confirmed = await Swal.fire({
+        title: `Are you sure you want to ${buttonText.toLowerCase()}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        cancelButtonText: 'cancel',
+        confirmButtonText: 'Close Ticket',
+        width: '350px',
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+    });
+
+    if (!confirmed.isConfirmed) return;
+
+    let comment = '';
+
+    if (isPending) {
+        const { value: reason } = await Swal.fire({
+            title: 'Reason for closing the ticket',
+            input: 'text',
+            inputLabel: 'Please provide a reason',
+            inputPlaceholder: 'Enter reason here...',
+            showCancelButton: true,
+            width: '350px',
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'You need to write something!';
+                }
+            }
+        });
+
+        if (!reason) return;
+        comment = reason;
+    }
+
+    try {
+        const res = await fetch('http://139.84.166.124:8060/order-service/update', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${session?.user?.accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                order_id: ticket.order_id,
+                premise_id: 'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af',
+                sub_premise_id: '0aad0a20-6b21-11ef-b2cb-13f201b16993',
+                premise_unit_id: 'D-0005',
+                order_status: isPending ? 'cancelled_by_customer' : 'complete',
+                ...(isPending && { comment_on_status_change: comment }),
+            }),
+        });
+
+        if (!res.ok) throw new Error('Failed to update ticket status.');
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Ticket has been updated.',
+            width: '350px',
+            confirmButtonColor: "#3085d6"
+        });
+
+        // Optionally refresh data or UI
+    } catch (error) {
+        console.error(error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong while updating the ticket.',
+            width: '350px',
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+        });
+    }
+};
+
+
 
 const priorityIconMap: Record<string, JSX.Element> = {
     emergency: <WarningAmberIcon sx={{ color: red[600] }} />,
@@ -91,6 +180,8 @@ const normalizeStatus = (status: string) =>
 
 const TicketBottomDrawer: React.FC<TicketBottomDrawerProps> = ({ open, onClose, skill, tickets }) => {
     const theme = useTheme()
+    const { data: session } = useSession();
+
 
     return (
         <Drawer
@@ -133,7 +224,7 @@ const TicketBottomDrawer: React.FC<TicketBottomDrawerProps> = ({ open, onClose, 
 
 
                     {tickets.length === 0 ? (
-                        <NewTicketForm skill={skill || ""} />
+                        <NewTicketForm skill={skill || ""} onClose={onClose} />
                     ) : (
                         tickets.map((ticket) => (
                             <motion.div
@@ -153,37 +244,52 @@ const TicketBottomDrawer: React.FC<TicketBottomDrawerProps> = ({ open, onClose, 
                                         Ticket #{ticket.order_id} - {ticket.servicetype}
                                     </Typography>
 
-                                    {!['complete', 'cancelled_by_customer'].includes(normalizeStatus(ticket?.order_timeline?.slice(-1)[0]?.status)) && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -5 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                            <Box
-                                                component="button"
-                                                onClick={() => handleCloseTicket(ticket.order_id)}
-                                                sx={{
-                                                    background: 'linear-gradient(135deg, #f44336, #e53935)',
-                                                    color: '#fff',
-                                                    border: 'none',
-                                                    borderRadius: 30,
-                                                    px: 3,
-                                                    py: 0.7,
-                                                    boxShadow: 2,
-                                                    fontWeight: 'bold',
-                                                    fontSize: '0.9rem',
-                                                    cursor: 'pointer',
-                                                    '&:hover': {
-                                                        boxShadow: 4,
-                                                        transform: 'translateY(-1px)',
-                                                    },
-                                                    transition: 'all 0.3s ease-in-out',
-                                                }}
+                                    {(() => {
+                                        const latestStatus = normalizeStatus(ticket?.order_timeline?.slice(-1)[0]?.status || '');
+
+                                        if (['complete', 'cancelled_by_customer'].includes(latestStatus)) return null;
+
+                                        const isPending = latestStatus === 'order_initiate';
+                                        const buttonText = isPending ? 'Close Ticket' : 'Mark as Done';
+                                        const buttonColor = isPending
+                                            ? 'linear-gradient(135deg, #f44336, #e53935)' // Red
+                                            : 'linear-gradient(135deg, #4caf50, #43a047)' // Green
+
+                                        return (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -5 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.3 }}
                                             >
-                                                Close Ticket
-                                            </Box>
-                                        </motion.div>
-                                    )}
+                                                <Box
+                                                    component="button"
+                                                    onClick={() => handleCloseOrCompleteTicket(ticket, session, onClose)}
+                                                    sx={{
+                                                        background: buttonColor,
+                                                        color: '#fff',
+                                                        border: 'none',
+                                                        borderRadius: 30,
+                                                        px: 3,
+                                                        py: 0.7,
+                                                        boxShadow: 2,
+                                                        fontWeight: 'bold',
+                                                        fontSize: '0.9rem',
+                                                        cursor: 'pointer',
+                                                        '&:hover': {
+                                                            boxShadow: 4,
+                                                            transform: 'translateY(-1px)',
+                                                        },
+                                                        transition: 'all 0.3s ease-in-out',
+                                                    }}
+                                                >
+                                                    {buttonText}
+                                                </Box>
+                                            </motion.div>
+                                        );
+                                    })()}
+
+
+
                                 </Box>
 
                                 <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2 }}>
@@ -268,7 +374,7 @@ const TicketBottomDrawer: React.FC<TicketBottomDrawerProps> = ({ open, onClose, 
                                                             borderRadius: 1,
                                                             mb: 1,
                                                             px: 1,
-                                                            py: 1.5,
+                                                            py: 0.1,
                                                             boxShadow: index === ticket.order_timeline.length - 1 ? 1 : 0,
                                                         }}
                                                     >

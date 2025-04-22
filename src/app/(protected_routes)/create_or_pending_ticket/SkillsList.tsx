@@ -28,7 +28,7 @@ const SkillsList: React.FC<Props> = ({ onSkillClick }) => {
     }, [])
 
     return (
-        <div className="flex flex-col gap-4 p-2">
+        <div className="bg-white p-4 font-sans">
             <div className="flex justify-center mb-6">
                 <h2
                     className="text-xl font-medium text-[#222] px-6 py-3 rounded-2xl bg-white"
@@ -42,9 +42,11 @@ const SkillsList: React.FC<Props> = ({ onSkillClick }) => {
                     Manage Tickets
                 </h2>
             </div>
-            {skills.map((skill) => (
-                <SkillItem key={skill._id} skill={skill} onClick={onSkillClick} />
-            ))}
+            <div className="space-y-4 overflow-y-auto" style={{ height: '75vh' }}>
+                {skills.map((skill) => (
+                    <SkillItem key={skill._id} skill={skill} onClick={onSkillClick} />
+                ))}
+            </div>
         </div>
     )
 }

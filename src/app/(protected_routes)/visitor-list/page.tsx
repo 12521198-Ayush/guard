@@ -136,7 +136,7 @@ const Page: React.FC = () => {
   }, [page, activeTab, session])
 
   return (
-    <div className="bg-[#f1f5f9] p-3 font-sans transition-all">
+    <div className="bg-white p-3 font-sans transition-all">
       {/* <h2 className="text-xl font-semibold text-gray-800 mb-4 bg-white p-2 rounded-2xl shadow-md text-center">
         Pre-Invited Visitor List
       </h2> */}

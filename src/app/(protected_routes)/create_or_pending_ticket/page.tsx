@@ -4,6 +4,7 @@ import SkillsList from './SkillsList'
 import TicketDrawer from './TicketDrawer'
 import axios from 'axios'
 
+
 const CreateOrPendingTicketPage = () => {
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null)
   const [tickets, setTickets] = useState<any[]>([])
@@ -14,7 +15,7 @@ const CreateOrPendingTicketPage = () => {
       premise_id: 'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af',
       sub_premise_id: '0aad0a20-6b21-11ef-b2cb-13f201b16993',
       premise_unit_id: 'D-0005',
-      order_status: 'pending',
+      order_status: 'open',
     })
     return res.data.data.array
   }
