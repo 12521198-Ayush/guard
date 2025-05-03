@@ -160,7 +160,7 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
       </div>
 
       {/* Name and Phone */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.25 }}
@@ -185,10 +185,10 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
             className="w-full rounded-xl px-4 py-2 bg-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-inner"
           />
         </div>
-      </motion.div>
+      </motion.div> */}
 
-      {/* Skill (Read-only) */}
-      <div className="flex items-center gap-3 rounded-xl px-4 py-3 bg-gray-100 shadow-inner">
+
+      {/* <div className="flex items-center gap-3 rounded-xl px-4 py-3 bg-gray-100 shadow-inner">
         <BadgeCheck className="text-purple-500 w-5 h-5" />
         <input
           type="text"
@@ -196,7 +196,7 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
           disabled
           className="flex-1 bg-transparent text-sm text-gray-600 font-medium cursor-not-allowed focus:outline-none"
         />
-      </div>
+      </div> */}
 
       {/* Priority Dropdown */}
       <motion.div className="relative" initial={{ scale: 1 }} whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
@@ -247,34 +247,22 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="relative">
+        <div className="relative bg-white rounded-2xl shadow-md px-3 py-4 space-y-2">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            Describe the issue
+          </label>
+
           <textarea
-            placeholder="Describe the issue..."
+            id="description"
+            placeholder="Write a brief description..."
             value={form.description}
             onChange={(e) => handleChange('description', e.target.value)}
             rows={4}
-            className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-inner pr-10"
+            className="w-full resize-none px-4 py-3 text-sm text-gray-800 bg-gray-50 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition-all duration-200"
           />
-
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/gif,image/jpg"
-            style={{ display: 'none' }}
-            onChange={handleUploadClick}
-          />
-
-          {/* Upload button */}
-          <button
-            type="button"
-            className="absolute bottom-2 right-3 text-blue-500 hover:text-blue-600"
-            onClick={handleButtonClick}
-          >
-            <CloudUploadOutlinedIcon fontSize="small" />
-          </button>
         </div>
       </motion.div>
+
 
 
       {/* Submit Button */}

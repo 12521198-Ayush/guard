@@ -31,13 +31,14 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber' // Emergency
 import LabelImportantIcon from '@mui/icons-material/LabelImportant' // Normal
 import NewTicketForm from './NewTicketForm'
 import { useSession } from 'next-auth/react';
-
-dayjs.extend(relativeTime)
-
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
+dayjs.extend(relativeTime)
 const MySwal = withReactContent(Swal)
+
 
 const handleCloseOrCompleteTicket = async (
     ticket: any,
@@ -94,9 +95,9 @@ const handleCloseOrCompleteTicket = async (
             },
             body: JSON.stringify({
                 order_id: ticket.order_id,
-                premise_id: 'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af',
-                sub_premise_id: '0aad0a20-6b21-11ef-b2cb-13f201b16993',
-                premise_unit_id: 'D-0005',
+                premise_id: session?.user?.primary_premise_id,
+                sub_premise_id: session?.user?.sub_premise_id,
+                premise_unit_id: session?.user?.premise_unit_id,
                 order_status: isPending ? 'cancelled_by_customer' : 'complete',
                 ...(isPending && { comment_on_status_change: comment }),
             }),
@@ -126,8 +127,6 @@ const handleCloseOrCompleteTicket = async (
     }
 };
 
-
-
 const priorityIconMap: Record<string, JSX.Element> = {
     emergency: <WarningAmberIcon sx={{ color: red[600] }} />,
     normal: <LabelImportantIcon sx={{ color: blue[500] }} />,
@@ -139,8 +138,11 @@ const priorityColorMap: Record<string, string> = {
 }
 
 const formattedPhone = (phone: string) => {
-    return `+91-${phone.slice(3, 13)}`; // Format phone number
+    const digits = phone.replace(/\D/g, ''); // Remove non-digit characters
+    const last10 = digits.slice(-10); // Get last 10 digits
+    return `+91-${last10}`;
 };
+
 
 const statusIconMap: Record<string, JSX.Element> = {
     order_initiate: <AccessTimeIcon sx={{ color: blue[500] }} />,
@@ -181,6 +183,40 @@ const normalizeStatus = (status: string) =>
 const TicketBottomDrawer: React.FC<TicketBottomDrawerProps> = ({ open, onClose, skill, tickets }) => {
     const theme = useTheme()
     const { data: session } = useSession();
+    const [queueCounts, setQueueCounts] = useState(null);
+    const [queueCountsMap, setQueueCountsMap] = useState<Record<string, any>>({});
+
+
+    useEffect(() => {
+        const fetchQueueCounts = async () => {
+            const counts: Record<string, any> = {};
+
+            await Promise.all(
+                tickets.map(async (ticket) => {
+                    try {
+                        const response = await axios.post('http://139.84.166.124:8060/order-service/handyman/queue/count', {
+                            premise_id: session?.user?.primary_premise_id,
+                            sub_premise_id: session?.user?.sub_premise_id,
+                            servicetype: ticket.servicetype,
+                            order_id: ticket.order_id
+                        });
+
+                        if (response.data?.data?.counts) {
+                            counts[ticket.order_id] = response.data.data.counts;
+                        }
+                    } catch (error) {
+                        console.error(`Failed to fetch queue count for ticket ${ticket.order_id}`, error);
+                    }
+                })
+            );
+
+            setQueueCountsMap(counts);
+        };
+
+        if (tickets.length > 0) {
+            fetchQueueCounts();
+        }
+    }, [tickets]);
 
 
     return (
@@ -194,15 +230,17 @@ const TicketBottomDrawer: React.FC<TicketBottomDrawerProps> = ({ open, onClose, 
                     borderTopLeftRadius: 16,
                     borderTopRightRadius: 16,
                     overflow: 'hidden',
-                }
+                    m: 0, // remove default margin
+                },
             }}
         >
             <Box
-                height="auto"
-                maxHeight="80vh"
-                minHeight="auto"
-                display="flex"
-                flexDirection="column"
+                sx={{
+                    height: 'fit-content',
+                    maxHeight: '80vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
             >
                 {/* Handle Bar */}
                 <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: "100%", height: 30 }}>
@@ -295,7 +333,43 @@ const TicketBottomDrawer: React.FC<TicketBottomDrawerProps> = ({ open, onClose, 
                                 <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2 }}>
                                     Description: {ticket.order_description}
                                 </Typography>
+                                {queueCountsMap[ticket.order_id] && (
+                                    <Box
+                                        display="flex"
+                                        alignItems="center"
+                                        gap={2}
+                                        sx={{
+                                            backgroundColor: "white",
+                                            borderRadius: 2,
+                                            py: 1,
+                                            mt: 1,
 
+                                        }}
+                                    >
+                                        <Box display="flex" alignItems="center" gap={0.5}>
+                                            <HourglassBottomIcon sx={{ color: orange[600] }} />
+                                            <Typography variant="body2" fontWeight="medium" color="text.primary">
+                                                Pending: {queueCountsMap[ticket.order_id].pending}
+                                            </Typography>
+                                        </Box>
+
+                                        <Box display="flex" alignItems="center" gap={0.5}>
+                                            <DirectionsRunIcon sx={{ color: blue[600] }} />
+                                            <Typography variant="body2" fontWeight="medium" color="text.primary">
+                                                Picked: {queueCountsMap[ticket.order_id].picked}
+                                            </Typography>
+                                        </Box>
+
+                                        <Box display="flex" alignItems="center" gap={0.5}>
+                                            <PauseCircleOutlineIcon sx={{ color: purple[400] }} />
+                                            <Typography variant="body2" fontWeight="medium" color="text.primary">
+                                                Parked: {queueCountsMap[ticket.order_id].temporarily_parked}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                )}
+
+                                <br />
                                 <Grid
                                     container
                                     alignItems="center"
@@ -312,9 +386,9 @@ const TicketBottomDrawer: React.FC<TicketBottomDrawerProps> = ({ open, onClose, 
                                             <Typography variant="body1" fontWeight="bold">
                                                 {ticket.customer_name}
                                             </Typography>
-                                            <Typography variant="body2" color="textSecondary">
+                                            {/* <Typography variant="body2" color="textSecondary">
                                                 Ticket Raised by
-                                            </Typography>
+                                            </Typography> */}
                                             <Typography variant="body2">
                                                 {formattedPhone(ticket.customer_mobile)}
                                             </Typography>
@@ -401,8 +475,6 @@ const TicketBottomDrawer: React.FC<TicketBottomDrawerProps> = ({ open, onClose, 
                                         })}
                                     </AnimatePresence>
                                 </List>
-
-                                <Divider sx={{ mt: 2 }} />
                             </motion.div>
                         ))
                     )}

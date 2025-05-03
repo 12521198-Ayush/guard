@@ -6,6 +6,7 @@ import { Drawer, Button } from "antd";
 import { Alert } from "antd";
 import { useSession } from 'next-auth/react';
 import StatusStory from './StatusStory'
+import {CardWithSlideshowBackground} from './CardWithSlideshowBackground'
 
 const menuItems = [
   {
@@ -93,23 +94,12 @@ const MobileMenu = () => {
           <img width="70" height="70" src="https://img.icons8.com/plasticine/100/automatic.png" alt="automatic" />
         </Link>
       </div>
-     
+
       {isLoading ? (
         <SkeletonLoader /> // Show skeleton loader while loading  
       ) : (
         <>
-          {isMobile && (
-            <>
-              {/* <main className="flex justify-center items-center bg-gray-100">
-                <StatusStory
-                  imageUrl="https://www.nobroker.in/blog/wp-content/uploads/2024/03/best-society-in-delhi.jpg"
-                  title={session?.user?.primary_premise_name ?? 'Unnamed Society'}
-                  subtitle={session?.user?.premise_unit_id ?? 'Unknown Unit'}
-                />
-              </main> */}
-              <div></div>
-            </>
-          )}
+
           <Drawer
             title={<h2 className="text-lg font-semibold text-gray-800">Collabarative Tool</h2>}
             placement="bottom"
@@ -125,6 +115,19 @@ const MobileMenu = () => {
           </Drawer>
 
           <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-2 bg-gray-100'>
+
+            <CardWithSlideshowBackground
+              media={[
+                { type: 'image', url: 'https://i.pinimg.com/236x/67/97/19/6797199f1ab690cf8bd3da6a70feadc8.jpg' },
+                { type: 'video', url: 'https://cdn.pixabay.com/video/2022/04/21/114694-701830300_tiny.mp4' },
+                { type: 'image', url: 'https://thumbs.dreamstime.com/b/valerie-cyberpunk-neon-vertical-k-mobile-wallpaper-valerie-cyberpunk-vertical-k-320503568.jpg' },
+                { type: 'image', url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbt99GOyyX1ZMk2MfH9mGBpvV2DdsPU9e76w&s' },
+                { type: 'image', url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuOv1QrxzTdMAGu0sShhZf3tjQP5ghJ6Al2Q&s' }
+              ]}
+              title={session?.user?.primary_premise_name ?? 'Unnamed Society'}
+              subtitle={session?.user?.premise_unit_id ?? 'Unknown Unit'}
+            />
+
             {menuItems.map((item, index) => (
               <div key={index} className='mb-2'>
                 <Link

@@ -32,74 +32,80 @@ const Header = (props: {
     <header className="sticky top-0 z-[999] w-full bg-white shadow-md dark:bg-boxdark dark:shadow-none rounded-bl-3xl rounded-br-3xl">
       <div className="flex items-center justify-between px-4 py-4 md:px-6 2xl:px-11">
 
-        {/* Left logo (for mobile) */}
         {isMobile && (
-          <div className="flex items-center gap-3 text-gray-800 font-semibold text-lg">
-            <StatusStory
-              imageUrl="https://static.wixstatic.com/media/a3eec1_276d6c8168e4476c90b451f9d9bf4b22~mv2.jpeg/v1/fill/w_480,h_854,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a3eec1_276d6c8168e4476c90b451f9d9bf4b22~mv2.jpeg"
-              title={session?.user?.primary_premise_name ?? 'Unnamed Society'}
-              subtitle={session?.user?.premise_unit_id ?? 'Unknown Unit'}
-            />
-            <span className="text-base font-bold tracking-wide">SERVIZING</span>
-          </div>
-        )}
+          <div className="mr-auto text-black font-bold font-semibold flex text-md justify-center items-center">
+            <div className="flex items-center gap-3 text-gray-800 font-semibold text-lg">
+              <Link href="/dashboard">
+                <Image
+                  className="drop-shadow-2xl"
+                  width={44}
+                  height={44}
+                  src="/images/logo/logo.png"
+                  alt="Logo"
+                  priority
+                />
+              </Link>
+              <span className="text-base font-bold tracking-wide">SERVIZING</span>
+            </div>
+            </div>
+         )}
 
 
-        {/* Right side */}
-        <div className="flex items-center gap-3 ml-auto">
-          <ul className="flex items-center">
-            {/* <div className="mr-4">
+            {/* Right side */}
+            <div className="flex items-center gap-3 ml-auto">
+              <ul className="flex items-center">
+                {/* <div className="mr-4">
               <StatusStory
                 imageUrl="https://www.nobroker.in/blog/wp-content/uploads/2024/03/best-society-in-delhi.jpg"
                 title={session?.user?.primary_premise_name ?? 'Unnamed Society'}
                 subtitle={session?.user?.premise_unit_id ?? 'Unknown Unit'}
               />
             </div> */}
-            <DropdownNotification />
-          </ul>
+                <DropdownNotification />
+              </ul>
 
-          {!isMobile && <DropdownUser />}
+              {!isMobile && <DropdownUser />}
 
-          {/* Hamburger for mobile */}
-          <button
-            aria-controls="sidebar"
-            onClick={(e) => {
-              e.stopPropagation();
-              props.setSidebarOpen(!props.sidebarOpen);
-            }}
-            className="lg:hidden p-2 rounded-xl bg-white shadow-md dark:bg-boxdark transition duration-300 hover:shadow-lg active:scale-95"
-          >
-            <span className="relative block h-5.5 w-5.5 cursor-pointer">
-              <span className="du-block absolute right-0 h-full w-full">
-                <span
-                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-black delay-[0] duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "!w-full delay-300"
-                    }`}
-                ></span>
-                <span
-                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-black delay-150 duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "delay-400 !w-full"
-                    }`}
-                ></span>
-                <span
-                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-black delay-200 duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "!w-full delay-500"
-                    }`}
-                ></span>
-              </span>
-              <span className="absolute right-0 h-full w-full rotate-45">
-                <span
-                  className={`absolute left-2.5 top-0 block h-full w-0.5 rounded-sm bg-black delay-300 duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "!h-0 !delay-[0]"
-                    }`}
-                ></span>
-                <span
-                  className={`delay-400 absolute left-0 top-2.5 block h-0.5 w-full rounded-sm bg-black duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "!h-0 !delay-200"
-                    }`}
-                ></span>
-              </span>
-            </span>
-          </button>
+              {/* Hamburger for mobile */}
+              <button
+                aria-controls="sidebar"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  props.setSidebarOpen(!props.sidebarOpen);
+                }}
+                className="lg:hidden p-2 rounded-xl bg-white shadow-md dark:bg-boxdark transition duration-300 hover:shadow-lg active:scale-95"
+              >
+                <span className="relative block h-5.5 w-5.5 cursor-pointer">
+                  <span className="du-block absolute right-0 h-full w-full">
+                    <span
+                      className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-black delay-[0] duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "!w-full delay-300"
+                        }`}
+                    ></span>
+                    <span
+                      className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-black delay-150 duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "delay-400 !w-full"
+                        }`}
+                    ></span>
+                    <span
+                      className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-black delay-200 duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "!w-full delay-500"
+                        }`}
+                    ></span>
+                  </span>
+                  <span className="absolute right-0 h-full w-full rotate-45">
+                    <span
+                      className={`absolute left-2.5 top-0 block h-full w-0.5 rounded-sm bg-black delay-300 duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "!h-0 !delay-[0]"
+                        }`}
+                    ></span>
+                    <span
+                      className={`delay-400 absolute left-0 top-2.5 block h-0.5 w-full rounded-sm bg-black duration-200 ease-in-out dark:bg-white ${!props.sidebarOpen && "!h-0 !delay-200"
+                        }`}
+                    ></span>
+                  </span>
+                </span>
+              </button>
 
 
-        </div>
-      </div>
+            </div>
+          </div>
     </header>
   );
 };

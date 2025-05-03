@@ -96,17 +96,17 @@ const MyHelpers = () => {
   }, [fetchHelpers, hasMore, loading])
 
   return (
-    <div className="bg-[#f1f5f9] p-3 font-sans transition-all">
-      <div className="flex justify-center mb-6">
-        <h2
-          className="text-xl font-medium text-[#222] px-6 py-3 rounded-2xl bg-white"
-          style={{
-            textAlign: 'center',
-            width: '90%',
-            background: 'linear-gradient(to right, #ffffff, #f9fbfd)',
-            boxShadow: 'inset 0 2px 5px rgba(0, 0, 0, 0.05), inset 0 -1px 3px rgba(0, 0, 0, 0.07)',
-          }}
-        >
+    <div className="bg-white p-4 font-sans">
+        <div className="flex justify-center mb-6">
+          <h2
+            className="text-xl font-medium text-[#222] px-6 py-3 rounded-2xl bg-white"
+            style={{
+              textAlign: 'center',
+              width: '90%',
+              background: 'linear-gradient(to right, #ffffff, #f9fbfd)',
+              boxShadow: 'inset 0 2px 5px rgba(0, 0, 0, 0.05), inset 0 -1px 3px rgba(0, 0, 0, 0.07)',
+            }}
+          >
           Helpers List
         </h2>
       </div>

@@ -91,11 +91,9 @@ const VisitorCard: React.FC<Props> = ({ visitor, onDelete }) => {
     <div className="flex items-start bg-[#fafafa] rounded-2xl shadow-md mb-4 p-4 relative transition-all duration-300 hover:shadow-lg active:scale-[0.98]">
       <div className="flex-shrink-0 mr-4">
         {isGuest && visitor.signed_url ? (
-          <img
-            src={visitor.signed_url}
-            alt="Visitor"
-            className="w-20 h-20 object-cover rounded-xl shadow-sm"
-          />
+          <div className="w-20 h-20 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600 text-2xl font-medium shadow-lg tracking-wide">
+            {visitor.contact_name?.[0]?.toUpperCase() || '?'}
+          </div>
         ) : vendorLogo ? (
           <img
             src={vendorLogo}

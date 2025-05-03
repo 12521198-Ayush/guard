@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash, BookUser, CheckCircle, Circle, StickyNote } from 'lucide-react';
 import * as React from 'react';
-import { Slider } from 'antd';
+import { message, Slider } from 'antd';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { ChevronDown } from 'lucide-react';
 
 type Visitor = {
   name: string;
@@ -36,6 +37,11 @@ export default function InviteVisitorsForm({ onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const router = useRouter()
   const { data: session } = useSession()
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState('General');
+  const options = ['General', 'Birthday', 'Party'];
+  const toggleDropdown = () => setIsOpen((prev) => !prev);
+
 
   const filteredContacts = contacts.filter((contact) =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -51,7 +57,6 @@ export default function InviteVisitorsForm({ onClose }: Props) {
         ? contactsInput
         : JSON.stringify(contactsInput);
 
-      // message.info(`Received contacts JSON: ${stringifyIfObject(contactsInput)}`, 5);
       console.log("Raw contacts JSON:", contactsJson);
 
       try {
@@ -63,47 +68,47 @@ export default function InviteVisitorsForm({ onClose }: Props) {
         );
 
         console.log("Filtered unique contacts:", uniqueContacts);
-        // message.success(`Loaded ${uniqueContacts.length} unique contacts.`, 3);
         setContacts(uniqueContacts);
       } catch (error) {
         console.error('Error parsing contacts:', error);
-        // message.error('Failed to parse contacts. Check console for details.', 5);
       }
     };
 
+    // 1. Always define the global callbacks FIRST
+    // Android callback
+    // @ts-ignore
+    window.showContacts = function (contactsFromAndroid: any) {
+      console.log("Received contacts from Android:", contactsFromAndroid);
+      processContacts(contactsFromAndroid);
+    };
+
+    // iOS callback
+    // @ts-ignore
+    window.onReceiveContacts = function (contactsFromiOS: any) {
+      console.log("Received contacts from iOS:", contactsFromiOS);
+      processContacts(contactsFromiOS);
+    };
+
+    // 2. Then request contacts (after callback is ready)
     // Android
     // @ts-ignore
-    if (window.AndroidInterface?.getContacts) {
-      console.log("Android detected. Fetching contacts...");
-      // message.info("Android detected. Fetching contacts...", 3);
-
+    if (window.AndroidContacts?.fetchContacts) {
+      console.log("Android detected. Requesting contacts...");
       // @ts-ignore
-      const contactsJson = window.AndroidInterface.getContacts();
-      processContacts(contactsJson);
+      window.AndroidContacts.fetchContacts();
     }
-
     // iOS
     // @ts-ignore
     else if (window.webkit?.messageHandlers?.getContacts) {
       console.log("iOS detected. Requesting contacts...");
-      // message.info("iOS detected. Requesting contacts...", 3);
-
-      // @ts-ignore
-      window.onReceiveContacts = (contactsJson: any) => {
-        console.log("iOS callback received contacts:", contactsJson);
-        // message.success("Contacts received from iOS.", 3);
-        processContacts(contactsJson);
-      };
-
       // @ts-ignore
       window.webkit.messageHandlers.getContacts.postMessage(null);
-    } else {
+    }
+    // Other / Unsupported
+    else {
       console.log("No compatible contact interface found.");
-      // message.warning("No compatible contact interface found.", 4);
     }
   }, []);
-
-
 
   const handleChange = (index: number, field: keyof Visitor, value: string) => {
     const updated = [...visitors];
@@ -151,6 +156,7 @@ export default function InviteVisitorsForm({ onClose }: Props) {
 
   const handleSubmit = async () => {
     const isEmpty = visitors.some((visitor) => !visitor.name || !visitor.phone);
+    console.log(selectedDate);
     if (isEmpty) {
       alert('Please fill in all name and phone fields.');
       return;
@@ -164,17 +170,23 @@ export default function InviteVisitorsForm({ onClose }: Props) {
       };
     });
 
-    const now = new Date();
-    const future = new Date(now.getTime() + validity * 24 * 60 * 60 * 1000); // validity days later
-
+    const future = new Date(selectedDate.getTime() + validity * 24 * 60 * 60 * 1000); // validity days later
+    let invite = '';
+    if(selected == 'General'){
+      invite = 'general';
+    }else if(selected == 'Birthday'){
+      invite = 'birthday';
+    }else if(selected == 'Party'){
+      invite = 'party';
+    }
     if (!session?.user) return;
     const payload: any = {
       premise_id: session.user?.primary_premise_id,
       premise_unit_id: session.user?.premise_unit_id,
       sub_premise_id: session.user?.sub_premise_id,
       resident_mobile_number: session.user?.phone,
-      invite_type: 'PERSONAL',
-      start_date_iso: now.toISOString(),
+      invite_type: invite,
+      start_date_iso: new Date(selectedDate).toISOString(),
       end_date_iso: future.toISOString(),
       contact_array,
     };
@@ -184,6 +196,7 @@ export default function InviteVisitorsForm({ onClose }: Props) {
       payload.note_for_guest = note.trim();
     }
 
+    console.log("payload");
     console.log(payload);
 
     try {
@@ -198,7 +211,7 @@ export default function InviteVisitorsForm({ onClose }: Props) {
 
       if (!res.ok) {
         const errorData = await res.json();
-        alert('Failed to submit: ' + (errorData.message || res.status));
+        message.error('Failed to submit: ' + (errorData.message || res.status));
         return;
       }
 
@@ -317,14 +330,12 @@ export default function InviteVisitorsForm({ onClose }: Props) {
         router.push('/menu');
         onClose();
       }
-
-
-
       console.log(await res.json());
 
       alert('Visitors submitted successfully!');
       console.log(await res.json());
     } catch (error) {
+      // @ts-ignore
       console.error('Submit Error:', error);
       alert('An error occurred while submitting.');
     }
@@ -333,6 +344,68 @@ export default function InviteVisitorsForm({ onClose }: Props) {
     }
   };
 
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const renderCalendar = () => {
+    const today = new Date()
+    const days = Array.from({ length: 16 }, (_, i) => new Date(today.getTime() + i * 86400000))
+
+    return (
+      <div className="grid grid-cols-4 gap-2">
+        {days.map((day) => (
+          <button
+            key={day.toDateString()}
+            onClick={() => setSelectedDate(day)}
+            className={`p-2 rounded-xl text-sm transition-all duration-200 
+              shadow-md hover:shadow-xl 
+              ${day.toDateString() === selectedDate.toDateString()
+                ? 'bg-blue-600 text-white shadow-2xl'
+                : 'bg-gray-100 text-gray-800'
+              }`}
+            
+          >
+            {day.toDateString().split(' ').slice(0, 3).join(' ')}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+
+  const AndroidDropdown = () => {
+    // @ts-ignore
+    const selectOption = (option) => {
+      setSelected(option);
+      setIsOpen(false);
+    };
+
+    return (
+      <div className="relative w-48">
+        <button
+          onClick={toggleDropdown}
+          className="w-full p-3 rounded-2xl bg-gray-100 shadow-md flex justify-between items-center text-sm text-gray-800 hover:shadow-lg transition-all"
+        >
+          {selected}
+          <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {isOpen && (
+          <div className="absolute mt-2 w-full bg-white rounded-2xl shadow-xl z-10">
+            {options.map((option) => (
+              <button
+                key={option}
+                onClick={() => selectOption(option)}
+                className={`w-full text-left px-4 py-2 text-sm rounded-2xl hover:bg-gray-100 transition-all ${selected === option ? 'bg-blue-600 text-white' : 'text-gray-800'
+                  }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <motion.div
@@ -394,6 +467,7 @@ export default function InviteVisitorsForm({ onClose }: Props) {
 
       {/* Add guest / phonebook / note buttons */}
       <div className="flex space-x-2">
+      {AndroidDropdown()}
 
         <motion.button
           onClick={handleAddVisitor}
@@ -401,7 +475,7 @@ export default function InviteVisitorsForm({ onClose }: Props) {
           className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-blue-100 to-indigo-100 text-indigo-700 rounded-2xl shadow-sm hover:shadow-md hover:from-blue-200 hover:to-indigo-200 transition-all duration-200"
         >
           <Plus className="w-5 h-5" />
-          Add Guest
+          Add
         </motion.button>
 
         <motion.button
@@ -422,6 +496,9 @@ export default function InviteVisitorsForm({ onClose }: Props) {
           <StickyNote size={20} />
         </motion.button>
       </div>
+      <br />
+
+      {renderCalendar()}
 
       {/* Note input with animation */}
       <AnimatePresence>
@@ -456,7 +533,6 @@ export default function InviteVisitorsForm({ onClose }: Props) {
           className="mt-2"
         />
       </div>
-
 
       {/* Phonebook drawer */}
       <AnimatePresence>

@@ -8,6 +8,7 @@ import Image from 'next/image'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { ChevronDown } from 'lucide-react';
 
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -56,7 +57,6 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
   const formatDate = (date: Date) => {
     return date.toISOString();
   };
-
 
   const handleNowSchedule = async () => {
     if (!selectedProduct || !session) return;
@@ -155,9 +155,11 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
           <button
             key={day.toDateString()}
             onClick={() => setSelectedDate(day)}
-            className={`p-2 rounded-lg text-sm border ${day.toDateString() === selectedDate.toDateString()
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-100'
+            className={`p-2 rounded-xl text-sm transition-all duration-200 
+              shadow-md hover:shadow-xl 
+              ${day.toDateString() === selectedDate.toDateString()
+                ? 'bg-blue-600 text-white shadow-2xl'
+                : 'bg-gray-100 text-gray-800'
               }`}
           >
             {day.toDateString().split(' ').slice(0, 3).join(' ')}
@@ -169,29 +171,35 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
 
   const renderTimePicker = () => (
     <div className="flex gap-4 items-center">
-      <select
-        value={selectedHour}
-        onChange={(e) => setSelectedHour(e.target.value)}
-        className="border rounded-lg p-2 bg-white"
-      >
-        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map((h) => (
-          <option key={h} value={h}>
-            {h}
-          </option>
-        ))}
-      </select>
-      <span>:</span>
-      <select
-        value={selectedMinute}
-        onChange={(e) => setSelectedMinute(e.target.value)}
-        className="border rounded-lg p-2 bg-white"
-      >
-        {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map((m) => (
-          <option key={m} value={m}>
-            {m}
-          </option>
-        ))}
-      </select>
+      <div className="relative shadow-md rounded-xl bg-white">
+        <select
+          value={selectedHour}
+          onChange={(e) => setSelectedHour(e.target.value)}
+          className="appearance-none p-2 pr-6 rounded-xl bg-white text-gray-800 focus:outline-none"
+        >
+          {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map((h) => (
+            <option key={h} value={h}>
+              {h}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <span className="text-lg text-gray-600">:</span>
+
+      <div className="relative shadow-md rounded-xl bg-white">
+        <select
+          value={selectedMinute}
+          onChange={(e) => setSelectedMinute(e.target.value)}
+          className="appearance-none p-2 pr-6 rounded-xl bg-white text-gray-800 focus:outline-none"
+        >
+          {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   )
 
@@ -286,7 +294,8 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
             <button
               key={day.toDateString()}
               onClick={() => toggleDate(day)}
-              className={`p-2 rounded-lg text-sm border text-center ${isSelected ? 'bg-blue-500 text-white' : 'bg-gray-100'
+              className={`p-2 rounded-xl text-sm transition-all duration-200 
+              shadow-md hover:shadow-xl  ${isSelected ? 'bg-blue-600 text-white shadow-2xl' : 'bg-gray-100 text-gray-800'
                 }`}
             >
               {day.toDateString().split(' ').slice(0, 3).join(' ')}
@@ -299,29 +308,35 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
 
   const MultipleRenderTimePicker = () => (
     <div className="flex gap-4 items-center">
-      <select
-        value={selectedHour}
-        onChange={(e) => setSelectedHour(e.target.value)}
-        className="border rounded-lg p-2 bg-white"
-      >
-        {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map((h) => (
-          <option key={h} value={h}>
-            {h}
-          </option>
-        ))}
-      </select>
-      <span>:</span>
-      <select
-        value={selectedMinute}
-        onChange={(e) => setSelectedMinute(e.target.value)}
-        className="border rounded-lg p-2 bg-white"
-      >
-        {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map((m) => (
-          <option key={m} value={m}>
-            {m}
-          </option>
-        ))}
-      </select>
+      <div className="relative shadow-md rounded-xl bg-white">
+        <select
+          value={selectedHour}
+          onChange={(e) => setSelectedHour(e.target.value)}
+          className="appearance-none p-2 pr-6 rounded-xl bg-white text-gray-800 focus:outline-none"
+        >
+          {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map((h) => (
+            <option key={h} value={h}>
+              {h}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <span className="text-lg text-gray-600">:</span>
+
+      <div className="relative shadow-md rounded-xl bg-white">
+        <select
+          value={selectedMinute}
+          onChange={(e) => setSelectedMinute(e.target.value)}
+          className="appearance-none p-2 pr-6 rounded-xl bg-white text-gray-800 focus:outline-none"
+        >
+          {Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')).map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   )
 
@@ -349,7 +364,7 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
         newDate.setSeconds(0);
         newDate.setMilliseconds(0);
         return newDate.toISOString();
-      };      
+      };
 
       const duration_array = selectedDates.map((date) => ({
         start_time_iso: formatDateTime(date, selectedHour, selectedMinute),
@@ -406,7 +421,6 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
     }
   };
 
-
   const renderRecurringStep = () => (
     <div className="space-y-4">
       <MultipleRenderCalendar />
@@ -420,8 +434,6 @@ export default function ScheduleDrawer({ open, onClose, selectedProduct, onCompl
       </button>
     </div>
   );
-  
-
 
   return (
     <Drawer

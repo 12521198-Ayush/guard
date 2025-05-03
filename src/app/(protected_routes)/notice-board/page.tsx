@@ -1,130 +1,207 @@
-'use client'
+'use client';
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaStar } from 'react-icons/fa';
+import { AiFillFilePdf, AiFillFileImage, AiFillFileExcel } from 'react-icons/ai';
+import { useSession } from 'next-auth/react'
+import EmailDrawer from './EmailDrawer';
+
+const getFileType = (filename: string) => {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  if (ext === 'pdf') return 'pdf';
+  if (['jpg', 'jpeg', 'png', 'gif'].includes(ext!)) return 'image';
+  if (['xls', 'xlsx', 'csv'].includes(ext!)) return 'excel';
+  return 'file';
+};
 
 const Page = () => {
-  const [result, setResult] = useState('');
+  const [emails, setEmails] = useState<any[]>([]);
+  const [selectedEmail, setSelectedEmail] = useState<any>(null);
+  const [viewingAttachment, setViewingAttachment] = useState<any>(null);
+  const premiseId = "c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af";
+  const { data: session } = useSession()
 
   useEffect(() => {
-    // Handle QR result for both platforms
-    // Android calls: window.handleQRResult(result)
-    // iOS calls: window.webkit.messageHandlers.qrResultHandler.postMessage(result) → which calls window.handleQRResult
-
-    // Common handler for QR result
-    // @ts-ignore
-    window.handleQRResult = (scannedResult: string) => {
-      console.log("QR Code scanned:", scannedResult);
-      setResult(scannedResult);
+    const fetchEmails = async () => {
+      try {
+        const res = await fetch("http://139.84.166.124:8060/communication-service-producer/communication/email/view", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ premise_id: premiseId }),
+        });
+        const result = await res.json();
+        if (result?.data) {
+          const formattedEmails = result.data.map((email: any) => ({
+            id: email._id,
+            from: email.recipient_email,
+            subject: email.subject,
+            body: email.message,
+            timestamp: new Date().toISOString(),
+            isRead: true,
+            isStarred: false,
+            attachments: email.object_id_attachment_array.map((file_key: string) => ({
+              file_key,
+              filename: file_key.split('/').pop(),
+              filetype: getFileType(file_key),
+            })),
+          }));
+          setEmails(formattedEmails);
+        }
+      } catch (error) {
+        console.error("Error fetching emails:", error);
+      }
     };
+
+    fetchEmails();
   }, []);
 
-  const shareText = () => {
-    const message = "This is a text message!";
-    // Android
-    // @ts-ignore
-    if (window.AndroidInterface?.shareText) {
-      // @ts-ignore
-      window.AndroidInterface.shareText(message);
-    }
-    // iOS
-    // @ts-ignore
-    else if (window.webkit?.messageHandlers?.shareText) {
-      // @ts-ignore
-      window.webkit.messageHandlers.shareText.postMessage(message);
+  const getAttachmentIcon = (filetype: string) => {
+    switch (filetype) {
+      case 'pdf':
+        return <AiFillFilePdf className="text-red-500 w-6 h-6" />;
+      case 'image':
+        return <AiFillFileImage className="text-blue-400 w-6 h-6" />;
+      case 'excel':
+        return <AiFillFileExcel className="text-green-500 w-6 h-6" />;
+      default:
+        return null;
     }
   };
 
-  const shareLink = () => {
-    const link = "https://example.com";
-    // Android
-    // @ts-ignore
-    if (window.AndroidInterface?.shareLink) {
-      // @ts-ignore
-      window.AndroidInterface.shareLink(link);
-    }
-    // iOS
-    // @ts-ignore
-    else if (window.webkit?.messageHandlers?.shareLink) {
-      // @ts-ignore
-      window.webkit.messageHandlers.shareLink.postMessage(link);
-    }
-  };
-
-  const shareImage = () => {
-    const imageUrl = "https://servizing.com/qr_codes/guest/guest_d996115b-8239-4a54-b528-5689658b2e67.png";
-    const text = "This is a text message!";
-    // Android
-    // @ts-ignore
-    if (window.AndroidInterface?.shareImage) {
-      // @ts-ignore
-      window.AndroidInterface.shareImage(imageUrl, text);
-    }
-    // iOS
-    // @ts-ignore
-    else if (window.webkit?.messageHandlers?.shareImage) {
-      // @ts-ignore
-      window.webkit.messageHandlers.shareImage.postMessage({ imageUrl, text });
+  const handleAttachmentClick = async (att: any) => {
+    try {
+      const res = await fetch("http://139.84.166.124:8060/staff-service/upload/get_presigned_url", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.user?.accessToken}`,
+        },
+        body: JSON.stringify({ premise_id: premiseId, file_key: att.file_key }),
+      });
+      const result = await res.json();
+      if (result?.data) {
+        setViewingAttachment({ ...att, url: result.data });
+      }
+    } catch (error) {
+      console.error("Error fetching attachment URL:", error);
     }
   };
 
-  const shareFile = () => {
-    const fileUrl = "https://www.servizing.com/notification/83861ee0-0c99-11f0-b978-7d95e3256608.pdf";
-    const text = "This is a text message!";
-    // Android
-    // @ts-ignore
-    if (window.AndroidInterface?.shareFile) {
-      // @ts-ignore
-      window.AndroidInterface.shareFile(fileUrl, text);
-    }
-    // iOS
-    // @ts-ignore
-    else if (window.webkit?.messageHandlers?.shareFile) {
-      // @ts-ignore
-      window.webkit.messageHandlers.shareFile.postMessage({ fileUrl, text });
-    }
-  };
-
-  const startScan = () => {
-    // Android
-    // @ts-ignore
-    if (window.AndroidInterface?.startQRScan) {
-      // @ts-ignore
-      window.AndroidInterface.startQRScan();
-    }
-    // iOS
-    // @ts-ignore
-    else if (window.webkit?.messageHandlers?.startQRScan) {
-      // @ts-ignore
-      window.webkit.messageHandlers.startQRScan.postMessage(null);
-    }
-  };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Share & Scan Example</h2>
-
-      <div style={{ marginTop: 30 }}>
-        <button onClick={shareText}>Share Text</button>
+    <div className="bg-white p-4 font-sans relative">
+      <div className="flex justify-center mb-6">
+        <h2
+          className="text-xl font-medium text-[#222] px-6 py-3 rounded-2xl bg-white"
+          style={{
+            textAlign: 'center',
+            width: '90%',
+            background: 'white',
+            boxShadow: 'inset 0 2px 5px rgba(0, 0, 0, 0.05), inset 0 -1px 3px rgba(0, 0, 0, 0.07)',
+          }}
+        >
+          Email Notifications
+        </h2>
       </div>
 
-      <div style={{ marginTop: 30 }}>
-        <button onClick={shareLink}>Share Link</button>
+      <div className="space-y-4 overflow-y-auto" style={{ height: '75vh' }}>
+        {emails.map((email) => (
+          <motion.div
+            key={email.id}
+            className=" from-white to-blue-50 p-4 rounded-2xl shadow-md cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+            onClick={() => setSelectedEmail(email)}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-start gap-4">
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium text-sm">
+                {email.from?.charAt(0).toUpperCase()}
+              </div>
+
+              {/* Email Content */}
+              <div className="flex justify-between items-start flex-1">
+                <div>
+                  <h3 className="text-md font-semibold text-[#333]">{email.subject}</h3>
+                  <p className="text-sm text-[#666]">{email.from}</p>
+                  <p className="text-xs text-[#888] mt-1">
+                    {new Date(email.timestamp).toLocaleString()}
+                  </p>
+                </div>
+                {email.isStarred && <FaStar className="text-yellow-400 w-5 h-5" />}
+              </div>
+            </div>
+
+          </motion.div>
+        ))}
       </div>
 
-      <div style={{ marginTop: 30 }}>
-        <button onClick={shareImage}>Share Image</button>
-      </div>
+      {/* Blur Background */}
+      <AnimatePresence>
+        {selectedEmail && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black backdrop-blur-md z-[999]"
+            onClick={() => setSelectedEmail(null)}
+          />
+        )}
+      </AnimatePresence>
 
-      <div style={{ marginTop: 30 }}>
-        <button onClick={shareFile}>Share File</button>
-      </div>
+      {/* Bottom Drawer */}
+      <EmailDrawer
+        selectedEmail={selectedEmail}
+        onClose={() => setSelectedEmail(null)}
+        handleAttachmentClick={handleAttachmentClick}
+        getAttachmentIcon={getAttachmentIcon}
+      />
 
-      <div style={{ marginTop: 30 }}>
-        <button onClick={startScan}>Start QR Scan</button>
-      </div>
 
-      <div style={{ marginTop: 50, fontWeight: 'bold' }}>
-        Here is your result: <br /> <span style={{ color: 'green' }}>{result}</span>
-      </div>
+      {/* Attachment Viewer */}
+      <AnimatePresence>
+        {viewingAttachment && (
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="fixed inset-0 z-[999999] flex flex-col bg-white overflow-hidden shadow-xl"
+          >
+            {/* Header */}
+            <div className="relative bg-blue-600 text-white p-4 flex items-center justify-center shadow-md">
+              <span className="text-sm font-medium text-center truncate max-w-[80%]">
+                {viewingAttachment.filename}
+              </span>
+              <button
+                onClick={() => setViewingAttachment(null)}
+                className="absolute right-4 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Viewer Content */}
+            <div className="flex-1 bg-black/5">
+              {viewingAttachment.filetype === 'pdf' ||
+                viewingAttachment.filetype === 'excel' ? (
+                <iframe
+                  src={`https://docs.google.com/gview?url=${encodeURIComponent(viewingAttachment.url)}&embedded=true`}
+                  className="w-full h-full"
+                  title="Document Viewer"
+                />
+              ) : (
+                <div className="flex items-center justify-center w-full h-full bg-gray-100">
+                  <img
+                    src={viewingAttachment.url}
+                    alt={viewingAttachment.filename}
+                    className="max-h-full max-w-full object-contain rounded-md shadow-lg"
+                  />
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
