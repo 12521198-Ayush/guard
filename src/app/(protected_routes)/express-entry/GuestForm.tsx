@@ -332,12 +332,12 @@ export default function InviteVisitorsForm({ onClose }: Props) {
       }
       console.log(await res.json());
 
-      alert('Visitors submitted successfully!');
+      // alert('Visitors submitted successfully!');
       console.log(await res.json());
     } catch (error) {
       // @ts-ignore
       console.error('Submit Error:', error);
-      alert('An error occurred while submitting.');
+      // alert('An error occurred while submitting.');
     }
     finally {
       setLoading(false); // Stop loader

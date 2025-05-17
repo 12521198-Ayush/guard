@@ -1,13 +1,12 @@
-import React from 'react';
+'use client'
+
+import React, { useState, useEffect } from 'react';
 import {
     Drawer,
     Box,
     Typography,
-    IconButton,
     Button,
-    Divider,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 
 interface EmailDrawerProps {
     selectedEmail: any;
@@ -16,13 +15,26 @@ interface EmailDrawerProps {
     getAttachmentIcon: (filetype: string) => React.ReactNode;
 }
 
-const EmailDrawer: React.FC<EmailDrawerProps> = ({
-    selectedEmail,
-    onClose,
-    handleAttachmentClick,
-    getAttachmentIcon,
-}) => {
+const EmailDrawer: React.FC<EmailDrawerProps> = ({ selectedEmail, onClose, handleAttachmentClick, getAttachmentIcon }) => {
+    const [windowHeight, setWindowHeight] = useState(0);
+
+    useEffect(() => {
+        // This runs only on client
+        setWindowHeight(window.innerHeight);
+        console.log(selectedEmail)
+        // Optional: update on window resize
+        const handleResize = () => setWindowHeight(window.innerHeight);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+    // Calculate dynamic height based on message length (approximate)
+    const baseHeight = 150;
+    const charCount = selectedEmail?.message?.length || 0;
+    const dynamicHeight = Math.min(window.innerHeight * 0.9, baseHeight + charCount * 0.3);
+    console.log(selectedEmail)
+
     return (
+
         <Drawer
             anchor="bottom"
             open={!!selectedEmail}
@@ -33,73 +45,115 @@ const EmailDrawer: React.FC<EmailDrawerProps> = ({
                     borderTopRightRadius: 24,
                     px: 3,
                     pt: 2,
-                    pb: 4,
+                    pb: 0,
                     background: 'linear-gradient(to top, #ffffff, #f7faff)',
-                    height: '85vh', // Set desired height
-                    maxHeight: '100vh',
-                    overflowY: 'auto',
+                    maxHeight: '90vh',   // max height but no fixed height
+                    height: 'auto',      // allow auto height
+                    display: 'flex',
+                    flexDirection: 'column',
                 },
             }}
         >
             {selectedEmail && (
-                <Box>
+                <>
+                    {/* Drag handle */}
                     <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                         <Box width={50} height={6} borderRadius={3} bgcolor="blue.200" />
                     </Box>
 
-                    <Box>
+                    {/* Scrollable content */}
+                    <Box
+                        sx={{
+                            overflowY: 'auto',
+                            flexGrow: 1,
+                        }}
+                    >
                         <Typography variant="h6" fontWeight={600} color="#222">
                             {selectedEmail.subject}
                         </Typography>
+                        <p>
+                            <span className="font-medium text-gray-700 dark:text-gray-300">To : </span>
+                            {selectedEmail.recipients_array && Array.isArray(selectedEmail.recipients_array)
+                                ? selectedEmail.recipients_array.join(', ')
+                                : selectedEmail.recipient_type
+                                    ? selectedEmail.recipient_type
+                                        .replace(/_/g, ' ') // Replace underscores with spaces
+                                        .replace(/^(.)/, (match: any) => match.toUpperCase()) // Capitalize the first letter
+                                    : ''}
+
+                        </p>
                         <Typography variant="body2" color="#666" mb={2}>
                             {selectedEmail.from}
                         </Typography>
 
-                        <div className="space-y-4 overflow-y-auto" style={{ height: '50vh' }}>
-                            <Box
-                                className="prose max-w-none"
-                                sx={{ color: '#555', fontSize: 14 }}
-                                dangerouslySetInnerHTML={{ __html: selectedEmail.body }}
-                            />
-                        </div>
+                        <Box
+                            className="prose max-w-none"
+                            sx={{ color: '#555', fontSize: 14, mb: 3 }}
+                            dangerouslySetInnerHTML={{ __html: selectedEmail.message }}
+                        />
 
-                        {/* Attachments */}
-                        <div className="mt-4">
-                            <h4 className="text-md font-medium mb-2">Attachments</h4>
-                            <div className="flex flex-wrap gap-3">
-                                {selectedEmail.attachments.map((att: any, index: number) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => handleAttachmentClick(att)}
-                                        className="flex items-center gap-2 bg-blue-50 p-2 px-3 rounded-xl shadow-sm hover:bg-blue-100"
-                                    >
-                                        {getAttachmentIcon(att.filetype)}
-                                        <span className="text-sm text-[#444]">{att.filename}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                        {Array.isArray(selectedEmail.attachments) && selectedEmail.attachments.length > 0 && (
+                            <Box mt={2}>
+                                <Typography variant="subtitle1" fontWeight={600} mb={1}>
+                                    Attachments
+                                </Typography>
+                                <Box display="flex" flexWrap="wrap" gap={2}>
+                                    {selectedEmail.attachments.map((att: any, index: number) => (
+                                        <Button
+                                            key={index}
+                                            onClick={() => handleAttachmentClick(att)}
+                                            variant="outlined"
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1,
+                                                px: 2,
+                                                py: 1,
+                                                borderRadius: 2,
+                                                textTransform: 'none',
+                                                maxWidth: 160,
+                                                overflow: 'hidden',
+                                                whiteSpace: 'nowrap',
+                                                textOverflow: 'ellipsis',
+                                            }}
+                                        >
+                                            {getAttachmentIcon(att.filetype)}
+                                            <span>{att.filename}</span>
+                                        </Button>
+                                    ))}
+                                </Box>
+                            </Box>
+                        )}
+                    </Box>
 
-                        {/* Close Button */}
+                    {/* Close Button fixed at bottom */}
+                    <Box sx={{ pt: 2, pb: 2 }}>
                         <Button
                             fullWidth
                             onClick={onClose}
                             variant="contained"
                             sx={{
-                                mt: 4,
                                 py: 1.5,
-                                borderRadius: 4,
-                                background: 'linear-gradient(to right, #4e92ff, #1e62d0)',
-                                fontWeight: 500,
+                                borderRadius: 24,
+                                backgroundColor: '#1e88e5',
+                                '&:hover': {
+                                    backgroundColor: '#1565c0',
+                                },
+                                fontWeight: 600,
                                 fontSize: 16,
+                                textTransform: 'none',
+                                boxShadow: 'none',
+                                transition: 'background-color 0.3s ease',
                             }}
+                            disableElevation
                         >
                             Close
                         </Button>
                     </Box>
-                </Box>
+                </>
             )}
         </Drawer>
+
     );
 };
 

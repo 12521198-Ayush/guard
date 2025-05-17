@@ -8,6 +8,9 @@ import { useSession } from 'next-auth/react';
 import { MdNotificationsNone, MdWarningAmber } from 'react-icons/md';
 import { message } from 'antd';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined'
+import axios from 'axios'
+import { FaUpload } from 'react-icons/fa';
+import imageCompression from 'browser-image-compression';
 
 interface Props {
   skill: string
@@ -87,6 +90,7 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
       premise_unit_id: session?.user?.premise_unit_id,
       servicetype: skill,
       service_priority: form.priority,
+      object_id: uploadedObjectId,
       order_description: form.description,
       customer_name: session?.user?.name,
       customer_mobile: session?.user?.phone
@@ -119,10 +123,9 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
       })
     } catch (error) {
       console.error('Failed to submit ticket:', error)
-      alert('Failed to submit ticket. Please try again.')
+      message.info('.')
     }
   }
-
 
   const priorities = [
     { label: 'Normal', icon: <MdNotificationsNone className="text-green-500 w-5 h-5" /> },
@@ -130,6 +133,120 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
   ];
 
   const selectedPriority = priorities.find(p => p.label === form.priority)
+
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadedObjectId, setUploadedObjectId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = React.useState(false);
+
+  const getBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploading(true);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const MAX_FILE_SIZE_MB = 2;
+    const validTypes = [
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'image/gif',
+      'application/pdf',
+    ];
+
+    if (!validTypes.includes(file.type)) {
+      const errorMsg = 'Only PNG, JPG, GIF, or PDF files are allowed.';
+      setUploadError(errorMsg);
+      message.warning(errorMsg);
+      return;
+    }
+
+    let finalFile = file;
+
+    if (file.type !== 'application/pdf') {
+      try {
+        // Compress image to be under 2MB
+        const options = {
+          maxSizeMB: 2,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        };
+        finalFile = await imageCompression(file, options);
+        console.log('🗜️ Compressed file size (MB):', finalFile.size / 1024 / 1024);
+      } catch (error) {
+        console.error('❌ Image compression failed:', error);
+        message.error('Image compression failed.');
+        setUploading(false);
+        return;
+      }
+    } else {
+      // For PDFs, just check size
+      const isTooLarge = file.size > MAX_FILE_SIZE_MB * 1024 * 1024;
+      if (isTooLarge) {
+        const errorMsg = `PDF must be smaller than ${MAX_FILE_SIZE_MB}MB`;
+        setUploadError(errorMsg);
+        message.warning(errorMsg);
+        setUploading(false);
+        return;
+      }
+    }
+
+    setUploadError(null);
+    setUploadedFile(finalFile);
+    console.log('📂 Final file selected:', finalFile);
+
+    // Preview
+    if (finalFile.type === 'application/pdf') {
+      setPreviewUrl(URL.createObjectURL(finalFile));
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(finalFile);
+    }
+
+    try {
+      const base64WithPrefix = await getBase64(finalFile);
+      const payload = {
+        premise_id: session?.user?.primary_premise_id,
+        filetype: finalFile.type,
+        file_extension: finalFile.name.split('.').pop(),
+        base64_data: base64WithPrefix,
+      };
+
+      console.log('📤 Upload payload:', payload);
+
+      const res = await axios.post(
+        'http://139.84.166.124:8060/order-service/upload/async',
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${session?.user?.accessToken}`,
+          },
+        }
+      );
+
+      const objectKey = res?.data?.data?.key;
+      if (objectKey) {
+        setUploadedObjectId(objectKey);
+        console.log('✅ File uploaded, Object ID:', objectKey);
+        message.success('Image uploaded successfully');
+      }
+    } catch (error) {
+      console.error('❌ Upload failed:', error);
+      message.error('File upload failed.');
+    }
+
+    setUploading(false);
+  };
 
   return (
     <motion.form
@@ -221,7 +338,7 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute z-10 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden"
+            className="absolute z-40 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden"
           >
             {priorities.map((opt) => (
               <motion.div
@@ -247,7 +364,7 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="relative bg-white rounded-2xl shadow-md px-3 py-4 space-y-2">
+        <div className="relative bg-white rounded-2xl px-3 space-y-2">
           <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
             Describe the issue
           </label>
@@ -258,12 +375,73 @@ const NewTicketForm: React.FC<Props> = ({ skill, onClose }) => {
             value={form.description}
             onChange={(e) => handleChange('description', e.target.value)}
             rows={4}
-            className="w-full resize-none px-4 py-3 text-sm text-gray-800 bg-gray-50 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition-all duration-200"
+            className="w-full resize-none px-4 py-3 text-sm text-gray-800 bg-gray-50 border-gray-300 rounded-xl focus:outline-none focus:ring-2 ring-blue-500 focus:border-blue-400 transition-all duration-200"
           />
         </div>
       </motion.div>
 
+      <div className="relative w-full">
+        <label htmlFor="vehicle-doc-upload" className="block mb-2 text-sm text-gray-800">
+          Upload a snapshot of your issue
+        </label>
 
+        <label
+          htmlFor="vehicle-doc-upload"
+          className={`cursor-pointer w-full p-3 rounded-2xl bg-gray-100 shadow-md flex justify-between items-center text-sm text-gray-800 hover:shadow-lg transition-all
+                                                            ${uploading ? 'opacity-70 cursor-wait' : 'cursor-pointer'}`}
+        >
+          {uploading ? (
+            <span className="flex items-center space-x-2">
+              <svg
+                className="animate-spin h-5 w-5 text-gray-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+              <span>Uploading...</span>
+            </span>
+          ) : (
+            <>
+              {uploadedFile ? uploadedFile.name : 'Choose Image (JPG, PNG, GIF, PDF)'}
+              <FaUpload className="ml-2 h-4 w-4 text-gray-500" />
+            </>
+          )}
+        </label>
+
+        <input
+          id="vehicle-doc-upload"
+          type="file"
+          accept="image/png, image/jpeg, image/jpg"
+          capture="environment"
+          onChange={handleFileUpload}
+          className="hidden"
+          disabled={uploading}
+        />
+
+        {uploadError && (
+          <p className="text-sm text-red-500 mt-2">{uploadError}</p>
+        )}
+
+        {uploadedFile && (
+          <p className="text-xs text-gray-500 mt-1">
+            File size: {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+          </p>
+        )}
+      </div>
 
       {/* Submit Button */}
       <motion.button

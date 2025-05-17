@@ -185,10 +185,10 @@ const Register = () => {
                 window.location.href = `${window.location.origin}/nativeRedirect/logout`;
             }
         });
-    
+
         fetchCountries();
     }, []);
-    
+
 
     const fetchCountries = async () => {
         try {
@@ -490,6 +490,36 @@ const Register = () => {
         nextStep();
     }
 
+    const handlerFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Optional: Validate file type
+        const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            alert('Please select a valid image file (png, jpg, jpeg, gif).');
+            return;
+        }
+
+        console.log('Selected file:', file);
+        alert(`Selected file: ${file.name}`);
+
+        // Optional: Preview the file
+        const reader = new FileReader();
+        reader.onload = () => {
+            const previewUrl = reader.result as string;
+            console.log('Preview URL:', previewUrl);
+            // e.g. setPreview(previewUrl) if you want to show image in UI
+        };
+        reader.readAsDataURL(file);
+
+        // Optional: Upload logic
+        // const formData = new FormData();
+        // formData.append('file', file);
+        // await fetch('/api/upload', { method: 'POST', body: formData });
+    };
+
+
     return (
         <>
             {/* <div className="p-4 border rounded-md">
@@ -731,7 +761,6 @@ const Register = () => {
                                                 </button>
                                             </>
                                         )}
-
                                         {step === 4 && (
                                             <>
 
@@ -802,11 +831,13 @@ const Register = () => {
                                                         </label>
                                                         <input
                                                             type="file"
-                                                            id="relationship-doc"
+                                                            id="lease-agreement"
                                                             accept="image/png, image/jpeg, image/jpg, image/gif"
-                                                            onChange={handleFileUpload}
+                                                            capture="environment"
+                                                            onChange={handlerFileUpload}
                                                             className="mb-4 p-2 border rounded-lg w-full"
                                                         />
+
                                                     </>
                                                 )}
 

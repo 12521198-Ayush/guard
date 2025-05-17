@@ -5,6 +5,7 @@ import { FaStar } from 'react-icons/fa';
 import { AiFillFilePdf, AiFillFileImage, AiFillFileExcel } from 'react-icons/ai';
 import { useSession } from 'next-auth/react'
 import EmailDrawer from './EmailDrawer';
+import { formatDistanceToNow } from 'date-fns';
 
 const getFileType = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase();
@@ -23,6 +24,7 @@ const Page = () => {
 
   useEffect(() => {
     const fetchEmails = async () => {
+
       try {
         const res = await fetch("http://139.84.166.124:8060/communication-service-producer/communication/email/view", {
           method: "POST",
@@ -30,23 +32,8 @@ const Page = () => {
           body: JSON.stringify({ premise_id: premiseId }),
         });
         const result = await res.json();
-        if (result?.data) {
-          const formattedEmails = result.data.map((email: any) => ({
-            id: email._id,
-            from: email.recipient_email,
-            subject: email.subject,
-            body: email.message,
-            timestamp: new Date().toISOString(),
-            isRead: true,
-            isStarred: false,
-            attachments: email.object_id_attachment_array.map((file_key: string) => ({
-              file_key,
-              filename: file_key.split('/').pop(),
-              filetype: getFileType(file_key),
-            })),
-          }));
-          setEmails(formattedEmails);
-        }
+        setEmails(result?.data);
+
       } catch (error) {
         console.error("Error fetching emails:", error);
       }
@@ -87,7 +74,6 @@ const Page = () => {
     }
   };
 
-
   return (
     <div className="bg-white p-4 font-sans relative">
       <div className="flex justify-center mb-6">
@@ -115,7 +101,7 @@ const Page = () => {
             <div className="flex items-start gap-4">
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium text-sm">
-                {email.from?.charAt(0).toUpperCase()}
+                {(email.subject?.replace(/^\s*/, '')?.charAt(0)?.toUpperCase() || 'E')}
               </div>
 
               {/* Email Content */}
@@ -123,9 +109,9 @@ const Page = () => {
                 <div>
                   <h3 className="text-md font-semibold text-[#333]">{email.subject}</h3>
                   <p className="text-sm text-[#666]">{email.from}</p>
-                  <p className="text-xs text-[#888] mt-1">
-                    {new Date(email.timestamp).toLocaleString()}
-                  </p>
+                  <span className="text-xs ml-1 text-gray-500">
+                    • {email.ts ? formatDistanceToNow(new Date(email.ts), { addSuffix: true }) : 'now'}
+                  </span>
                 </div>
                 {email.isStarred && <FaStar className="text-yellow-400 w-5 h-5" />}
               </div>

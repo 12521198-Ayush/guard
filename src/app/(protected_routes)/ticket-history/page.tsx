@@ -22,6 +22,7 @@ import CancelIcon from '@mui/icons-material/Cancel'
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun'
 import LockIcon from '@mui/icons-material/Lock'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
+import { useSession } from 'next-auth/react';
 
 
 dayjs.extend(relativeTime)
@@ -74,12 +75,13 @@ function normalizeStatus(status: string): OrderStatusKey {
 const Page = () => {
   const [list, setList] = useState<Ticket[]>([])
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null)
+  const { data: session } = useSession();
 
   const fetchTickets = async () => {
     const res = await axios.post('http://139.84.166.124:8060/order-service/list', {
-      premise_id: 'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af',
-      sub_premise_id: '0aad0a20-6b21-11ef-b2cb-13f201b16993',
-      premise_unit_id: 'D-0005',
+      premise_id: session?.user?.primary_premise_id,
+      sub_premise_id: session?.user?.sub_premise_id,
+      premise_unit_id: session?.user?.premise_unit_id,
     })
     setList(res.data.data.array)
   }
@@ -162,7 +164,7 @@ const Page = () => {
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
                 Order #{selectedTicket.order_id} Timeline
-              </Typography>
+              </Typography> 
               <IconButton onClick={() => setSelectedTicket(null)}>
                 <CloseIcon />
               </IconButton>

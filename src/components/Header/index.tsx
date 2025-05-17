@@ -29,7 +29,7 @@ const Header = (props: {
   const { data: session } = useSession();
 
   return (
-    <header className="sticky top-0 z-[999] w-full bg-white shadow-md dark:bg-boxdark dark:shadow-none rounded-bl-3xl rounded-br-3xl">
+    <header className="sticky top-0 z-[99] w-full bg-white shadow-md dark:bg-boxdark dark:shadow-none rounded-bl-3xl rounded-br-3xl">
       <div className="flex items-center justify-between px-4 py-4 md:px-6 2xl:px-11">
 
         {isMobile && (
