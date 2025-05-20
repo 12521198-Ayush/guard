@@ -6,6 +6,8 @@ import { HelperProps } from './HelperCard'
 import { FaStar, FaRegStar } from 'react-icons/fa';
 import { motion } from 'framer-motion'
 import { useState } from 'react';
+import AttendanceDrawer from './AttendanceModal';
+import NotifyGiftSection from './NotifyGifts';
 
 type Props = {
     open: boolean
@@ -24,6 +26,8 @@ const MotionBox = motion(Box)
 const HelperDrawer = ({ open, onClose, helper }: Props) => {
     const [rating, setRating] = useState<number>(0);
     const [feedback, setFeedback] = useState<string>('');
+    const [modalOpen, setModalOpen] = useState(false);
+
     const handleSubmit = () => {
         console.log('Rating:', rating);
         console.log('Feedback:', feedback);
@@ -165,7 +169,10 @@ const HelperDrawer = ({ open, onClose, helper }: Props) => {
                     <Typography variant="subtitle1" gutterBottom>Helper Activity</Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <Button variant="text" color="primary">Tap to view work logs</Button>
-                        <Button variant="text" color="primary">Check attendance records</Button>
+                        <Button variant="contained" onClick={() => setModalOpen(true)}>
+                            View Attendance
+                        </Button>
+                        <AttendanceDrawer open={modalOpen} onClose={() => setModalOpen(false)} />
                     </Box>
                 </MotionBox>
 
@@ -181,7 +188,7 @@ const HelperDrawer = ({ open, onClose, helper }: Props) => {
                 </MotionBox>
 
                 {/* Section: Recommend Job */}
-                <MotionBox
+                {/* <MotionBox
                     sx={sectionStyle}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -196,7 +203,7 @@ const HelperDrawer = ({ open, onClose, helper }: Props) => {
                     <Button variant="contained" color="primary" fullWidth>
                         Recommend
                     </Button>
-                </MotionBox>
+                </MotionBox> */}
 
                 {/* Section: Notify Gate */}
                 <MotionBox
@@ -206,9 +213,20 @@ const HelperDrawer = ({ open, onClose, helper }: Props) => {
                     transition={{ delay: 0.5 }}
                 >
                     <Typography variant="subtitle1" gutterBottom>Notify Gate about Gifts</Typography>
-                    <Button variant="contained" color="secondary" fullWidth>
+                    {/* <NotifyGiftSection
+                        premise_id="your-premise-id"
+                        premise_unit_id="your-unit-id"
+                        card_no="card123"
+                        qr_code="qrcode456"
+                    /> */}
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        fullWidth
+                    >
                         Notify Now
                     </Button>
+
                 </MotionBox>
 
             </Box>

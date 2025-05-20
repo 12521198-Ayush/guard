@@ -3,7 +3,7 @@
 import Swal from "sweetalert2";
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import PhoneInput from 'react-phone-input-2';
-import { Form, Select } from 'antd';
+import { Form, message, Select } from 'antd';
 import 'react-phone-input-2/lib/style.css';
 import OtpInput from "./OtpInput";
 import { Input } from 'antd';
@@ -14,6 +14,8 @@ import { RootState } from "@/store/store";
 import axios from "axios";
 import { sha256 } from "crypto-hash";
 import { createHash } from 'crypto';
+import imageCompression from 'browser-image-compression';
+import { useSession } from 'next-auth/react';
 
 const { Option } = Select;
 
@@ -88,6 +90,7 @@ const Register = () => {
     const [isLeaseUnderYourName, setIsLeaseUnderYourName] = useState<"yes" | "no" | null>('no');
     const [base64String, setBase64String] = useState<any>(null);
     const [hashedOtp, setHashedOtp] = useState<any>(null);
+    const { data: session } = useSession();
 
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [releaseAgreement, setReleaseAgreement] = useState<File | null>(null);
@@ -125,7 +128,8 @@ const Register = () => {
                     association_type: accosiationType,
                     is_guardian: isLeaseUnderYourName,
                     name: name,
-                    doc_base_64: base64String,
+                    doc_type: isLeaseUnderYourName === 'yes' ? 'lease' : 'relationship',
+                    object_id: uploadedObjectId,
                     otp_hash: hashedOtp,
                 },
                 {
@@ -165,8 +169,6 @@ const Register = () => {
             });
         }
     };
-
-
 
     useEffect(() => {
         Swal.fire({
@@ -264,27 +266,118 @@ const Register = () => {
         }
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files ? e.target.files[0] : null;
-        if (file) {
-            const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
-            if (!allowedTypes.includes(file.type)) {
-                setError("Only image files (JPG, PNG, GIF) are allowed.");
-                setUploadedFile(null);
-            } else {
-                setError("");
-                setUploadedFile(file);
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onloadend = () => {
-                    setBase64String(reader.result as string);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [uploadedObjectId, setUploadedObjectId] = useState<string | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [uploading, setUploading] = React.useState(false);
+
+    const getBase64 = (file: File) =>
+        new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = (error) => reject(error);
+        });
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        setUploading(true);
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const MAX_FILE_SIZE_MB = 2;
+        const validTypes = [
+            'image/png',
+            'image/jpeg',
+            'image/jpg',
+            'image/gif',
+            'application/pdf',
+        ];
+
+        if (!validTypes.includes(file.type)) {
+            const errorMsg = 'Only PNG, JPG, GIF, or PDF files are allowed.';
+            setUploadError(errorMsg);
+            message.warning(errorMsg);
+            return;
+        }
+
+        let finalFile = file;
+
+        if (file.type !== 'application/pdf') {
+            try {
+                // Compress image to be under 2MB
+                const options = {
+                    maxSizeMB: 2,
+                    maxWidthOrHeight: 1920,
+                    useWebWorker: true,
                 };
-                reader.onerror = () => {
-                    setError("Error converting file to Base64");
-                };
-                console.log("Uploaded File:", file);
+                finalFile = await imageCompression(file, options);
+                console.log('🗜️ Compressed file size (MB):', finalFile.size / 1024 / 1024);
+            } catch (error) {
+                console.error('❌ Image compression failed:', error);
+                message.error('Image compression failed.');
+                setUploading(false);
+                return;
+            }
+        } else {
+            // For PDFs, just check size
+            const isTooLarge = file.size > MAX_FILE_SIZE_MB * 1024 * 1024;
+            if (isTooLarge) {
+                const errorMsg = `PDF must be smaller than ${MAX_FILE_SIZE_MB}MB`;
+                setUploadError(errorMsg);
+                message.warning(errorMsg);
+                setUploading(false);
+                return;
             }
         }
+
+        setUploadError(null);
+        setUploadedFile(finalFile);
+        console.log('📂 Final file selected:', finalFile);
+
+        // Preview
+        if (finalFile.type === 'application/pdf') {
+            setPreviewUrl(URL.createObjectURL(finalFile));
+        } else {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setPreviewUrl(reader.result as string);
+            };
+            reader.readAsDataURL(finalFile);
+        }
+
+        try {
+            const base64WithPrefix = await getBase64(finalFile);
+            const payload = {
+                premise_id: session?.user?.primary_premise_id,
+                filetype: finalFile.type,
+                file_extension: finalFile.name.split('.').pop(),
+                base64_data: base64WithPrefix,
+            };
+
+            console.log('📤 Upload payload:', payload);
+
+            const res = await axios.post(
+                'http://139.84.166.124:8060/user-service/upload/async',
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${session?.user?.accessToken}`,
+                    },
+                }
+            );
+
+            const objectKey = res?.data?.data?.key;
+            if (objectKey) {
+                setUploadedObjectId(objectKey);
+                console.log('✅ File uploaded, Object ID:', objectKey);
+                message.success('Image uploaded successfully');
+            }
+        } catch (error) {
+            console.error('❌ Upload failed:', error);
+            message.error('File upload failed.');
+        }
+
+        setUploading(false);
     };
 
     const SendOtp = async () => {

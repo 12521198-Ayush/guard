@@ -6,12 +6,6 @@ import { useSession } from 'next-auth/react'
 import HelpersList from './HelpersList'
 import Loader from './Loader'
 
-const premiseDetails = {
-  premise_id: 'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af',
-  sub_premise_id: '0aad0a20-6b21-11ef-b2cb-13f201b16993',
-  premise_unit_id: 'D-0005',
-}
-
 type Helper = {
   name: string
   mobile: string
@@ -28,6 +22,12 @@ const MyHelpers = () => {
   const observerRef = useRef<HTMLDivElement | null>(null)
   const { data: session } = useSession()
   const initialLoadDone = useRef(false)
+
+  const premiseDetails = {
+    premise_id: session?.user?.primary_premise_id,
+    sub_premise_id: session?.user?.sub_premise_id,
+    premise_unit_id: session?.user?.premise_unit_id,
+  }
 
   const fetchHelpers = useCallback(async () => {
     if (loading || !hasMore || !session) return
@@ -97,16 +97,16 @@ const MyHelpers = () => {
 
   return (
     <div className="bg-white p-4 font-sans">
-        <div className="flex justify-center mb-6">
-          <h2
-            className="text-xl font-medium text-[#222] px-6 py-3 rounded-2xl bg-white"
-            style={{
-              textAlign: 'center',
-              width: '90%',
-              background: 'linear-gradient(to right, #ffffff, #f9fbfd)',
-              boxShadow: 'inset 0 2px 5px rgba(0, 0, 0, 0.05), inset 0 -1px 3px rgba(0, 0, 0, 0.07)',
-            }}
-          >
+      <div className="flex justify-center mb-6">
+        <h2
+          className="text-xl font-medium text-[#222] px-6 py-3 rounded-2xl bg-white"
+          style={{
+            textAlign: 'center',
+            width: '90%',
+            background: 'linear-gradient(to right, #ffffff, #f9fbfd)',
+            boxShadow: 'inset 0 2px 5px rgba(0, 0, 0, 0.05), inset 0 -1px 3px rgba(0, 0, 0, 0.07)',
+          }}
+        >
           Helpers List
         </h2>
       </div>

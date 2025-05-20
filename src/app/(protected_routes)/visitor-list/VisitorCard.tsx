@@ -77,15 +77,27 @@ const VisitorCard: React.FC<Props> = ({ visitor, onDelete }) => {
   const handleShare = () => {
     // @ts-ignore
     if (isGuest && window.AndroidInterface?.shareImage) {
+      // Android native interface
       // @ts-ignore
       window.AndroidInterface.shareImage(
         `${visitor.signed_url}`,
         `Visitor: ${visitor.contact_name}\nPasscode: ${visitor.passcode}`
-      )
-    } else {
-      console.error("AndroidInterface not available")
+      );
     }
-  }
+    // iOS native interface
+    // @ts-ignore
+    else if (isGuest && window.webkit?.messageHandlers?.shareImage) {
+      // @ts-ignore
+      window.webkit.messageHandlers.shareImage.postMessage({
+        imageUrl: `${visitor.signed_url}`,
+        message: `Visitor: ${visitor.contact_name}\nPasscode: ${visitor.passcode}`
+      });
+    }
+    else {
+      console.error("Native share interface not available");
+    }
+  };
+
 
   return (
     <div className="flex items-start bg-[#fafafa] rounded-2xl shadow-md mb-4 p-4 relative transition-all duration-300 hover:shadow-lg active:scale-[0.98]">

@@ -172,11 +172,11 @@ export default function InviteVisitorsForm({ onClose }: Props) {
 
     const future = new Date(selectedDate.getTime() + validity * 24 * 60 * 60 * 1000); // validity days later
     let invite = '';
-    if(selected == 'General'){
+    if (selected == 'General') {
       invite = 'general';
-    }else if(selected == 'Birthday'){
+    } else if (selected == 'Birthday') {
       invite = 'birthday';
-    }else if(selected == 'Party'){
+    } else if (selected == 'Party') {
       invite = 'party';
     }
     if (!session?.user) return;
@@ -196,8 +196,8 @@ export default function InviteVisitorsForm({ onClose }: Props) {
       payload.note_for_guest = note.trim();
     }
 
-    console.log("payload");
-    console.log(payload);
+    // console.log("payload");
+    // console.log(payload);
 
     try {
       setLoading(true);
@@ -238,16 +238,26 @@ export default function InviteVisitorsForm({ onClose }: Props) {
                 />
       
                <button 
-                class="absolute top-3 mt-4 right-3 p-1 rounded-full hover:scale-105 transition"
-                onclick="window.AndroidInterface?.shareImage?.(
-                  '${visitor.signed_url}', 
-                  'Visitor: ${visitor.contact_name}\\nMobile: ${visitor.contact_number}\\nPasscode: ${visitor.passcode}'
-                )"
-                title="Share via WhatsApp"
-                >
-                <img width="28" height="28" src="https://img.icons8.com/ios-filled/50/forward-arrow.png" alt="forward-arrow"/>
-              </button>
+                  class="absolute top-3 mt-4 right-3 p-1 rounded-full hover:scale-105 transition"
+                  onclick="
+                    const visitor = window.visitorData;
+                    const message = 'Visitor: ${ visitor.contact_name }\\nMobile: ${ visitor.contact_number }\\nPasscode: ${ visitor.passcode }';
 
+                    if (window.AndroidInterface?.shareImage) {
+                      window.AndroidInterface.shareImage(visitor.signed_url, message);
+                    } else if (window.webkit?.messageHandlers?.shareImage) {
+                      window.webkit.messageHandlers.shareImage.postMessage({
+                        imageUrl: visitor.signed_url,
+                        message: message
+                      });
+                    } else {
+                      console.error('No native share interface available');
+                    }
+                  "
+                  title="Share via WhatsApp"
+                  >
+                  <img width="28" height="28" src="https://img.icons8.com/ios-filled/50/forward-arrow.png" alt="forward-arrow"/>
+                  </button>
               </div>
             `
           )
@@ -362,7 +372,7 @@ export default function InviteVisitorsForm({ onClose }: Props) {
                 ? 'bg-blue-600 text-white shadow-2xl'
                 : 'bg-gray-100 text-gray-800'
               }`}
-            
+
           >
             {day.toDateString().split(' ').slice(0, 3).join(' ')}
           </button>
@@ -467,7 +477,7 @@ export default function InviteVisitorsForm({ onClose }: Props) {
 
       {/* Add guest / phonebook / note buttons */}
       <div className="flex space-x-2">
-      {AndroidDropdown()}
+        {AndroidDropdown()}
 
         <motion.button
           onClick={handleAddVisitor}

@@ -108,11 +108,24 @@ const TagYourHelper = () => {
 
         tagHelper(scannedResult)
     }
-
     const startScan = () => {
+        // Android
         // @ts-ignore
-        window.AndroidInterface?.startQRScan?.()
-    }
+        if (window.AndroidInterface?.startQRScan) {
+            // @ts-ignore
+            window.AndroidInterface.startQRScan();
+        }
+        // iOS
+        // @ts-ignore
+        else if (window.webkit?.messageHandlers?.startQRScan) {
+            // @ts-ignore
+            window.webkit.messageHandlers.startQRScan.postMessage(null);
+        }
+        else {
+            console.error("QR Scan interface not available");
+        }
+    };
+
 
     useEffect(() => {
         // Bind the scan handler and start scan immediately

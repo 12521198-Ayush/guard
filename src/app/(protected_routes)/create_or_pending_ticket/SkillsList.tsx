@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import SkillItem from './SkillItem'
+import { useSession } from 'next-auth/react';
 
 interface Props {
     onSkillClick: (skill: string) => void
@@ -8,13 +9,14 @@ interface Props {
 
 const SkillsList: React.FC<Props> = ({ onSkillClick }) => {
     const [skills, setSkills] = useState<any[]>([])
+    const { data: session } = useSession();
 
     useEffect(() => {
         const fetchSkills = async () => {
             const res = await axios.post('http://139.84.166.124:8060/staff-service/skills', {
-                premise_id: 'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af',
-                sub_premise_id: '0aad0a20-6b21-11ef-b2cb-13f201b16993',
-                premise_unit_id: 'D-0005',
+                premise_id: session?.user?.primary_premise_id,
+                sub_premise_id: session?.user?.sub_premise_id,
+                premise_unit_id: session?.user?.premise_unit_id,
             })
             const formatted = res.data.data.map((item: any) => ({
                 ...item,

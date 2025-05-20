@@ -6,6 +6,7 @@ import { AiFillFilePdf, AiFillFileImage, AiFillFileExcel } from 'react-icons/ai'
 import { useSession } from 'next-auth/react'
 import EmailDrawer from './EmailDrawer';
 import { formatDistanceToNow } from 'date-fns';
+import { Button } from 'antd';
 
 const getFileType = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase();
@@ -19,8 +20,10 @@ const Page = () => {
   const [emails, setEmails] = useState<any[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<any>(null);
   const [viewingAttachment, setViewingAttachment] = useState<any>(null);
-  const premiseId = "c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af";
   const { data: session } = useSession()
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const premiseId = session?.user?.primary_premise_id;
+
 
   useEffect(() => {
     const fetchEmails = async () => {
@@ -88,6 +91,21 @@ const Page = () => {
         >
           Email Notifications
         </h2>
+      </div>
+
+      <div className="flex justify-start gap-4 px-6 py-4">
+        {['ALL', 'Circular', 'Notice', 'Marketing'].map((category) => (
+          <Button
+            key={category}
+            onClick={() => setSelectedCategory(category)}
+            style={{
+              backgroundColor: selectedCategory === category ? '#1e62d0' : '#f0f0f0',
+              color: selectedCategory === category ? 'white' : '#000',
+            }}
+          >
+            {category}
+          </Button>
+        ))}
       </div>
 
       <div className="space-y-4 overflow-y-auto" style={{ height: '75vh' }}>

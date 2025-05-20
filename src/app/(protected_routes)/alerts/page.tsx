@@ -78,8 +78,8 @@ const Preferences: React.FC = () => {
         const response = await axios.post(
           "http://139.84.166.124:8060/user-service/admin/premise_unit/list",
           {
-            premise_id: "c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af",
-            id: "D-0005",
+            premise_id: session?.user?.primary_premise_id,
+            id: session?.user?.premise_unit_id,
           },
           {
             headers: {
@@ -166,9 +166,9 @@ const Preferences: React.FC = () => {
     };
 
     const payload: any = {
-      premise_id: "c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af",
-      sub_premise_id: "0aad0a20-6b21-11ef-b2cb-13f201b16993",
-      premise_unit_id: "D-0005",
+      premise_id: session?.user?.primary_premise_id,
+      sub_premise_id: session?.user?.sub_premise_id,
+      premise_unit_id: session?.user?.premise_unit_id,
       mobile: "000918588868604",
       [fieldMap[key]]: newValue ? "yes" : "no"
     };
