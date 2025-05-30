@@ -45,6 +45,7 @@ export default function VisitorEntry() {
       PaperProps={{
         className:
           'rounded-t-3xl px-5 py-6 h-[86vh] max-h-[90vh] overflow-y-auto shadow-xl bg-gray-50 animate-slideUp',
+          style: { height: 'fit-content' },
       }}
     >
       <style jsx global>{`

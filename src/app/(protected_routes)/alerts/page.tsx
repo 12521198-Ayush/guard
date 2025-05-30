@@ -72,43 +72,50 @@ const Preferences: React.FC = () => {
   const { data: session } = useSession();
   const accessToken = session?.user?.accessToken || '';
 
-  useEffect(() => {
-    const fetchPreferences = async () => {
-      try {
-        const response = await axios.post(
-          "http://139.84.166.124:8060/user-service/admin/premise_unit/list",
-          {
-            premise_id: session?.user?.primary_premise_id,
-            id: session?.user?.premise_unit_id,
+  const fetchPreferences = async () => {
+    try {
+      const response = await axios.post(
+        "http://139.84.166.124:8060/user-service/admin/residents/fetch",
+        {
+          premise_id: session?.user?.primary_premise_id,
+          sub_premise_id: session?.user?.sub_premise_id,
+          premise_unit_id: session?.user?.premise_unit_id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-
-        const data = response.data?.data?.array;
-        if (data) {
-          setPreferences({
-            maidNotifications: data.maid_notification === "yes",
-            vehicleNotifications: data.vehicle_notification === "yes",
-            emailNotifications: data.email_notification === "yes",
-            whatsappNotifications: data.wa_notification === "yes",
-            smsNotifications: data.sms_notification === "yes",
-            voipMode: data.vms_voip === "yes",
-            ivrsMode: data.vms_ivrs === "yes",
-            manualMode: data.vms_manual === "yes"
-          });
         }
-      } catch (error) {
-        console.error("Error fetching preferences:", error);
-      }
-    };
+      );
 
-    if (accessToken) {
-      fetchPreferences();
+      const arrayData = response.data?.data?.array;
+      console.log("Fetched preferences array:", arrayData);
+
+      if (Array.isArray(arrayData) && arrayData.length > 0) {
+        const data = arrayData[0]; // Get the first item
+
+        setPreferences({
+          maidNotifications: data.maid_notification === "yes",
+          vehicleNotifications: data.vehicle_notification === "yes",
+          emailNotifications: data.email_notification === "yes",
+          whatsappNotifications: data.wa_notification === "yes",
+          smsNotifications: data.sms_notification === "yes",
+          voipMode: data.vms_voip === "yes",
+          ivrsMode: data.vms_ivrs === "yes",
+          manualMode: data.vms_manual === "yes",
+        });
+      } else {
+        console.warn("No data found in residents array.");
+      }
+    } catch (error) {
+      console.error("Error fetching preferences:", error);
     }
+  };
+
+
+
+  useEffect(() => {
+    fetchPreferences();
   }, []);
 
   useEffect(() => {
@@ -169,7 +176,7 @@ const Preferences: React.FC = () => {
       premise_id: session?.user?.primary_premise_id,
       sub_premise_id: session?.user?.sub_premise_id,
       premise_unit_id: session?.user?.premise_unit_id,
-      mobile: "000918588868604",
+      mobile: session?.user?.phone,
       [fieldMap[key]]: newValue ? "yes" : "no"
     };
 
@@ -269,14 +276,14 @@ const Preferences: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-lg mx-auto p-4 bg-white font-sans">
-      <div className="text-center mb-4">
-        <h2 className="text-2xl font-semibold text-[#222] bg-gradient-to-r from-white to-[#f9fbfd] shadow-inner py-3 rounded-xl">
-          Manage Alerts
-        </h2>
+    <div className="bg-white p-3 font-sans relative ">
+      <div className="p-4 space-y-4 max-w-md mx-auto">
+        <div className="flex justify-center mb-6 ">
+          <h2 className="text-lg font-semibold text-gray-700"> Manage Alerts</h2>
+        </div>
       </div>
 
-      <div className="overflow-y-auto" style={{ maxHeight: '75vh' }}>
+      <div className="space-y-4 overflow-y-auto pb-20" style={{ maxHeight: '75vh' }}>
         {sections.map((group) => (
           <div key={group.title} className="mb-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">{group.title}</h3>

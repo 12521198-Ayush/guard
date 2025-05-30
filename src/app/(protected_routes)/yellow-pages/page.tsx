@@ -5,43 +5,26 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Drawer } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { Users, Tag, Gift, UserPlus, ChevronLeft, Component } from 'lucide-react'
-import TagYourHelper from './TagYourHelper'
-import GiftList from './GiftList'
+import { Handshake, Eye, } from 'lucide-react';
 
 const options = [
   {
-    key: 'tag',
-    label: 'Tag Your Helper',
-    about: 'Assign or identify helpers linked to your premises.',
-    icon: <Tag className="h-6 w-6 text-indigo-600" />,
-    component: <TagYourHelper />,
+    key: 'recommend_vendor',
+    label: 'Recommend a Vendor',
+    about: 'Suggest a vendor to be associated with your premises.',
+    icon: <Handshake className="h-6 w-6 text-indigo-600" />,
+    route: '/vendors/recommend',
     color: 'from-indigo-100 to-white',
   },
   {
-    key: 'helpers',
-    label: 'My Helpers',
-    about: 'View all helpers currently working with you.',
-    icon: <Users className="h-6 w-6 text-teal-600" />,
-    route: '/myhelpers',
+    key: 'view_vendors',
+    label: 'View Recommended Vendors',
+    about: 'See the list of vendors you or others have recommended.',
+    icon: <Eye className="h-6 w-6 text-teal-600" />,
+    route: '/vendors/list',
     color: 'from-teal-100 to-white',
-  },
-  {
-    key: 'gifts',
-    label: 'List of Gift Given',
-    about: 'Track gifts and appreciation shared with your helpers.',
-    icon: <Gift className="h-6 w-6 text-yellow-600" />,
-    component: <GiftList />,
-    color: 'from-yellow-100 to-white',
-  },
-  {
-    key: 'recruit',
-    label: 'Recruit a New Helper',
-    about: 'Onboard a new helper to assist you.',
-    icon: <UserPlus className="h-6 w-6 text-pink-600" />,
-    route: '/recruit-helper',
-    color: 'from-pink-100 to-white',
-  },
-]
+  }
+];
 
 const HelpersPage = () => {
   const [open, setOpen] = useState(true)
@@ -134,7 +117,6 @@ const HelpersPage = () => {
                 <ChevronLeft size={18} />
                 Back
               </button>
-              {options[selected].component}
             </motion.div>
           )}
         </AnimatePresence>

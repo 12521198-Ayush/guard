@@ -1,69 +1,119 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import {Modal} from 'antd';
-import HeaderWithBack from "@/components/Home/HeaderWithBack";
-import { PhoneOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Phone, Mail, User2 } from "lucide-react";
+import { Card, CardContent, Typography, CircularProgress, Box, Stack } from "@mui/material";
+import { Button } from "antd";
+import { useSession } from "next-auth/react";
 
-const quickDialNumbers = [
-    { name: "Security", phone: "+911234567890", description: "24/7 Security Helpdesk" },
-    { name: "Maintenance", phone: "+919876543210", description: "Building Maintenance Support" },
-    { name: "Society Office", phone: "+911122334455", description: "General Society Queries" },
-    { name: "Fire Department", phone: "101", description: "Emergency Fire Service" },
-];
+interface Contact {
+    _id: string;
+    role: string;
+    mobile: string;
+    email: string;
+}
 
-const QuickDialList = () => {
+const ImportantContactsList: React.FC = () => {
+    const { data: session } = useSession();
+    const premiseId = session?.user?.primary_premise_id;
+    const accessToken = session?.user?.accessToken || '';
 
+    const [contacts, setContacts] = useState<Contact[]>([]);
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        const fetchContacts = async () => {
+            if (!premiseId || !accessToken) return;
 
-    const handleSubmit = async () => {
-        setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            Modal.success({
-                title: "Success",
-                content: "Call Initiated successfully!",
-                centered: true,
-                getContainer: false,
-                width: 400,
-                style: { padding: "0 20px" },
-                okButtonProps: {
-                    style: {
-                        backgroundColor: "#1890ff",
-                        borderColor: "#1890ff",
-                        color: "#fff",
-                        fontWeight: "bold",
-                        borderRadius: "6px",
-                    },
-                },
-            });
-        }, 1500);
-    };
+            setLoading(true);
+            try {
+                const response = await axios.post(
+                    "http://139.84.166.124:8060/user-service/misc/important_contacts/read",
+                    { premise_id: premiseId },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                    }
+                );
+                setContacts(response.data?.data || []);
+            } catch (error) {
+                console.error("Error fetching contacts:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
+        fetchContacts();
+    }, [accessToken, premiseId]);
+
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" mt={4}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
-        <div className="max-w-md mx-auto p-4 bg-white shadow-lg rounded-lg">
-            <h2 className="mb-4">
-                <HeaderWithBack title="Quick Dial Numbers" />
-            </h2>
-            <ul className="space-y-4">
-                {quickDialNumbers.map((item, index) => (
-                    <li key={index} className="flex justify-between items-center p-3 rounded-lg bg-gray-50">
-                        <div>
-                            <h3 className="text-lg font-medium">{item.name}</h3>
-                            <p className="text-sm text-gray-600">{item.description}</p>
-                            <p className="text-sm font-semibold text-blue-600">{item.phone}</p>
-                        </div>
-                        <a href={`tel:${item.phone}`} className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg flex items-center gap-1 transition">
-                            <PhoneOutlined className="text-lg" />
-                            <span onClick={handleSubmit}>Call</span>
-                        </a>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <Box>
+            <div className="bg-white p-3 font-sans relative ">
+                <div className="p-4 space-y-4 max-w-md mx-auto">
+                    <div className="flex justify-center mb-6 ">
+                        <h2 className="text-lg font-semibold text-gray-700"> Important Contacts</h2>
+                    </div>
+                </div>
+                <div className="space-y-4 overflow-y-auto pb-20" style={{ maxHeight: '75vh' }}>
+                    <Stack spacing={2}>
+                        {contacts.map((item) => (
+                            <Card
+                                key={item._id}
+                                variant="outlined"
+                                sx={{
+                                    border: "none",
+                                    boxShadow: "0px 2px 10px rgba(0,0,0,0.06)",
+                                    borderRadius: 3,
+                                    backgroundColor: "#f9f9f9",
+                                }}
+                            >
+                                <CardContent>
+                                    <Typography variant="subtitle1" fontWeight={600}>
+                                        {item.role}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Phone: {item.mobile}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Email: {item.email !== "-" ? item.email : "N/A"}
+                                    </Typography>
+
+                                    <Box mt={2}>
+                                        <a href={`tel:${item.mobile}`} style={{ textDecoration: "none" }}>
+                                            <Button
+                                                type="primary"
+                                                icon={<Phone size={16} />}
+                                                style={{
+                                                    backgroundColor: "#4CAF50",
+                                                    borderColor: "#4CAF50",
+                                                    borderRadius: 8,
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 6,
+                                                }}
+                                            >
+                                                Call
+                                            </Button>
+                                        </a>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Stack>
+                </div>
+            </div>
+        </Box>
     );
 };
 
-export default QuickDialList;
+export default ImportantContactsList;

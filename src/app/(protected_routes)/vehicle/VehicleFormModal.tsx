@@ -526,7 +526,6 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
                     )}
                 </div>
 
-
                 <button
                     onClick={handleSubmit}
                     className="w-full py-2 bg-blue-600 text-white rounded-xl font-medium shadow-md hover:bg-blue-700 transition"

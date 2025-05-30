@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { ChevronDown } from 'lucide-react';
+import Drawer from '@mui/material/Drawer';  
 
 type Visitor = {
   name: string;
@@ -222,45 +223,32 @@ export default function InviteVisitorsForm({ onClose }: Props) {
 
         const htmlContent = result.data
           .map(
-            // @ts-ignore
-            (visitor) => `
-              <div class="qr-card flex-shrink-0 w-full max-w-xs p-3 bg-white rounded-xl text-center space-y-2 mx-auto relative border-gray-200">
-                <p class="text-lg font-semibold text-gray-900">${visitor.contact_name}</p>
-                <p class="text-sm text-gray-700">${visitor.contact_number}</p>
-                <p class="text-sm text-gray-600">
-                  Passcode: <strong class="text-black font-semibold">${visitor.passcode}</strong>
-                </p>
-      
-                <img 
-                  src="${visitor.signed_url}" 
-                  alt="QR Code" 
-                  class="mx-auto w-48 h-48 rounded-lg shadow-md object-contain border-gray-200"
-                />
-      
-               <button 
-                  class="absolute top-3 mt-4 right-3 p-1 rounded-full hover:scale-105 transition"
-                  onclick="
-                    const visitor = window.visitorData;
-                    const message = 'Visitor: ${ visitor.contact_name }\\nMobile: ${ visitor.contact_number }\\nPasscode: ${ visitor.passcode }';
+            //@ts-ignore
+            (visitor, index) => `
+    <div class="qr-card flex-shrink-0 w-full max-w-xs p-3 bg-white rounded-xl text-center space-y-2 mx-auto relative border-gray-200">
+      <p class="text-lg font-semibold text-gray-900">${visitor.contact_name}</p>
+      <p class="text-sm text-gray-700">${visitor.contact_number}</p>
+      <p class="text-sm text-gray-600">
+        Passcode: <strong class="text-black font-semibold">${visitor.passcode}</strong>
+      </p>
 
-                    if (window.AndroidInterface?.shareImage) {
-                      window.AndroidInterface.shareImage(visitor.signed_url, message);
-                    } else if (window.webkit?.messageHandlers?.shareImage) {
-                      window.webkit.messageHandlers.shareImage.postMessage({
-                        imageUrl: visitor.signed_url,
-                        message: message
-                      });
-                    } else {
-                      console.error('No native share interface available');
-                    }
-                  "
-                  title="Share via WhatsApp"
-                  >
-                  <img width="28" height="28" src="https://img.icons8.com/ios-filled/50/forward-arrow.png" alt="forward-arrow"/>
-                  </button>
-              </div>
-            `
+      <img 
+        src="${visitor.signed_url}" 
+        alt="QR Code" 
+        class="mx-auto w-48 h-48 rounded-lg shadow-md object-contain border-gray-200"
+      />
+
+      <button 
+        class="absolute top-3 mt-4 right-3 p-1 rounded-full hover:scale-105 transition share-btn"
+        data-index="${index}"
+        title="Share via WhatsApp"
+      >
+        <img width="28" height="28" src="https://img.icons8.com/ios-filled/50/forward-arrow.png" alt="forward-arrow"/>
+      </button>
+    </div>
+  `
           )
+
           .join('');
         Swal.fire({
           title: 'QR Code',
@@ -332,9 +320,37 @@ export default function InviteVisitorsForm({ onClose }: Props) {
 
             if (container) {
               container.addEventListener('scroll', updateDots);
-              setTimeout(updateDots, 100); // Make sure the first dot gets activated
+              setTimeout(updateDots, 100);
+            }
+
+            // ✅ ADD SHARE BUTTON HANDLERS HERE
+            const shareButtons = container?.querySelectorAll('.share-btn');
+            if (shareButtons) {
+              shareButtons.forEach((btn) => {
+                const index = parseInt(btn.getAttribute('data-index') || '0', 10);
+                const visitor = result.data[index]; // From your fetched result
+
+                btn.addEventListener('click', () => {
+                  const message = `Visitor: ${visitor.contact_name}\nMobile: ${visitor.contact_number}\nPasscode: ${visitor.passcode}`;
+                  //@ts-ignore
+                  if (window.AndroidInterface?.shareImage) {
+                    //@ts-ignore
+                    window.AndroidInterface.shareImage(visitor.signed_url, message);
+                    //@ts-ignore
+                  } else if (window.webkit?.messageHandlers?.shareImage) {
+                    //@ts-ignore
+                    window.webkit.messageHandlers.shareImage.postMessage({
+                      imageUrl: visitor.signed_url,
+                      message: message,
+                    });
+                  } else {
+                    console.error('No native share interface available');
+                  }
+                });
+              });
             }
           }
+
         });
 
         router.push('/menu');
@@ -545,90 +561,81 @@ export default function InviteVisitorsForm({ onClose }: Props) {
       </div>
 
       {/* Phonebook drawer */}
-      <AnimatePresence>
-        {showPhonebook && (
-          <>
-            <motion.div
-              className="fixed inset-0 bg-black bg-opacity-30 z-30"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowPhonebook(false)}
+      <Drawer
+        anchor="bottom"
+        open={showPhonebook}
+        onClose={() => setShowPhonebook(false)}
+        PaperProps={{
+          className: 'rounded-t-2xl max-h-[80vh] w-full overflow-hidden',
+        }}
+        ModalProps={{
+          keepMounted: true, // Helps with mobile performance
+        }}
+      >
+        <div className="flex flex-col h-full max-h-[80vh] relative">
+          {/* Header */}
+          <div className="pt-4 px-4 bg-white">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-semibold text-gray-700 text-base">Select from Phonebook</h3>
+              <button
+                onClick={() => setShowPhonebook(false)}
+                className="text-gray-400 hover:text-gray-600 text-sm"
+              >
+                Close
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Search contacts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full p-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 shadow-none"
             />
+          </div>
 
-            <motion.div
-              className="fixed bottom-0 left-0 right-0 bg-white z-40 rounded-t-2xl max-h-[70vh] flex flex-col"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          {/* Contact List */}
+          <div className="overflow-y-auto px-4 flex-1 pb-24"> {/* Extra bottom padding for footer */}
+            {filteredContacts.length === 0 ? (
+              <p className="text-gray-400 text-sm mt-4">No contacts found.</p>
+            ) : (
+              <ul className="space-y-2 mt-4">
+                {filteredContacts.map((contact, idx) => {
+                  const isSelected = selectedContacts.has(contact.phone);
+                  return (
+                    <li
+                      key={idx}
+                      onClick={() => toggleSelectContact(contact.phone)}
+                      className={`flex justify-between items-center p-3 rounded-xl cursor-pointer shadow-sm transition-all duration-200 ${isSelected ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'
+                        }`}
+                    >
+                      <div>
+                        <span className="text-sm font-medium text-gray-800">{contact.name}</span>
+                        <span className="text-xs text-gray-500 block">{contact.phone}</span>
+                      </div>
+                      {isSelected ? (
+                        <CheckCircle className="text-blue-500" size={20} />
+                      ) : (
+                        <Circle className="text-gray-300" size={20} />
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          {/* Fixed Footer Button */}
+          <div className="absolute bottom-0 left-0 w-full p-4 bg-white">
+            <button
+              onClick={handleAddSelectedContacts}
+              disabled={selectedContacts.size === 0}
+              className="w-full py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition text-sm font-medium disabled:opacity-50"
             >
-              <div className="sticky top-0 z-10 bg-white pt-4 px-4 rounded-t-2xl">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-semibold text-gray-700 text-base">Select from Phonebook</h3>
-                  <button
-                    onClick={() => setShowPhonebook(false)}
-                    className="text-gray-400 hover:text-gray-600 text-sm"
-                  >
-                    Close
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search contacts..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full p-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 shadow-none"
-                />
-              </div>
-
-              <div className="overflow-y-auto px-4 pb-4 flex-1">
-                {filteredContacts.length === 0 ? (
-                  <p className="text-gray-400 text-sm mt-4">No contacts found.</p>
-                ) : (
-                  <ul className="space-y-2 mt-4">
-                    {filteredContacts.map((contact, idx) => {
-                      const isSelected = selectedContacts.has(contact.phone);
-                      return (
-                        <li
-                          key={idx}
-                          onClick={() => toggleSelectContact(contact.phone)}
-                          className={`flex justify-between items-center p-3 rounded-xl cursor-pointer shadow-sm transition-all duration-200 ${isSelected
-                            ? 'bg-blue-50'
-                            : 'bg-white hover:bg-gray-50'
-                            }`}
-                        >
-                          <div>
-                            <span className="text-sm font-medium text-gray-800">{contact.name}</span>
-                            <span className="text-xs text-gray-500 block">{contact.phone}</span>
-                          </div>
-
-                          {isSelected ? (
-                            <CheckCircle className="text-blue-500" size={20} />
-                          ) : (
-                            <Circle className="text-gray-300" size={20} />
-                          )}
-                        </li>
-
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-
-              <div className="p-4 border-gray-200">
-                <button
-                  onClick={handleAddSelectedContacts}
-                  disabled={selectedContacts.size === 0}
-                  className="w-full py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition text-sm font-medium disabled:opacity-50"
-                >
-                  Add Selected ({selectedContacts.size})
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              Add Selected ({selectedContacts.size})
+            </button>
+          </div>
+        </div>
+      </Drawer>
 
       {/* Bottom submit button */}
       <div className="mt-6 space-y-2 sticky bottom-0 bg-white pt-4">

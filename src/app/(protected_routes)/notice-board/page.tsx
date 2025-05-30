@@ -93,7 +93,7 @@ const Page = () => {
         </h2>
       </div>
 
-      <div className="flex justify-start gap-4 px-6 py-4">
+      <div className="flex justify-start gap-4 mx-auto py-4">
         {['ALL', 'Circular', 'Notice', 'Marketing'].map((category) => (
           <Button
             key={category}
@@ -108,7 +108,7 @@ const Page = () => {
         ))}
       </div>
 
-      <div className="space-y-4 overflow-y-auto" style={{ height: '75vh' }}>
+      <div className="space-y-4 overflow-y-auto" style={{ height: '65vh' }}>
         {emails.map((email) => (
           <motion.div
             key={email.id}
@@ -157,7 +157,6 @@ const Page = () => {
         selectedEmail={selectedEmail}
         onClose={() => setSelectedEmail(null)}
         handleAttachmentClick={handleAttachmentClick}
-        getAttachmentIcon={getAttachmentIcon}
       />
 
 

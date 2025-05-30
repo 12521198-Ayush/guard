@@ -5,15 +5,19 @@ import { useRouter } from 'next/navigation';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { FilePlus2, History } from 'lucide-react';
+import { UserPlus, Users, Smartphone } from 'lucide-react';
 
 export default function ComplaintDrawer() {
-  const router = useRouter();
   const [open, setOpen] = useState(true);
+  const router = useRouter();
 
   const closeDrawer = () => {
     setOpen(false);
-    router.push('/menu');
+  };
+
+  const navigate = (path: string) => {
+    setOpen(false);
+    router.push(path);
   };
 
   return (
@@ -44,7 +48,7 @@ export default function ComplaintDrawer() {
       `}</style>
 
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Complaint Options</h2>
+        <h2 className="text-xl font-bold text-gray-800">Member Options</h2>
         <IconButton onClick={closeDrawer}>
           <CloseIcon className="text-gray-500" />
         </IconButton>
@@ -53,23 +57,23 @@ export default function ComplaintDrawer() {
       <div className="grid gap-5">
         {[
           {
-            route: '/create_or_pending_ticket',
-            label: 'Create / Pending Tickets',
-            about: 'Report a new complaint or view unresolved tickets.',
+            path: '/add-member',
+            label: 'Add Member',
+            about: 'Register a new family or group member.',
             color: 'from-blue-100 to-white',
-            icon: <FilePlus2 className="h-6 w-6 text-blue-600" />,
+            icon: <UserPlus className="h-6 w-6 text-blue-600" />,
           },
           {
-            route: '/ticket-history',
-            label: 'Ticket History',
-            about: 'View your previously raised tickets.',
+            path: '/member-list',
+            label: 'View Members',
+            about: 'See your member list.',
             color: 'from-purple-100 to-white',
-            icon: <History className="h-6 w-6 text-purple-600" />,
-          },
+            icon: <Users className="h-6 w-6 text-purple-600" />,
+          }
         ].map((option) => (
           <button
-            key={option.route}
-            onClick={() => router.push(option.route)}
+            key={option.path}
+            onClick={() => navigate(option.path)}
             className={`w-full text-left rounded-xl p-4 bg-gradient-to-tr ${option.color} shadow-md hover:shadow-lg transition-all flex items-start gap-3`}
           >
             {option.icon}
@@ -77,7 +81,9 @@ export default function ComplaintDrawer() {
               <span className="block text-base font-semibold text-gray-800">
                 {option.label}
               </span>
-              <span className="mt-1 text-sm text-gray-600">{option.about}</span>
+              <span className="mt-1 text-sm text-gray-600">
+                {option.about}
+              </span>
             </div>
           </button>
         ))}

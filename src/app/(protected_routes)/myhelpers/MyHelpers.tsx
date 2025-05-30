@@ -12,6 +12,8 @@ type Helper = {
   skill: string
   picture_url: string
   address: string
+  qr_code: string
+  card_no: number
 }
 
 const MyHelpers = () => {

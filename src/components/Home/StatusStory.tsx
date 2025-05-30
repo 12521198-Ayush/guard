@@ -6,13 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSwipeable } from 'react-swipeable'
 import { FaRegSmile, FaPaperPlane, FaTimes } from 'react-icons/fa'
 
-interface StoryMedia {
+type StoryMedia = {
   type: 'image' | 'video'
   url: string
 }
 
 interface StatusStoryProps {
-  media: StoryMedia[]
+  media: (string | StoryMedia)[]
   title: string
   subtitle?: string
   avatarUrl?: string
@@ -24,8 +24,17 @@ const StatusStory: React.FC<StatusStoryProps> = ({
   media,
   title,
   subtitle = 'Today at 12:26 pm',
-  avatarUrl = media[0]?.url || '',
+  avatarUrl,
 }) => {
+  const normalizedMedia: StoryMedia[] = media.map((item) =>
+    typeof item === 'string'
+      ? {
+          type: item.match(/\.(mp4|webm|ogg)$/i) ? 'video' : 'image',
+          url: item,
+        }
+      : item
+  )
+
   const [open, setOpen] = useState(false)
   const [progress, setProgress] = useState(0)
   const [index, setIndex] = useState(0)
@@ -39,7 +48,8 @@ const StatusStory: React.FC<StatusStoryProps> = ({
   const longPressTimer = useRef<NodeJS.Timeout | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
-  const currentMedia = media[index]
+  const currentMedia = normalizedMedia[index]
+  const avatarImage = avatarUrl || normalizedMedia[0]?.url || ''
 
   const startTimer = () => {
     clearTimers()
@@ -50,8 +60,8 @@ const StatusStory: React.FC<StatusStoryProps> = ({
       setProgress(percent)
       if (percent >= 100) {
         clearTimers()
-        if (index < media.length - 1) {
-          setIndex(prev => prev + 1)
+        if (index < normalizedMedia.length - 1) {
+          setIndex((prev) => prev + 1)
         } else {
           setOpen(false)
         }
@@ -59,7 +69,7 @@ const StatusStory: React.FC<StatusStoryProps> = ({
     }, 100)
 
     timerRef.current = setTimeout(() => {
-      if (index < media.length - 1) setIndex(prev => prev + 1)
+      if (index < normalizedMedia.length - 1) setIndex((prev) => prev + 1)
       else setOpen(false)
     }, STORY_DURATION - elapsedRef.current)
   }
@@ -87,15 +97,13 @@ const StatusStory: React.FC<StatusStoryProps> = ({
     }
   }, [paused])
 
-
   const handlers = useSwipeable({
     onSwipedUp: () => setShowReplyBox(true),
-    onSwipedLeft: () => index < media.length - 1 && setIndex(index + 1),
+    onSwipedLeft: () => index < normalizedMedia.length - 1 && setIndex(index + 1),
     onSwipedRight: () => index > 0 && setIndex(index - 1),
     onSwipedDown: () => setOpen(false),
     trackTouch: true,
   })
-
 
   const handleLongPressStart = () => {
     longPressTimer.current = setTimeout(() => {
@@ -112,14 +120,13 @@ const StatusStory: React.FC<StatusStoryProps> = ({
     }
   }
 
-
   const handleTapZone = (e: React.MouseEvent<HTMLDivElement>) => {
     const { clientX } = e
     const screenWidth = window.innerWidth
     if (clientX < screenWidth / 2) {
       if (index > 0) setIndex(index - 1)
     } else {
-      if (index < media.length - 1) setIndex(index + 1)
+      if (index < normalizedMedia.length - 1) setIndex(index + 1)
     }
   }
 
@@ -139,7 +146,7 @@ const StatusStory: React.FC<StatusStoryProps> = ({
         <div className="bg-gradient-to-tr from-blue-400 via-cyan-300 to-indigo-500 p-[2px] rounded-full">
           <div className="bg-white p-[2px] rounded-full">
             <div className="w-15 h-15 rounded-full overflow-hidden bg-white">
-              <Image src={avatarUrl} alt="Status" width={80} height={80} className="object-cover w-full h-full" />
+              <Image src={avatarImage} alt="Status" width={80} height={80} className="object-cover w-full h-full" />
             </div>
           </div>
         </div>
@@ -154,7 +161,7 @@ const StatusStory: React.FC<StatusStoryProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {/* Tap to navigate zones */}
+            {/* Tap Zones */}
             <div className="absolute w-full h-full z-[1010] flex">
               <div className="w-1/2 h-full" onClick={handleTapZone} />
               <div className="w-1/2 h-full" onClick={handleTapZone} />
@@ -162,7 +169,7 @@ const StatusStory: React.FC<StatusStoryProps> = ({
 
             {/* Progress Bar */}
             <div className="absolute top-0 left-0 w-full h-1 bg-white bg-opacity-30 z-20 flex">
-              {media.map((_, i) => (
+              {normalizedMedia.map((_, i) => (
                 <div key={i} className="flex-1 h-full mx-0.5 bg-white bg-opacity-50 relative overflow-hidden">
                   {i === index && (
                     <motion.div
@@ -181,7 +188,7 @@ const StatusStory: React.FC<StatusStoryProps> = ({
             <div className="absolute top-0 left-0 z-30 w-full flex justify-between items-center p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden border border-white">
-                  <Image src={avatarUrl} alt="Avatar" width={40} height={40} />
+                  <Image src={avatarImage} alt="Avatar" width={40} height={40} />
                 </div>
                 <div className="text-white">
                   <p className="font-semibold text-sm">{title}</p>
@@ -224,7 +231,6 @@ const StatusStory: React.FC<StatusStoryProps> = ({
               )}
               <div className="absolute inset-0 bg-black bg-opacity-40" />
             </div>
-
 
             {/* Bottom Gradient */}
             <div className="absolute bottom-0 w-full h-28 bg-gradient-to-t from-black via-transparent to-transparent z-10" />

@@ -11,6 +11,8 @@ export type HelperProps = {
   skill: string
   address: string
   picture_url: string
+  qr_code: string
+  card_no: number
 }
 
 const HelperCard = (props: HelperProps) => {
@@ -24,12 +26,13 @@ const HelperCard = (props: HelperProps) => {
       >
         <div className="flex-shrink-0">
           <Image
-           src={props.picture_url || '/placeholder.jpg'}
+            src={props.picture_url?.startsWith('http') ? props.picture_url : '/placeholder.jpg'}
             alt={props.name}
             width={80}
             height={80}
             className="w-20 h-20 object-cover rounded-xl border border-gray-200 shadow-sm"
           />
+
         </div>
 
         <div className="flex-1 text-gray-800">

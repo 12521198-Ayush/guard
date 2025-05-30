@@ -88,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
           {!isMobile && (
             <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
               <div className="text-white flex text-md justify-center items-center">
-                <Link href="/dashboard">
+                <Link href="/menu">
                   <Image
                     width={52}
                     height={52}
@@ -123,13 +123,13 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                   <Link
                     href="/menu"
                     onClick={handleMenuClick} // Close sidebar when clicking menu
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/menu" && "text-white"}`}
                   >
                     <img width="25" height="30" src="https://img.icons8.com/fluency/48/circled-menu.png" alt="circled-menu" />
                     Home
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link
                     href="/dashboard"
                     onClick={handleMenuClick} // Close sidebar when clicking menu
@@ -138,27 +138,27 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                     <img width="25" height="30" src="https://img.icons8.com/fluency/48/combo-chart--v1.png" alt="combo-chart--v1" />
                     Dashboard
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link
                     href="https://www.servizing.com/about.html"
                     onClick={handleMenuClick} // Close sidebar when clicking menu
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/menu" && "text-white"}`}
                   >
                     <img width="25" height="30" src="https://img.icons8.com/lollipop/48/about.png" alt="about" />
                     About Servizing
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link
                     href="/premise"
                     onClick={handleMenuClick} // Close sidebar when clicking menu
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/menu" && "text-white"}`}
                   >
                     <img width="25" height="30" src="https://img.icons8.com/ultraviolet/40/front-gate-closed.png" alt="front-gate-closed" />
                     My Premise
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link
                     href="#"
@@ -182,7 +182,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                   <Link
                     href="/vehicle"
                     onClick={handleMenuClick} // Close sidebar when clicking menu
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/menu" && "text-white"}`}
                   >
                     <img width="25" height="30" src="https://img.icons8.com/fluency/48/car--v1.png" alt="car--v1" />
                     My Vehicles
@@ -192,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                   <Link
                     href="/family-members"
                     onClick={handleMenuClick} // Close sidebar when clicking menu
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/menu" && "text-white"}`}
                   >
                     <img width="25" height="30" src="https://img.icons8.com/external-flaticons-lineal-color-flat-icons/64/external-members-agile-flaticons-lineal-color-flat-icons.png" alt="external-members-agile-flaticons-lineal-color-flat-icons" />
                     My Family Members
@@ -202,7 +202,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                   <Link
                     href="/add-society"
                     onClick={handleMenuClick} // Close sidebar when clicking menu
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/menu" && "text-white"}`}
                   >
                     <img width="25" height="30" src="https://img.icons8.com/arcade/64/plus-math.png" alt="plus-math" />
                     Add Premise
@@ -212,7 +212,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                   <Link
                     href="/family-members"
                     onClick={handleMenuClick} // Close sidebar when clicking menu
-                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/dashboard" && "text-white"}`}
+                    className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname === "/menu  " && "text-white"}`}
                   >
                     <img width="25" height="30" src="https://img.icons8.com/fluency/48/filled-trash.png" alt="filled-trash" />
                     Delete Account

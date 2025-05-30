@@ -6,6 +6,8 @@ type Helper = {
   skill: string
   address: string
   picture_url: string
+  qr_code: string
+  card_no: number
 }
 
 type Props = {

@@ -8,26 +8,30 @@ import {
 import { CalendarMonth, CheckCircle, AccessTime } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDropDown } from "@mui/icons-material"
+import { useSession } from 'next-auth/react';
+
 
 type AttendanceDrawerProps = {
+  card_no: number;
   open: boolean;
   onClose: () => void;
 };
 
-const AttendanceDrawer: React.FC<AttendanceDrawerProps> = ({ open, onClose }) => {
+const AttendanceDrawer: React.FC<AttendanceDrawerProps> = ({ card_no, open, onClose }) => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [attendanceDays, setAttendanceDays] = useState<Record<string, { type: string, time: string }[]>>({});
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const { data: session } = useSession();
 
   const fetchAttendance = async () => {
     const res = await fetch('http://139.84.166.124:8060/staff-service/attendance/monthly/get', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        card_no: 15002,
-        premise_id: "348afcc9-d024-3fe9-2e85-bf5a9694ea19",
+        card_no: card_no,
+        premise_id: session?.user?.primary_premise_id,
         year,
         month
       }),
@@ -191,7 +195,7 @@ const AttendanceDrawer: React.FC<AttendanceDrawerProps> = ({ open, onClose }) =>
 
         {/* Action Buttons */}
         <Button
-          variant="contained"
+          variant="outlined"
           startIcon={<CalendarMonth />}
           fullWidth
           sx={{ mt: 3, py: 1.2, borderRadius: 2, textTransform: "none" }}
@@ -261,7 +265,7 @@ const AttendanceDrawer: React.FC<AttendanceDrawerProps> = ({ open, onClose }) =>
         {/* Close Button */}
         <Button
           onClick={() => setCalendarOpen(false)}
-          variant="contained"
+          variant="outlined"
           fullWidth
           sx={{
             mt: 3,
@@ -342,7 +346,7 @@ const AttendanceDrawer: React.FC<AttendanceDrawerProps> = ({ open, onClose }) =>
 
         <Button
           fullWidth
-          variant="contained"
+          variant="outlined"
           color="primary"
           onClick={() => setSelectedDay(null)}
           sx={{ borderRadius: 2, py: 1.2, textTransform: "none" }}

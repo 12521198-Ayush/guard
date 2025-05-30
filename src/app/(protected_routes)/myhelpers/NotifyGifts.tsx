@@ -14,11 +14,12 @@ import imageCompression from 'browser-image-compression';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
+import { message } from 'antd';
 
 interface NotifyGiftProps {
   premise_id: string;
   premise_unit_id: string;
-  card_no: string;
+  card_no: number;
   qr_code: string;
 }
 
@@ -64,8 +65,7 @@ export default function NotifyGiftSection({
     if (!validTypes.includes(file.type)) {
       const errorMsg = 'Only PNG, JPG, GIF, or PDF files are allowed.';
       setUploadError(errorMsg);
-      toast.error(errorMsg);
-      setUploading(false);
+      message.warning(errorMsg);
       return;
     }
 
@@ -73,24 +73,27 @@ export default function NotifyGiftSection({
 
     if (file.type !== 'application/pdf') {
       try {
+        // Compress image to be under 2MB
         const options = {
           maxSizeMB: 2,
           maxWidthOrHeight: 1920,
           useWebWorker: true,
         };
         finalFile = await imageCompression(file, options);
+        console.log('🗜️ Compressed file size (MB):', finalFile.size / 1024 / 1024);
       } catch (error) {
         console.error('❌ Image compression failed:', error);
-        toast.error('Image compression failed.');
+        message.error('Image compression failed.');
         setUploading(false);
         return;
       }
     } else {
+      // For PDFs, just check size
       const isTooLarge = file.size > MAX_FILE_SIZE_MB * 1024 * 1024;
       if (isTooLarge) {
         const errorMsg = `PDF must be smaller than ${MAX_FILE_SIZE_MB}MB`;
         setUploadError(errorMsg);
-        toast.error(errorMsg);
+        message.warning(errorMsg);
         setUploading(false);
         return;
       }
@@ -98,26 +101,32 @@ export default function NotifyGiftSection({
 
     setUploadError(null);
     setUploadedFile(finalFile);
+    console.log('📂 Final file selected:', finalFile);
 
+    // Preview
     if (finalFile.type === 'application/pdf') {
       setPreviewUrl(URL.createObjectURL(finalFile));
     } else {
       const reader = new FileReader();
-      reader.onload = () => setPreviewUrl(reader.result as string);
+      reader.onload = () => {
+        setPreviewUrl(reader.result as string);
+      };
       reader.readAsDataURL(finalFile);
     }
 
     try {
       const base64WithPrefix = await getBase64(finalFile);
       const payload = {
-        premise_id,
+        premise_id: session?.user?.primary_premise_id,
         filetype: finalFile.type,
         file_extension: finalFile.name.split('.').pop(),
         base64_data: base64WithPrefix,
       };
 
+      console.log('📤 Upload payload:', payload);
+
       const res = await axios.post(
-        'http://139.84.166.124:8060/staff-service/upload/async',
+        'http://139.84.166.124:8060/order-service/upload/async',
         payload,
         {
           headers: {
@@ -129,11 +138,12 @@ export default function NotifyGiftSection({
       const objectKey = res?.data?.data?.key;
       if (objectKey) {
         setUploadedObjectId(objectKey);
-        toast.success('Image uploaded successfully');
+        console.log('✅ File uploaded, Object ID:', objectKey);
+        message.success('Image uploaded successfully');
       }
     } catch (error) {
       console.error('❌ Upload failed:', error);
-      toast.error('File upload failed.');
+      message.error('File upload failed.');
     }
 
     setUploading(false);
@@ -156,7 +166,7 @@ export default function NotifyGiftSection({
         description,
       });
 
-      toast.success('Notified gate successfully!');
+      message.success('Notified gate successfully!');
       setOpen(false);
       setDescription('');
       setUploadedFile(null);
@@ -175,10 +185,11 @@ export default function NotifyGiftSection({
         Notify Gate about Gifts
       </Typography>
       <Button
-        variant="contained"
-        color="secondary"
+        variant="outlined"
+        color="primary" // Standard for informative user actions
         fullWidth
         onClick={() => setOpen(true)}
+        sx={{ borderRadius: 2, py: 1.3, textTransform: 'none' }}
       >
         Notify Now
       </Button>
@@ -187,6 +198,9 @@ export default function NotifyGiftSection({
         anchor="bottom"
         open={open}
         onClose={() => setOpen(false)}
+        ModalProps={{
+          keepMounted: false,
+        }}
         PaperProps={{
           sx: {
             borderTopLeftRadius: 20,
@@ -202,6 +216,18 @@ export default function NotifyGiftSection({
           </IconButton>
         </div>
 
+        <TextField
+          label="Description"
+          fullWidth
+          multiline
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="mb-4"
+        />
+
+        <br />
+
         {/* Upload Area */}
         <div className="relative w-full mb-4">
           <label htmlFor="gift-upload" className="block mb-2 text-sm text-gray-800">
@@ -210,9 +236,8 @@ export default function NotifyGiftSection({
 
           <label
             htmlFor="gift-upload"
-            className={`cursor-pointer w-full p-3 rounded-2xl bg-gray-100 shadow-md flex justify-between items-center text-sm text-gray-800 hover:shadow-lg transition-all ${
-              uploading ? 'opacity-70 cursor-wait' : 'cursor-pointer'
-            }`}
+            className={`cursor-pointer w-full p-3 rounded-2xl bg-gray-100 shadow-md flex justify-between items-center text-sm text-gray-800 hover:shadow-lg transition-all ${uploading ? 'opacity-70 cursor-wait' : 'cursor-pointer'
+              }`}
           >
             {uploading ? (
               <span className="flex items-center space-x-2">
@@ -267,28 +292,11 @@ export default function NotifyGiftSection({
           )}
         </div>
 
-        {previewUrl && (
-          <div className="mb-4">
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="rounded-lg max-h-60 object-contain"
-            />
-          </div>
-        )}
 
-        <TextField
-          label="Description"
-          fullWidth
-          multiline
-          rows={3}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="mb-4"
-        />
+
 
         <Button
-          variant="contained"
+          variant="outlined"
           color="primary"
           fullWidth
           disabled={uploading || submitting || !uploadedObjectId || !description}
