@@ -646,7 +646,7 @@ const Register = () => {
                     <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
                         <div className="mt-12 flex flex-col items-center">
                             <h1 className="text-2xl xl:text-3xl font-extrabold">
-                                <img src="http://139.84.169.221:3001/_next/image?url=%2Fimages%2Flogo%2Flogo.png&w=128&q=75" alt="logo" />
+                                <img src="http://139.84.169.221:3003/_next/image?url=%2Fimages%2Flogo%2Flogo.png&w=128&q=75" alt="logo" />
                             </h1>
                             <h1 className="text-2xl xl:text-3xl font-bold">
                                 Create an Account

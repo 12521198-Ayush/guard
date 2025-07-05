@@ -1,27 +1,16 @@
 'use client'
-
-import MobileMenu from '@/components/Home/MobileMenu';
-import React from 'react';
-import { useSession } from 'next-auth/react';
-
-const Page = () => {
-  const { data: session } = useSession();
+import QuickActions from './QuickActions'
+import VisitorEntry from './VisitorEntry'
+import GuestList from './GuestList'
+import GuardVisitorForm from './new_form'
+const KeypadScreen = () => {
   return (
-    <>
-      {/* <div> access token - 
-      {session?.user.accessToken}
-      refresh tken ---------------------
-      {session?.user.accessToken}
-      primary_premise_id 
-      {session?.user.primary_premise_id}
-      premise_unit_id 
-      {session?.user.premise_unit_id}
-      sub_premise_id 
-      {session?.user.sub_premise_id}
-      </div> */}
-      <MobileMenu />
-    </>
-  );
-};
+    <div className="relative w-full text-gray-800 font-medium pb-6">
+      <VisitorEntry />
+      <GuestList />
+      <QuickActions />
+    </div>
+  )
+}
 
-export default Page;
+export default KeypadScreen 

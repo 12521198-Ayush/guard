@@ -7,7 +7,7 @@ module.exports = {
         exec_mode: 'cluster',
         instances: 'max',
         env: {
-          PM2_PUBLIC_PORT: 3001,
+          PM2_PUBLIC_PORT: 3003,
           NODE_ENV: 'production',
         },
       },

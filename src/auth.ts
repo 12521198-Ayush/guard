@@ -10,11 +10,11 @@ import { signOut } from 'next-auth/react';
 let isRefreshing = false;
 let refreshTokenPromise: Promise<any> | null = null;  // Holds the refresh promise while it's being executed
 
-async function refreshAccessToken(token:any) {
+async function refreshAccessToken(token: any) {
   // this is our refresh token method
   if (!token || token.error === "RefreshAccessTokenError") {
-    // console.log("Refresh token is expired or error already set, not calling the API.");
-    // console.log("All Cookies:", cookies().getAll());
+    console.log("Refresh token is expired or error already set, not calling the API.");
+    console.log("All Cookies:", cookies().getAll());
     return token; // Return the existing token without making the API call
   }
 
@@ -47,7 +47,7 @@ async function refreshAccessToken(token:any) {
     return {
       ...token,
       accessToken: data.data.accessToken,
-      refreshToken: data.data.refreshToken ?? token.refreshToken,
+      refreshToken: data.data.refreshToken,
       idToken: data.data.idToken,
       accessTokenExpires: decodedAccessToken["exp"] * 1000,
       error: "",
@@ -63,7 +63,7 @@ async function refreshAccessToken(token:any) {
 
 export const config = {
   trustHost: true,
-  
+
   providers: [
     // we use credentials provider here
     CredentialsProvider({
@@ -76,7 +76,7 @@ export const config = {
       async authorize(credentials, req): Promise<any> {
         const tokens = {
           accessToken: credentials.access_token,
-          refrehToken: credentials.refresh_token
+          refreshToken: credentials.refresh_token
         }
 
 
@@ -85,6 +85,9 @@ export const config = {
 
         if (!tokens.accessToken) {
           throw new Error("Access token is not available");
+        } 
+        if (!tokens.refreshToken) {
+          throw new Error("Refresh token is not available");
         }
 
         const res = await fetch(apiEndpoint, {
@@ -103,21 +106,13 @@ export const config = {
           throw new Error(userData.error.message)
         }
 
+        console.log("**************************************************************");
+        console.log("refresh token : ");
+        console.log(tokens.refreshToken);
+
         const expiration = new Date();
         expiration.setHours(expiration.getHours() + 1);
 
-        interface Premise {
-          premise_id: string;
-          premise_name: string;
-          current_premise_name: string;
-          admin_name: string;
-          admin_designation: string;
-          admin_email: string;
-          registration_status: string;
-          phone: string;
-          registration_reference: string;
-
-        }
         const premise = userData.data[0].premise_id;
         const sub_premise = userData.data[0].sub_premise_id;
         const user = {
@@ -137,9 +132,13 @@ export const config = {
           phone: userData.data[0].mobile,
           img: "/avatar.png",
           accessToken: tokens.accessToken,
-          refreshToken: tokens.refrehToken,
+          refreshToken: tokens.refreshToken,
           exp: expiration.toISOString(),
         };
+
+        console.log("**************************************************************")
+        console.log("user object")
+        console.log(user)
 
         if (res.ok && user) {
           const prefix = process.env.NODE_ENV === "production" ? "__Pro-" : "";
@@ -165,7 +164,7 @@ export const config = {
   pages: {
     signIn: "/nativeRedirect/logout",
   },
- 
+
   callbacks: {
     async jwt({ token, user, account, trigger, session }) {
       // If there's a user and account, we populate the token with the user details
@@ -186,6 +185,10 @@ export const config = {
         token.primary_premise_name = user.primary_premise_name;
         token.premises_associated_with = user.premises_associated_with;
 
+
+        console.log("**************************************************************")
+        console.log("token")
+        console.log(token)
         // Decoding the access token
         const decodedAccessToken = JSON.parse(Buffer.from(user.accessToken.split(".")[1], "base64").toString());
         if (decodedAccessToken) {
@@ -204,12 +207,11 @@ export const config = {
         token.premise_unit_id = session.premise_unit_id ?? token.premise_unit_id;
         token.sub_premise_id = session.sub_premise_id ?? token.sub_premise_id;
         token.role = session.role ?? token.role;
-      }  
+      }
 
       // If the token is not expired, return the current token
       if (token.accessTokenExpires && Date.now() < Number(token.accessTokenExpires)) {
-        const { refreshToken, ...rest } = token;
-        return rest;
+        return token;
       }
 
       if (isRefreshing) {
@@ -218,21 +220,22 @@ export const config = {
       }
       // Log that we're starting the refresh process
       // console.log("Starting refresh token process...");
-    
+
       // Start the refresh process
       isRefreshing = true;
       refreshTokenPromise = refreshAccessToken(token)
         .finally(() => {
           isRefreshing = false;  // Reset the flag after refresh attempt is finished
         });
-    
+
 
       return refreshTokenPromise;
     },
 
-
-
     async session({ session, token }) {
+      console.log("**************************************************************")
+      console.log("token object while puting refresh token in mysession")
+      console.log(token)
       const mySession = {
         ...session,
         user: {
@@ -242,6 +245,7 @@ export const config = {
           phone: token.phone as string,
           societyList: token.societyList as string[],
           accessToken: token.accessToken as string,
+          refreshToken: token.refreshToken as string,
           premise_unit_id: token.premise_unit_id as any,
           sub_premise_id: token.sub_premise_id as any,
           accessTokenExpires: token.accessTokenExpires as number,
@@ -252,8 +256,12 @@ export const config = {
         },
         error: token.error,
       }
+      console.log("**************************************************************")
+      console.log("mySession object")
+      console.log(mySession)
       return mySession;
     },
+
     authorized({ request, auth }) {
 
       const { pathname } = request.nextUrl

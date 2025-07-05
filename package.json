@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "PORT=3001 next start",
+    "start": "PORT=3003 next start",
     "lint": "next lint"
   },
   "dependencies": {
@@ -46,6 +46,7 @@
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
     "jsvectormap": "^1.5.3",
+    "keen-slider": "^6.8.6",
     "libphonenumber-js": "^1.11.8",
     "loadash": "^1.0.0",
     "lodash": "^4.17.21",
@@ -59,6 +60,8 @@
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",
     "primereact": "^10.8.3",
+    "qa": "^0.1.0",
+    "qs": "^6.14.0",
     "react": "^18",
     "react-apexcharts": "^1.4.1",
     "react-dom": "^18",
@@ -76,6 +79,7 @@
     "react-toastify": "^10.0.5",
     "sass": "^1.86.3",
     "sharp": "^0.33.5",
+    "styled-components": "^6.1.19",
     "sweetalert2": "^11.14.1",
     "sweetalert2-react-content": "^5.1.0",
     "tailwind-merge": "^2.5.2",
@@ -88,6 +92,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/next-auth": "^3.13.0",
     "@types/node": "^20",
+    "@types/qs": "^6.14.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
