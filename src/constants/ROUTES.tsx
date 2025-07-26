@@ -1,1 +1,2 @@
-export const PRIVATE_ROUTES = ["/profile","/flats-residents","/society-management","/emails"];  
+// export const PRIVATE_ROUTES = [""];  
+export const PRIVATE_ROUTES = ["/menu","/guard-menu","/guard-form","/notification-send","/rwa-menu"];

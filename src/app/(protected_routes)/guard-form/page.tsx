@@ -1,7 +1,11 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import {
-    Box, Button, Chip, Typography, Paper, Grid, TextField, InputAdornment, Snackbar, Alert, CircularProgress
+    Box, Button, Chip, Typography, Paper, Grid, TextField, InputAdornment, Snackbar, Alert, CircularProgress,
+    FormControl,
+    MenuItem,
+    InputLabel,
+    Select
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchIcon from '@mui/icons-material/Search';
@@ -18,7 +22,6 @@ import { FaCamera, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'; // Add 
 
 
 const API_BASE = 'http://139.84.166.124:8060/user-service/registration';
-const premise_id = '348afcc9-d024-3fe9-2e85-bf5a9694ea19';
 
 const guestTypes = ['delivery', 'private', 'cab', 'others'];
 const vehicleTypes = ['car', 'bike', 'pedestrian'];
@@ -34,8 +37,13 @@ const GuardVisitorForm = () => {
     const [subPremises, setSubPremises] = useState<any[]>([]);
     const [selectedTower, setSelectedTower] = useState('');
     const [premiseUnits, setPremiseUnits] = useState<any[]>([]);
-    const [selectedFlats, setSelectedFlats] = useState<string[]>([]);
+    const [selectedFlats, setSelectedFlats] = useState<{
+        premise_unit_id: string;
+        sub_premise_id: string;
+        sub_premise_name: string;
+    }[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedTowerName, setSelectedTowerName] = useState('');
     const [successMsgOpen, setSuccessMsgOpen] = useState(false);
     const [loadingUnits, setLoadingUnits] = useState(false);
     const [loadingSubmit, setLoadingSubmit] = useState(false);
@@ -47,7 +55,8 @@ const GuardVisitorForm = () => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [uploading, setUploading] = React.useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-
+    const premise_id = localStorage.getItem('selected_premise_id') || '';
+    const [visitorCount, setVisitorCount] = useState('1');
     const getBase64 = (file: File) =>
         new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
@@ -94,6 +103,7 @@ const GuardVisitorForm = () => {
                 finalFile = await imageCompression(file, options);
                 console.log('🗜️ Compressed file size (MB):', finalFile.size / 1024 / 1024);
             } catch (error) {
+                setUploadedFile(null)
                 console.error('❌ Image compression failed:', error);
                 message.error('Image compression failed.');
                 setUploading(false);
@@ -155,10 +165,10 @@ const GuardVisitorForm = () => {
             if (objectKey) {
                 setUploadedObjectId(objectKey);
                 console.log('✅ File uploaded, Object ID:', objectKey);
-
                 message.success('Image uploaded successfully');
             }
         } catch (error) {
+            setUploadedFile(null);
             console.error('❌ Upload failed:', error);
             message.error('File upload failed.');
         }
@@ -195,14 +205,15 @@ const GuardVisitorForm = () => {
         }
     };
 
-    const fetchPremiseUnits = async (selectedSubPremise: string) => {
-        setSelectedTower(selectedSubPremise);
+    const fetchPremiseUnits = async (subPremiseId: string, subPremiseName: string) => {
+        setSelectedTower(subPremiseId);
+        setSelectedTowerName(subPremiseName);
         setLoadingUnits(true);
         try {
             const res = await fetch(`${API_BASE}/premise_unit/list`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ premise_id, sub_premise_id: selectedSubPremise })
+                body: JSON.stringify({ premise_id, sub_premise_id: subPremiseId })
             });
             const data = await res.json();
             const sorted = [...(data.data || [])].sort((a, b) => a.id.localeCompare(b.id));
@@ -214,11 +225,29 @@ const GuardVisitorForm = () => {
         }
     };
 
-    const handleFlatToggle = (unit: string) => {
-        setSelectedFlats((prev) =>
-            prev.includes(unit) ? prev.filter(f => f !== unit) : [...prev, unit]
-        );
+
+    const handleFlatToggle = (unitId: string) => {
+        setSelectedFlats((prev) => {
+            const exists = prev.find(
+                (f) => f.premise_unit_id === unitId && f.sub_premise_id === selectedTower
+            );
+            if (exists) {
+                return prev.filter(
+                    (f) => !(f.premise_unit_id === unitId && f.sub_premise_id === selectedTower)
+                );
+            } else {
+                return [
+                    ...prev,
+                    {
+                        premise_unit_id: unitId,
+                        sub_premise_id: selectedTower,
+                        sub_premise_name: selectedTowerName
+                    }
+                ];
+            }
+        });
     };
+
 
     const filteredTowers = subPremises.filter(tp => tp.sub_premise_name?.toLowerCase().includes(searchQuery.toLowerCase()));
     const filteredUnits = premiseUnits.filter(unit => unit?.id?.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -235,36 +264,99 @@ const GuardVisitorForm = () => {
         setSearchQuery('');
     };
 
-    const handleSubmit = async () => {
-        if (!name || !guestType || !vehicleType || !selectedTower || selectedFlats.length === 0 || (vehicleType !== 'pedestrian' && !vehicleNumber)) {
-            message.info("Please fill all required fields.");
+    const handleNext = async () => {
+        if (!name) {
+            message.info("Please enter visitor name.");
+            return;
+        } else if (!guestType) {
+            message.info("Please select a guest type.");
+            return;
+        } else if (!vehicleType) {
+            message.info("Please select a vehicle type.");
+            return;
+        } else if (vehicleType !== 'pedestrian' && !vehicleNumber) {
+            message.info("Please enter vehicle number.");
+            return;
+        } else if (!uploadedObjectId) {
+            message.info("Please upload a visitor image.");
             return;
         }
-        const visit_id = `visitid[${uuidv4()}]`
-        const visitor_info_json = {
-            visit_id,
-            guestType,
-            vehicle_type: vehicleType,
-            vehicle_registration_number: vehicleType !== 'pedestrian' ? vehicleNumber : 'NOT_ON_VEHICLE',
-            guest_mobile_no: MobileNumber,
-            visitor_name: name,
-            pic_url: uploadedObjectId,
-            guest_reference: "Zakir",
-            listed_type: "unlisted"
+        setStep('address');
+    }
+
+    const handleSubmit = async () => {
+        if (!selectedTower || selectedFlats.length === 0) {
+            message.info("Please select a tower and at least one flat.");
+            return;
         }
-        const security_guard_id = uuidv4()
+
+        const visit_id = `visitid[${uuidv4()}]`;
+        const fcmToken = localStorage.getItem('fcm_token') || "49iu4983u43483u483h483u438434";
+        const total_no_of_person = visitorCount;
+        const visitor_info_json = {
+            name: name,
+            type: guestType,
+            mobile: MobileNumber,
+            vehicle_type: vehicleType,
+            total_no_of_person,
+            vehicle_number: vehicleType !== 'pedestrian' ? vehicleNumber : 'NOT_ON_VEHICLE',
+            pic_url: uploadedObjectId,
+            ...(guestType === 'delivery' && {
+                brand: selectedBrandName,
+                brand_logo_url: selectedBrandLogo,
+            }),
+        };
+
+
+        // Convert resident list to status map
+        const resident_status: Record<string, boolean> = {};
+
+        selectedFlats.forEach(flat => {
+            resident_status[flat.premise_unit_id] = false;
+        });
+
+        const mobile = session?.user?.phone || '9999999999';
+        const premise = localStorage.getItem('selected_premise_id') || "c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af";
+        const subpremise = localStorage.getItem('selected_subpremise_id') || "gate";
+        const security_guard_id = localStorage.getItem('security_guard_id');
+        const premiseName = localStorage.getItem('selected_premise_name') || "Ireo Uptown";
+        const subpremiseName = localStorage.getItem('selected_subpremise_name') || "Gate";
+        
+        const localStoragePayload = {
+            premise_id: premise,
+            visit_id,
+            visitor_info_json,
+            resident_json_array: selectedFlats,
+            security_guard_id: security_guard_id,
+            resident_status,
+            security_guard_fcmid: "fcmToken",
+        };
 
         const payload = {
-            premise_id: "348afcc9-d024-3fe9-2e85-bf5a9694ea19",
+            premise_id: premise,
+            premise_name: premiseName,
+            scan_location: subpremiseName,
+            visit_id,
             visitor_info_json,
-            resident_array: selectedFlats,
-            security_guard_id,
-            security_guard_fcmid: "fcmid[1234567890]",
-
+            resident_json_array: selectedFlats,
+            security_guard_id: security_guard_id,
+            security_guard_fcmid: fcmToken,
         };
-        console.log("Submitting payload:", payload);
-        console.log("Prefilled data:", prefilledData);
 
+        console.log(payload);
+
+        // Save to localStorage
+        try {
+            const existingData = localStorage.getItem('pending_visitor_list');
+            const pendingList = existingData ? JSON.parse(existingData) : [];
+
+            pendingList.push(localStoragePayload);
+            localStorage.setItem('pending_visitor_list', JSON.stringify(pendingList));
+        } catch (e) {
+            console.error("Error handling localStorage:", e);
+        }
+
+        // Submit to backend
         setLoadingSubmit(true);
         try {
             const res = await fetch('http://139.84.166.124:8060/vms-service/entry/request', {
@@ -273,13 +365,15 @@ const GuardVisitorForm = () => {
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
+            console.log(data);
+
             if (data && !data.error) {
                 message.success("Visitor added successfully!");
                 resetForm();
                 setUploadedFile(null);
-                router.push('/menu');
+                router.push('/guard-menu');
             } else {
-                alert('Submission failed');
+                alert(`Submission failed ${data.error.message}`);
             }
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -287,6 +381,7 @@ const GuardVisitorForm = () => {
             setLoadingSubmit(false);
         }
     };
+
 
     function enableCameraOnly() {
         // @ts-ignore
@@ -296,7 +391,28 @@ const GuardVisitorForm = () => {
         }
     }
 
+    const [brands, setBrands] = useState<any[]>([]);
+    const [selectedBrandId, setSelectedBrandId] = useState('');
+    const [selectedBrandName, setSelectedBrandName] = useState('');
+    const [selectedBrandLogo, setSelectedBrandLogo] = useState('');
 
+
+    useEffect(() => {
+        if (guestType === 'delivery') {
+            axios
+                .post('http://139.84.166.124:8060/vms-service/vendor/list', {
+                    premise_id: premise_id,
+                })
+                .then((response) => {
+                    if (response.data?.data) {
+                        setBrands(response.data.data);
+                    }
+                })
+                .catch((err) => {
+                    console.error('Failed to fetch vendor list:', err.message);
+                });
+        }
+    }, [guestType]);
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
@@ -388,7 +504,6 @@ const GuardVisitorForm = () => {
                                 )}
                             </div>
 
-                            <br />
 
                             <TextField
                                 fullWidth
@@ -407,6 +522,17 @@ const GuardVisitorForm = () => {
                                 }}
                             />
 
+                            <TextField
+                                fullWidth
+                                label="Number of Visitors"
+                                value={visitorCount}
+                                onChange={(e) => setVisitorCount(e.target.value)}
+                                type="number"
+                                className="mb-4"
+                                margin="normal"
+                                required
+                            />
+
                             <Typography variant="subtitle1">Guest Type</Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2, mt: 2 }}>
                                 {guestTypes.map(type => (
@@ -423,7 +549,7 @@ const GuardVisitorForm = () => {
                             {guestType && (
                                 <Box>
                                     <Typography variant="subtitle1">Vehicle Type</Typography>
-                                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                                    <Box sx={{ display: 'flex', gap: 1, mb: 2, mt: 2 }}>
                                         {vehicleTypes.filter(v => !(guestType === 'cab' && v === 'pedestrian')).map(v => (
                                             <Button
                                                 key={`vehicle-${v}`}
@@ -434,10 +560,44 @@ const GuardVisitorForm = () => {
                                             </Button>
                                         ))}
                                     </Box>
-
-
                                 </Box>
                             )}
+
+                            {guestType === 'delivery' && (
+                                <FormControl fullWidth>
+                                    <InputLabel>Select Brand</InputLabel>
+                                    <Select
+                                        value={selectedBrandId}
+                                        onChange={(e) => {
+                                            const brandId = e.target.value;
+                                            const brand = brands.find((b) => b._id === brandId);
+
+                                            setSelectedBrandId(brandId);
+                                            setSelectedBrandName(brand?.name || '');
+                                            setSelectedBrandLogo(brand?.logo || '');
+                                        }}
+                                        label="Select Brand"
+                                        renderValue={() => (
+                                            <div className="flex items-center gap-2">
+                                                {selectedBrandLogo && (
+                                                    <img src={selectedBrandLogo} alt="logo" className="w-6 h-6 rounded" />
+                                                )}
+                                                <span>{selectedBrandName}</span>
+                                            </div>
+                                        )}
+                                    >
+                                        {brands.map((brand) => (
+                                            <MenuItem key={brand._id} value={brand._id}>
+                                                <div className="flex items-center gap-3">
+                                                    <img src={brand.logo} alt={brand.name} className="w-6 h-6 rounded" />
+                                                    <span>{brand.name}</span>
+                                                </div>
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            )}
+
 
                             {vehicleType && (
                                 <>
@@ -472,7 +632,8 @@ const GuardVisitorForm = () => {
                                         className='mt-4'
                                         variant="outlined"
                                         color="primary"
-                                        onClick={() => setStep('address')}
+                                        onClick={handleNext}
+                                        disabled={!name || !guestType || !vehicleType || (vehicleType !== 'pedestrian' && !vehicleNumber) || uploading}
                                     >
                                         Next
                                     </Button>
@@ -511,11 +672,12 @@ const GuardVisitorForm = () => {
                                     <Button
                                         key={`tower-${sp.sub_premise_id}`}
                                         variant={selectedTower === sp.sub_premise_id ? 'outlined' : 'text'}
-                                        onClick={() => fetchPremiseUnits(sp.sub_premise_id)}
+                                        onClick={() => fetchPremiseUnits(sp.sub_premise_id, sp.sub_premise_name)}
                                         sx={{ borderRadius: 2 }}
                                     >
                                         {sp.sub_premise_name || 'Unnamed Tower'}
                                     </Button>
+
                                 ))}
                             </Box>
 
@@ -539,12 +701,13 @@ const GuardVisitorForm = () => {
                                                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                                                         {selectedFlats.map((flat) => (
                                                             <Chip
-                                                                key={`chip-${flat}`}
-                                                                label={flat}
-                                                                onDelete={() => handleFlatToggle(flat)}
+                                                                key={`chip-${flat.premise_unit_id}`}
+                                                                label={flat.premise_unit_id}
+                                                                onDelete={() => handleFlatToggle(flat.premise_unit_id)}
                                                                 color="primary"
                                                             />
                                                         ))}
+
                                                     </Box>
                                                 </Paper>
                                             )}
@@ -562,7 +725,12 @@ const GuardVisitorForm = () => {
                                                             <Button
                                                                 fullWidth
                                                                 size="small"
-                                                                variant={selectedFlats.includes(unit.id) ? 'outlined' : 'text'}
+                                                                variant={
+                                                                    selectedFlats.some(f => f.premise_unit_id === unit.id && f.sub_premise_id === selectedTower)
+                                                                        ? 'outlined'
+                                                                        : 'text'
+                                                                }
+
                                                                 onClick={() => handleFlatToggle(unit.id)}
                                                             >
                                                                 {unit.id}

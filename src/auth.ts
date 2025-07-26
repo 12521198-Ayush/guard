@@ -8,7 +8,7 @@ import { signOut } from 'next-auth/react';
 // @ts-ignore
 
 let isRefreshing = false;
-let refreshTokenPromise: Promise<any> | null = null;  // Holds the refresh promise while it's being executed
+let refreshTokenPromise: Promise<any> | null = null;
 
 async function refreshAccessToken(token: any) {
   // this is our refresh token method
@@ -47,8 +47,7 @@ async function refreshAccessToken(token: any) {
     return {
       ...token,
       accessToken: data.data.accessToken,
-      refreshToken: data.data.refreshToken,
-      idToken: data.data.idToken,
+      refreshToken: data.data.refreshToken || token.refreshToken,
       accessTokenExpires: decodedAccessToken["exp"] * 1000,
       error: "",
     }
@@ -57,6 +56,9 @@ async function refreshAccessToken(token: any) {
       ...token,
       error: "RefreshAccessTokenError", // attention!
     }
+  } finally {
+    isRefreshing = false; // Ensure flag is reset
+    refreshTokenPromise = null; // Clear the promise
   }
 }
 
@@ -65,7 +67,6 @@ export const config = {
   trustHost: true,
 
   providers: [
-    // we use credentials provider here
     CredentialsProvider({
       credentials: {
         access_token: { label: "access_token", type: "text", placeholder: "access_token" },
@@ -81,11 +82,11 @@ export const config = {
 
 
         const apiEndpoint =
-          "http://139.84.166.124:8060/user-service/resident/data";
+          "http://139.84.166.124:8060/user-service/karyakarta/data";
 
         if (!tokens.accessToken) {
           throw new Error("Access token is not available");
-        } 
+        }
         if (!tokens.refreshToken) {
           throw new Error("Refresh token is not available");
         }
@@ -100,7 +101,8 @@ export const config = {
 
 
         const userData = await res.json();
-        // console.log(userData);
+        console.log("++++++++++++++++++++++++++++++++++++++::userData::+++++++++++++++++++++++++++++++++++++++++++");
+        console.log(userData);
 
         if (!res.ok) {
           throw new Error(userData.error.message)
@@ -117,11 +119,13 @@ export const config = {
         const sub_premise = userData.data[0].sub_premise_id;
         const user = {
           //isAdmin: true, 
+          security_guard_id: userData.data[0].security_guard_id,
+          security_guard_fcmid: userData.data[0].security_guard_fcmid,
           primary_premise_id: premise,
           premises_associated_with: userData.data,
           sub_premise_id: sub_premise,
           premise_unit_id: userData.data[0].premise_unit_id,
-
+          skill: userData.data[0].skill,
           primary_premise_name: userData.data[0].premise_name,
           registration_reference: userData.data[0].registration_reference,
           registration_status: userData.data[0].registration_status,
@@ -174,6 +178,9 @@ export const config = {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.phone = user.phone;
+        token.skill = user.skill;
+        token.security_guard_fcmid = user.security_guard_fcmid;
+        token.security_guard_id = user.security_guard_id;
         token.premises_associated_with = user.premises_associated_with;
         token.registration_status = user.registration_status;
         token.registration_reference = user.registration_reference;
@@ -248,7 +255,10 @@ export const config = {
           refreshToken: token.refreshToken as string,
           premise_unit_id: token.premise_unit_id as any,
           sub_premise_id: token.sub_premise_id as any,
+          security_guard_fcmid: token.security_guard_fcmid as any,
+          security_guard_id: token.security_guard_id as any,
           accessTokenExpires: token.accessTokenExpires as number,
+          skill: token.skill as string,
           role: token.role as string,
           primary_premise_id: token.primary_premise_id as string,
           primary_premise_name: token.primary_premise_name as string,
@@ -280,6 +290,7 @@ export const config = {
       }
       return true
     },
+
   },
   debug: process.env.NODE_ENV === "production",
 } satisfies NextAuthConfig;

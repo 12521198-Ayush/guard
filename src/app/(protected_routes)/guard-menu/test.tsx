@@ -70,7 +70,7 @@ const GateGuestList = () => {
     };
 
     const loadGuestList = async () => {
-        const stored = localStorage.getItem('pending_visitors');
+        const stored = localStorage.getItem('pending_visitor_list');
         if (!stored) return;
 
         const parsed = JSON.parse(stored);

@@ -21,7 +21,7 @@ const OtpInput = ({ maxLength = 6, handleOtpChange }) => {
     // Move focus to the next input field if available
     if (onlyNumbers && index < maxLength - 1) {
       inputRefs.current[index + 1]?.focus();
-    }
+    } 
   };
 
   // Handle Backspace for navigation

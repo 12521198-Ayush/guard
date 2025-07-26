@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import axios from 'axios'
-import VisitorPrefillFormDrawer, { VisitorData } from './VisitorPrefillFormDrawer'
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import qs from 'qs';
@@ -11,14 +10,12 @@ const VisitorEntry = () => {
     const [input, setInput] = useState('')
     const [showOtpScreen, setShowOtpScreen] = useState(false)
     const [showFormDrawer, setShowFormDrawer] = useState(false)
-    const [fetchedData, setFetchedData] = useState<VisitorData | undefined>(undefined)
     const router = useRouter();
 
     const premise_id = 'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af'
 
     const isValidOtp = (val: string) => /^\d{6}$/.test(val)
     const isValidPhone = (val: string) => /^\d{10}$/.test(val)
-    console.log(fetchedData);
 
     const handleSubmit = async () => {
         const trimmed = input.trim();
@@ -146,15 +143,7 @@ const VisitorEntry = () => {
             )}
 
             {/* Bottom Drawer for Prefilled Form */}
-            <VisitorPrefillFormDrawer
-                open={showFormDrawer}
-                onClose={() => setShowFormDrawer(false)}
-                data={fetchedData}
-                onSubmit={(formData) => {
-                    console.log('Form submitted:', formData)
-                    setShowFormDrawer(false)
-                }}
-            />
+            
         </div>
     )
 }

@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { signOut } from 'next-auth/react';
+import HeaderBar from './HeaderBar';
 import {
   Box,
   Typography,
@@ -15,7 +17,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Snackbar, Alert, Slide } from '@mui/material';
 import VisitorDrawer from './VisitorDrawer';
-
+import { useSession } from 'next-auth/react';
 import {
   Grid3x3,
   RefreshCcw,
@@ -30,6 +32,7 @@ import {
   DoorOpen
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Swal from "sweetalert2";
 
 const drawerHeight = 0.7; // 60% of screen height
 //@ts-ignore
@@ -60,6 +63,38 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
   ]);
   const [currentVisitorIndex, setCurrentVisitorIndex] = useState(0);
   const [currentVisitor, setCurrentVisitor] = useState<string | null>(null);
+  const { data: session } = useSession();
+
+  const logout = useCallback(() => {
+    console.log("logout callback");
+
+    const accessToken = session?.user?.accessToken || undefined
+
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
+      method: "POST",
+      body: JSON.stringify({ accessToken })
+    })
+      .then(res => res.json())
+      .then(data => {
+      })
+      .catch(error => {
+      })
+      .finally(async () => {
+        await signOut({ callbackUrl: `${window.location.origin}/nativeRedirect/logout` })
+      })
+  }, [session])
+
+  const [confirmVisible, setConfirmVisible] = useState(false);
+
+  const handleLogoutConfirmed = () => {
+    logout();
+    setConfirmVisible(false);
+  };
+
+  const logoutConfirm = () => {
+    setConfirmVisible(true); // show your modal instead of Swal
+  };
+
 
   useEffect(() => {
     if (visitors.length === 0) return;
@@ -116,33 +151,11 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
 
   return (
     <>
-      <Box sx={{ pb: open ? `${drawerHeight * 100}vh` : 10 }}>
+      <HeaderBar logoutConfirm={logoutConfirm} />
+      <Box sx={{ pb: open ? `${drawerHeight * 100}vh` : 12 }}>
         <Box component="main">{children}</Box>
       </Box>
 
-      {/* Notification */}
-      {/* <Snackbar
-        open={!!currentVisitor}
-        autoHideDuration={2800}
-        onClose={() => setCurrentVisitor(null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        TransitionComponent={SlideDown}
-      >
-        <Alert
-          severity="success"
-          variant="filled"
-          sx={{
-            bgcolor: '#4CAF50',
-            color: '#fff',
-            fontWeight: 600,
-            fontSize: 14,
-            borderRadius: 2,
-            boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-          }}
-        >
-          {currentVisitor} has been approved by the resident. Please allow entry.
-        </Alert>
-      </Snackbar> */}
 
       {/* Bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-10">
@@ -187,6 +200,45 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {confirmVisible && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[99999] flex items-center justify-center px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center"
+            >
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">Confirm Logout</h2>
+              <p className="text-sm text-gray-600 mb-6">
+                Are you sure you want to log out?
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={handleLogoutConfirmed}
+                  className="bg-rose-600 text-white px-4 py-2 rounded-xl shadow hover:bg-rose-700 transition"
+                >
+                  Yes, Logout
+                </button>
+                <button
+                  onClick={() => setConfirmVisible(false)}
+                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded-xl shadow hover:bg-gray-300 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
       <VisitorDrawer
         open={open}

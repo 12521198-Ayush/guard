@@ -9,7 +9,11 @@ declare module "next-auth" {
         img: string;
         data: object;
         phone: string;
+        skill: string;
         admin_email: string;
+        primary_premise_id: string;
+        security_guard_fcmid: string;
+        security_guard_id: string;  
         primary_premise_id: string;
         registration_status:string;
         registration_reference: string;

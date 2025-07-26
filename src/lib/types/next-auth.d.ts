@@ -12,7 +12,10 @@ declare module "next-auth" {
         phone: string;
         img: string;
         data: object;
+        skill: string;
         primary_premise_id: string;
+        security_guard_fcmid: string;
+        security_guard_id: string;
         admin_email: string;
         primary_premise_name: string;
         premises_associated_with: string[];

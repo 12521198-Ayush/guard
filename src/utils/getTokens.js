@@ -1,38 +1,53 @@
 export const getTokensFromWebView = () => {
   return new Promise((resolve) => {
     // Android path
-    if (window.Android && typeof window.Android.getAccessToken === 'function') {
+    if (
+      window.Android &&
+      typeof window.Android.getAccessToken === 'function' &&
+      typeof window.Android.getRefreshToken === 'function' &&
+      typeof window.Android.getFCMId === 'function'
+    ) {
       const accessToken = window.Android.getAccessToken();
       const refreshToken = window.Android.getRefreshToken();
-      resolve({ accessToken, refreshToken });
+      const fcm_token = window.Android.getFCMId();
+      resolve({ accessToken, refreshToken, fcm_token });
     }
+
     // iOS path
     else if (window.webkit && window.webkit.messageHandlers) {
       let accessToken = null;
       let refreshToken = null;
+      let fcm_token = null;
 
-      // Define handlers that will be called by the Swift code
-      window.onReceiveAccessToken = function(token) {
+      // Helper to check if all are received
+      const tryResolve = () => {
+        if (accessToken !== null && refreshToken !== null && fcm_token !== null) {
+          resolve({ accessToken, refreshToken, fcm_token });
+        }
+      };
+
+      window.onReceiveAccessToken = function (token) {
         accessToken = token;
-        if (refreshToken !== null) {
-          resolve({ accessToken, refreshToken });
-        }
+        tryResolve();
       };
 
-      window.onReceiveRefreshToken = function(token) {
+      window.onReceiveRefreshToken = function (token) {
         refreshToken = token;
-        if (accessToken !== null) {
-          resolve({ accessToken, refreshToken });
-        }
+        tryResolve();
       };
 
-      // Trigger native iOS token fetch
+      window.onReceiveFcmToken = function (token) {
+        fcm_token = token;
+        tryResolve();
+      };
+
       window.webkit.messageHandlers.getAccessToken.postMessage(null);
       window.webkit.messageHandlers.getRefreshToken.postMessage(null);
+      window.webkit.messageHandlers.getFCMId.postMessage(null);
     }
-    // Fallback for browsers or unsupported environments
+
     else {
-      resolve({ accessToken: null, refreshToken: null });
+      resolve({ accessToken: null, refreshToken: null, fcm_token: null });
     }
   });
 };
