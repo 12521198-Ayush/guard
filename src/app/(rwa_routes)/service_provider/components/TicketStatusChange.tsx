@@ -203,7 +203,7 @@ const TicketStatusChange = ({ onClose, premiseId, ticketDetails, newStatus, sess
             try {
                 console.log("Status Update Details:", requestData);
                 // var URL = ConfigURL.baseURL + 'service/society/status/update';
-                const response = await fetch('http://139.84.166.124:8060/order-service/update', {
+                const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/update', {
                     method: 'POST',
                     headers: {
                         Authorization: `Bearer ${session?.user?.accessToken}`,

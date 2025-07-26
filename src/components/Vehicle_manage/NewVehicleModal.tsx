@@ -105,7 +105,7 @@ const NewVehicleModal: React.FC<NewVehicleModalProps> = ({
 
             try {
                 const response = await axios.post(
-                    'http://139.84.166.124:8060/user-service/admin/parking/slot/list',
+                    process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/admin/parking/slot/list',
                     {
                         premise_id: premiseId,
                         sub_premise_id: subPremiseId,
@@ -136,7 +136,7 @@ const NewVehicleModal: React.FC<NewVehicleModalProps> = ({
     const fetchParkingArea = async () => {
         try {
             const response = await axios.post(
-                'http://139.84.166.124:8060/user-service/admin/parking/premises/parking_area/list',
+                process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/admin/parking/premises/parking_area/list',
                 {
                     premise_id: premiseId,
                 },
@@ -162,7 +162,7 @@ const NewVehicleModal: React.FC<NewVehicleModalProps> = ({
         const fetchUnit_id = async () => {
             try {
                 const response = await axios.post(
-                    'http://139.84.166.124:8060/user-service/admin/premise_unit/list',
+                    process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/admin/premise_unit/list',
                     {
                         premise_id: premiseId,
                         sub_premise_id: subPremiseId
@@ -242,7 +242,7 @@ const NewVehicleModal: React.FC<NewVehicleModalProps> = ({
             }).then(async (result: any) => {
                 if (result.isConfirmed) {
                     await axios.post(
-                        'http://139.84.166.124:8060/user-service/admin/parking/slot/add_vehicle',
+                        process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/admin/parking/slot/add_vehicle',
                         requestData,
                         {
                             headers: {

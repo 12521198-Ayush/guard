@@ -59,7 +59,7 @@ const EmergencyAlerts = () => {
 
         try {
             const response = await axios.post(
-                'http://139.84.166.124:8060/user-service/misc/emergency_alarm/create',
+                process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/misc/emergency_alarm/create',
                 payload
             )
 

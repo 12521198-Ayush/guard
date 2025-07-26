@@ -36,7 +36,7 @@ export default function VisitorsListPage() {
   const fetchApiVisitors = async (pg: number) => {
     try {
       const response = await axios.post(
-        'http://139.84.166.124:8060/vms-service-consumer/vms/records/by_visit_ids',
+        process.env.NEXT_PUBLIC_API_BASE_URL+'/vms-service-consumer/vms/records/by_visit_ids',
         {
           premise_id: 'your-premise-id',
           limit: 10,

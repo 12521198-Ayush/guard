@@ -70,7 +70,7 @@ const MobileMenu = () => {
         if (!premiseId) throw new Error('Premise ID not found');
 
         // Step 2: Get menu_items
-        const menuRes = await fetch('http://139.84.166.124:8060/user-service/misc/dashboard/switch/read', {
+        const menuRes = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/misc/dashboard/switch/read', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

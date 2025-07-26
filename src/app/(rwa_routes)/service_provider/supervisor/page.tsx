@@ -19,7 +19,7 @@ export default function ComplaintDrawer() {
   return (
 
     <div className="grid m-5">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between mx-auto items-center mb-6">
         <h2 className="text-xl font-bold text-gray-800">Manage Tickets</h2>
       </div>
 

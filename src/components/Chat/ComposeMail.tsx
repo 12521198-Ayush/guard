@@ -35,7 +35,7 @@ const ComposeMail: React.FC = () => {
     const fetchEmailTemplates = async () => {
         try {
             const response = await axios.post(
-                'http://139.84.166.124:8060/communication-service-producer/communication/email/template/read',
+                process.env.NEXT_PUBLIC_API_BASE_URL+'/communication-service-producer/communication/email/template/read',
                 { test: 'test' }
             );
             const templates = response.data.data || [];
@@ -72,7 +72,7 @@ const ComposeMail: React.FC = () => {
 
         try {
             await axios.post(
-                'http://139.84.166.124:8060/communication-service-producer/communication/email/send',
+                process.env.NEXT_PUBLIC_API_BASE_URL+'/communication-service-producer/communication/email/send',
                 {
                     recipient_email: recipients,
                     recipient_type: 'individual',

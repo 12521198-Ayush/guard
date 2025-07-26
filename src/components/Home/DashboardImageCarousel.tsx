@@ -15,7 +15,7 @@ const DashboardImageCarousel = ({ premiseId }: { premiseId: string }) => {
         const fetchImageUrls = async () => {
             try {
                 const objectIdRes = await axios.post(
-                    "http://139.84.166.124:8060/user-service/misc/dashboard/image/read",
+                    process.env.NEXT_PUBLIC_API_BASE_URL+"/user-service/misc/dashboard/image/read",
                     { premise_id: premiseId },
                     {
                         headers: {
@@ -30,7 +30,7 @@ const DashboardImageCarousel = ({ premiseId }: { premiseId: string }) => {
                 const urlPromises = objectIds.map((fileKey: string) =>
                     axios
                         .post(
-                            "http://139.84.166.124:8060/user-service/upload/get_presigned_url",
+                            process.env.NEXT_PUBLIC_API_BASE_URL+"/user-service/upload/get_presigned_url",
                             { premise_id: premiseId, file_key: fileKey },
                             {
                                 headers: {

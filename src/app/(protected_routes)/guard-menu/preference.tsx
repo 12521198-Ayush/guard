@@ -21,7 +21,7 @@ const Page = ({ onComplete }: { onComplete: () => void }) => {
   const { data: session } = useSession();
   const router = useRouter();
 
-  const API_BASE = 'http://139.84.166.124:8060/user-service/registration';
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/registration';
   const premiseOptions: any = session?.user?.premises_associated_with || [];
 
   const [selectedPremise, setSelectedPremise] = useState<any>('');

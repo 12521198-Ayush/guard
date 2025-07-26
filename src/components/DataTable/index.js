@@ -96,7 +96,7 @@ const DataTable = () => {
         setIsButtonDisabled(true);
         try {
             const response = await axios.post(
-                'http://139.84.166.124:8060/user-service/admin/premise_unit/list',
+                process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/admin/premise_unit/list',
                 {
                     premise_id: (session?.user?.primary_premise_id),
                     id: searchText,

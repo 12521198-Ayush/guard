@@ -21,7 +21,7 @@ import VoiceInput from './VoiceInput'
 import { FaCamera, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'; // Add these icons
 
 
-const API_BASE = 'http://139.84.166.124:8060/user-service/registration';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/registration';
 
 const guestTypes = ['delivery', 'private', 'cab', 'others'];
 const vehicleTypes = ['car', 'bike', 'pedestrian'];
@@ -152,7 +152,7 @@ const GuardVisitorForm = () => {
             console.log('📤 Upload payload:', payload);
 
             const res = await axios.post(
-                'http://139.84.166.124:8060/order-service/upload/async',
+                process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/upload/async',
                 payload,
                 {
                     headers: {
@@ -359,7 +359,7 @@ const GuardVisitorForm = () => {
         // Submit to backend
         setLoadingSubmit(true);
         try {
-            const res = await fetch('http://139.84.166.124:8060/vms-service/entry/request', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL+'/vms-service/entry/request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -400,7 +400,7 @@ const GuardVisitorForm = () => {
     useEffect(() => {
         if (guestType === 'delivery') {
             axios
-                .post('http://139.84.166.124:8060/vms-service/vendor/list', {
+                .post(process.env.NEXT_PUBLIC_API_BASE_URL+'/vms-service/vendor/list', {
                     premise_id: premise_id,
                 })
                 .then((response) => {

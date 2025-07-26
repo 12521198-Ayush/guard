@@ -28,7 +28,7 @@ const NewPremiseTagHM: React.FC<NewPremiseTagHMProps> = ({ premise_id, modalData
 
         try {
             const response = await axios.post(
-                'http://139.84.166.124:8060/staff-service/tag/premise_unit',
+                process.env.NEXT_PUBLIC_API_BASE_URL+'/staff-service/tag/premise_unit',
                 {
                     premise_id,
                     qr_code,

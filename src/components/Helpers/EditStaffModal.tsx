@@ -57,7 +57,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
         console.log(payload);
 
         const response = await axios.post(
-          'http://139.84.166.124:8060/staff-service/upload/async',
+          process.env.NEXT_PUBLIC_API_BASE_URL+'/staff-service/upload/async',
           {
             premise_id: premiseId,
             filetype: file.type,
@@ -94,7 +94,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
     const fetchSkills = async () => {
       try {
         const response = await axios.post(
-          'http://139.84.166.124:8060/staff-service/skills',
+          process.env.NEXT_PUBLIC_API_BASE_URL+'/staff-service/skills',
           {},
           { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
         );
@@ -123,7 +123,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://139.84.166.124:8060/staff-service/list',
+        process.env.NEXT_PUBLIC_API_BASE_URL+'/staff-service/list',
         {
           premise_id: premiseId,
           card_no: cardNumber,
@@ -183,7 +183,7 @@ const EditStaffModal: React.FC<ModalProps> = ({ visible, onClose, cardNumber, pr
       try {
         // Send the request to the API
         const response = await axios.post(
-          'http://139.84.166.124:8060/staff-service/update',
+          process.env.NEXT_PUBLIC_API_BASE_URL+'/staff-service/update',
           filteredPayload,
           { headers: { Authorization: `Bearer ${session?.user.accessToken}` } }
         );

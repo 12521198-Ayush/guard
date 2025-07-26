@@ -51,7 +51,7 @@ export default function VisitorList() {
     if (!fileKey) return null;
     try {
       const response = await axios.post(
-        'http://139.84.166.124:8060/staff-service/upload/get_presigned_url',
+        process.env.NEXT_PUBLIC_API_BASE_URL+'/staff-service/upload/get_presigned_url',
         {
           premise_id: '348afcc9-d024-3fe9-2e85-bf5a9694ea19',
           file_key: fileKey,

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const apiUrl = 'http://139.84.166.124:8060/user-service/admin/premise_unit/list';
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/admin/premise_unit/list';
 
   try {
     const body = await request.json();

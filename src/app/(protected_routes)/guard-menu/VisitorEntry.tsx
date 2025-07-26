@@ -24,7 +24,7 @@ const VisitorEntry = () => {
             setShowOtpScreen(true);
         } else if (isValidPhone(trimmed)) {
             try {
-                const res = await axios.post('http://139.84.166.124:8060/vms-service/mobile/fetch', {
+                const res = await axios.post(process.env.NEXT_PUBLIC_API_BASE_URL+'/vms-service/mobile/fetch', {
                     mobile: trimmed,
                     premise_id,
                 });

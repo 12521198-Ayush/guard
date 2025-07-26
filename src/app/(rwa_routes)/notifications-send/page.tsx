@@ -40,7 +40,7 @@ const Page = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        fetch('http://139.84.166.124:8060/communication-service-producer/communication/email/template/read', {
+        fetch(process.env.NEXT_PUBLIC_API_BASE_URL+'/communication-service-producer/communication/email/template/read', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ test: 'test' }),
@@ -68,7 +68,7 @@ const Page = () => {
         };
 
         try {
-            const res = await fetch('http://139.84.166.124:8060/communication-service-producer/communication/email/send', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL+'/communication-service-producer/communication/email/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -195,7 +195,7 @@ const Page = () => {
                 console.log("📤 Upload payload:", payload);
 
                 const res = await axios.post(
-                    'http://139.84.166.124:8060/user-service/upload/async',
+                    process.env.NEXT_PUBLIC_API_BASE_URL+'/user-service/upload/async',
                     payload,
                     {
                         headers: {
@@ -234,7 +234,7 @@ const Page = () => {
 
     return (
         <Box className="min-h-screen bg-gradient-to-br from-[#f0f4ff] to-white p-4 space-y-6">
-            <div className="relative flex items-center justify-center py-2">
+            {/* <div className="relative flex items-center justify-center py-2">
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.05 }}
@@ -243,12 +243,14 @@ const Page = () => {
                 >
                     <ArrowBackIcon />
                 </motion.button>
-
+                
                 <Typography variant="h6" className="text-xl font-semibold text-center text-gray-800 ">
                     Send Notification
                 </Typography>
-            </div>
-
+            </div> */}
+            <div className="flex justify-center mb-3">
+              <h2 className="text-lg font-semibold text-center text-gray-700 mb-4">Send Notification</h2>
+          </div>
 
             <motion.div
                 className="grid grid-cols-1 gap-4"

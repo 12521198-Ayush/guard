@@ -19,7 +19,7 @@ async function refreshAccessToken(token: any) {
   }
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/refresh`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/refresh`, {
       method: "POST",
       headers: headers(),
       body: JSON.stringify({ userID: token.userId })

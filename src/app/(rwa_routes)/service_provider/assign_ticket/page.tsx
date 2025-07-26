@@ -36,7 +36,7 @@ export default function AssignTicket() {
 
       console.log("Assign service provider details:", requestData);
       // var URL = ConfigURL.baseURL + 'service/society/status/update';
-      const response = await fetch('http://139.84.166.124:8060/order-service/update', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/update', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
@@ -68,7 +68,7 @@ export default function AssignTicket() {
 
     const service_type = session?.user?.skill || undefined;
 
-    const res = await axios.post('http://139.84.166.124:8060/order-service/list', {
+    const res = await axios.post(process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/list', {
       premise_id: session?.user?.primary_premise_id,
       sub_premise_id: session?.user?.sub_premise_id,
       servicetype: service_type,
@@ -85,7 +85,7 @@ export default function AssignTicket() {
     const service_type = session?.user?.skill || undefined;
 
     const response = await axios.post(
-      'http://139.84.166.124:8060/order-service/handyman/availability',
+      process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/handyman/availability',
       {
         premise_id: session?.user?.primary_premise_id,
         servicetype: service_type

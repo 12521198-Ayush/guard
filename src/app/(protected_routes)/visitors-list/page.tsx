@@ -38,7 +38,7 @@ export default function VisitorsListPage() {
     const fetchImageUrl = async (fileKey: string): Promise<string | null> => {
         try {
             const res = await axios.post(
-                'http://139.84.166.124:8060/staff-service/upload/get_presigned_url',
+                process.env.NEXT_PUBLIC_API_BASE_URL+'/staff-service/upload/get_presigned_url',
                 {
                     premise_id: premise,
                     file_key: fileKey,
@@ -59,7 +59,7 @@ export default function VisitorsListPage() {
         setLoading(true);
         try {
             const res = await axios.post(
-                'http://139.84.166.124:8060/vms-service-consumer/vms/records/by_visit_ids',
+                process.env.NEXT_PUBLIC_API_BASE_URL+'/vms-service-consumer/vms/records/by_visit_ids',
                 {
                     premise_id: premise,
                     limit: LIMIT,

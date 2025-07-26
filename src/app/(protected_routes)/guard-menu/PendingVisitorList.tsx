@@ -41,7 +41,7 @@ export default function PendingVisitorList({ socketMessages }: { socketMessages:
     if (!fileKey) return null;
     try {
       const response = await axios.post(
-        'http://139.84.166.124:8060/staff-service/upload/get_presigned_url',
+        process.env.NEXT_PUBLIC_API_BASE_URL+'/staff-service/upload/get_presigned_url',
         {
           premise_id: premise,
           file_key: fileKey,

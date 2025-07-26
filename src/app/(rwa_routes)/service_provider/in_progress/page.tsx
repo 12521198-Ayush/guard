@@ -53,7 +53,7 @@ export default function InProgressTickets() {
 
       console.log("Assign service provider details:", requestData);
       // var URL = ConfigURL.baseURL + 'service/society/status/update';
-      const response = await fetch('http://139.84.166.124:8060/order-service/update', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/update', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
@@ -89,7 +89,7 @@ export default function InProgressTickets() {
 
     const service_type = session?.user?.skill || undefined;
 
-    const res = await axios.post('http://139.84.166.124:8060/order-service/list', {
+    const res = await axios.post(process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/list', {
       premise_id: session?.user?.primary_premise_id,
       //sub_premise_id: session?.user?.sub_premise_id,
       //servicetype: service_type,
@@ -106,7 +106,7 @@ export default function InProgressTickets() {
     const service_type = session?.user?.skill || undefined;
 
     const response = await axios.post(
-      'http://139.84.166.124:8060/order-service/handyman/availability',
+      process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/handyman/availability',
       {
         premise_id: session?.user?.primary_premise_id,
         servicetype: service_type
@@ -134,7 +134,7 @@ export default function InProgressTickets() {
           <div className="flex justify-center mb-3">
               <h2 className="text-lg font-semibold text-center text-gray-700 mb-4">Tickets In-Progress</h2>
           </div>
-          <div className="space-y-2 overflow-y-auto" style={{ height: '77vh' }}>
+          <div className="space-y-2 overflow-y-auto" style={{ height: '100vh' }}>
             {tickets.map((ticket: any) => (
               <div
                 key={ticket._id}
