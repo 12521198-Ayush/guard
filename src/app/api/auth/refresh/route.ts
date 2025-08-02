@@ -6,10 +6,13 @@ export async function POST(request: Request) {
 
     const prefix = process.env.NODE_ENV === "production" ? "__Pro-" : ""
     const refreshToken = cookies().get(`${prefix}xxx.refresh-token`)?.value
+    
     const payload = {token: refreshToken};
+    console.log(payload);
+    
 
     const res = await fetch(
-        `${process.env.API_BASE_URL}/user-service/token`, 
+        `https://api.servizing.app/user-service/token`, 
         {
             method: 'POST',
             headers: {

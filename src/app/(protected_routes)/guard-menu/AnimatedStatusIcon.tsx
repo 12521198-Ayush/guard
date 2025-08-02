@@ -5,8 +5,8 @@ export default function AnimatedStatusIcon({ type }: { type: any }) {
   const icons: Record<string, string> = {
     approved: 'https://img.icons8.com/color/48/ok--v1.png',
     denied: 'https://img.icons8.com/fluency/48/cancel.png',
-    wait_at_gate: 'https://lottie.host/yellow-door.json',
-    wait_at_lobby: 'https://lottie.host/blue-door.json',
+    gate_delivery: 'https://img.icons8.com/external-sbts2018-flat-sbts2018/58/external-wait-lean-thinking-sbts2018-flat-sbts2018.png',
+    lobby_delivery: 'https://img.icons8.com/arcade/64/waiting-room.png',
     pending: 'https://img.icons8.com/doodle/48/hourglass.png',
   };
 

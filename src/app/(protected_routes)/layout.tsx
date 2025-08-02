@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
+import { signOut } from 'next-auth/react';
 
 let socket: Socket | null = null;
 type ConnectionState = 'connected' | 'disconnected' | 'reconnecting' | 'error';
@@ -16,6 +17,28 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
   let phone = '9999999999';
 
+
+  const accessToken = session?.user?.accessToken;
+
+  const logout = useCallback(() => {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
+      method: "POST",
+      body: JSON.stringify({ accessToken }),
+    })
+      .catch(() => { })
+      .finally(() => {
+        const redirectUrl = `https://karyakarta.servizing.app/nativeRedirect/logout`;
+        signOut({ callbackUrl: redirectUrl });
+      });
+  }, [session]);
+
+  useEffect(() => {
+    console.log('session: ', session)
+    if (session?.error === "RefreshAccessTokenError") {
+      logout()
+    }
+  }, [session, logout]);
+
   useEffect(() => {
     const guardId = localStorage.getItem('security_guard_id') || '';
     setGaurdId(guardId);
@@ -23,7 +46,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     console.log("🔐 security_guard_id:", guardId);
 
     if (!socket || !socket.connected) {
-      socket = io("http://139.84.166.124:4561", {
+      socket = io("https://api.servizing.app:4561", {
         query: { userId: guardId },
         autoConnect: true,
         reconnection: true,
@@ -41,10 +64,10 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         setConnectionStatus("disconnected");
       });
 
-      socket.on("connect_error", (err) => {
-        console.error("🚨 Socket connection error:", err.message);
-        setConnectionStatus("error");
-      });
+      // socket.on("connect_error", (err) => {
+      //   console.error("🚨 Socket connection error:", err.message);
+      //   setConnectionStatus("error");
+      // });
 
       socket.on("reconnect_attempt", (attempt) => {
         console.log(`🔁 Reconnect attempt ${attempt}`);
@@ -82,14 +105,23 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <DefaultLayout>
-      <div className="relative mt-20 w-full bg-[#f1f3f6] text-gray-800 font-medium">
+      <div className="relative mt-20 mb-18 w-full bg-[#f1f3f6] text-gray-800 font-medium">
         {/* 🔄 Connection Status */}
-        <div className="p-4 flex items-center gap-2">
-          <span className={`text-sm font-semibold ${statusColor[connectionStatus]}`}>
-            🔌 Status: {connectionStatus}
-          </span>
-          {/* <span className="text-xs text-gray-500">(Guard ID: {security_guard_id || "..."})</span> */}
+        <div className="fixed top-3 left-8 z-50 flex items-center space-x-2 rounded-full px-3 py-1 pr-4">
+          <span
+            className={`h-3 w-3 rounded-full animate-pulse ${connectionStatus === 'connected'
+                ? 'bg-green-500'
+                : connectionStatus === 'reconnecting'
+                  ? 'bg-yellow-500'
+                  : 'bg-rose-500'
+              }
+              `}
+          />
+          {/* <span className="text-sm font-medium text-gray-700 capitalize">
+            {connectionStatus}
+          </span> */}
         </div>
+
 
         {/* 📩 WebSocket Messages */}
         {/* <div className="p-4 pt-0">

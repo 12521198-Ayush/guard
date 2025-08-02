@@ -4,61 +4,69 @@ import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PRIVATE_ROUTES as privateRoutes } from "@/constants/ROUTES"
 import { signOut } from 'next-auth/react';
+import { getRefreshToken } from './getRefreshToken'; 
 
 // @ts-ignore
 
-let isRefreshing = false;
-let refreshTokenPromise: Promise<any> | null = null;
-
 async function refreshAccessToken(token: any) {
-  // this is our refresh token method
-  if (!token || token.error === "RefreshAccessTokenError") {
-    console.log("Refresh token is expired or error already set, not calling the API.");
-    console.log("All Cookies:", cookies().getAll());
-    return token; // Return the existing token without making the API call
-  }
+  console.log("🔄 Initiating token refresh process...");
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/refresh`, {
+    console.log("📡 Sending refresh token request to API...");
+    const res = await fetch(`https://resident.servizing.app/api/auth/refresh`, {
       method: "POST",
       headers: headers(),
       body: JSON.stringify({ userID: token.userId })
-    })
+    });
 
-    const { success, status, data } = await res.json()
-    if (!success) {
-      throw data
+    console.log("📨 Received response from refresh API");
+    const { success, status, data } = await res.json();
+    console.log("📊 Refresh API response:", { success, status, data });
+
+    if (!success || status === 422 || status === 401) {
+      console.error("❌ Token refresh failed - API returned unsuccessful or invalid status");
+      throw new Error(`Token refresh failed (status ${status})`);
     }
 
-    if (status === 422 || status === 401) {
-      throw new Error("The token could not be refreshed", status);
-    }
-
-    if (data.error) {
+    if (data?.error) {
+      console.error("❌ Token refresh failed - Error in response data:", data.error);
       throw new Error(data.error);
     }
 
-    console.log("The token has been refreshed successfully.")
-    // get some data from the new access token such as exp (expiration time)
-    // console.log("Decoding token 2nd ... ")
-    const decodedAccessToken = JSON.parse(Buffer.from(data.data.accessToken.split(".")[1], "base64").toString())
+    const accessToken = data?.data?.accessToken;
+    const refreshToken = data?.data?.refreshToken ?? token.refreshToken;
+    const idToken = data?.data?.idToken;
 
+    if (!accessToken) {
+      console.error("❌ Token refresh failed - Missing accessToken in response");
+      throw new Error("Access token is missing in refresh response");
+    }
 
-    return {
+    console.log("🔓 Decoding new access token...");
+    const decodedAccessToken = JSON.parse(
+      Buffer.from(accessToken.split(".")[1], "base64").toString()
+    );
+    console.log("🔍 Decoded access token:", decodedAccessToken);
+
+    const refreshedToken = {
       ...token,
-      accessToken: data.data.accessToken,
-      refreshToken: data.data.refreshToken || token.refreshToken,
+      accessToken,
+      refreshToken,
+      idToken,
       accessTokenExpires: decodedAccessToken["exp"] * 1000,
       error: "",
-    }
+    };
+
+    console.log("✅ Returning refreshed token:", refreshedToken);
+    return refreshedToken;
   } catch (error) {
-    return {
+    console.error("🚨 Error during token refresh:", error);
+    const errorToken = {
       ...token,
-      error: "RefreshAccessTokenError", // attention!
-    }
-  } finally {
-    isRefreshing = false; // Ensure flag is reset
-    refreshTokenPromise = null; // Clear the promise
+      error: "RefreshAccessTokenError",
+    };
+    console.log("⚠️ Returning token with error state:", errorToken);
+    return errorToken;
   }
 }
 
@@ -73,23 +81,25 @@ export const config = {
         refresh_token: { label: "refresh_token", type: "text", placeholder: "refresh_token" }
       },
 
-
       async authorize(credentials, req): Promise<any> {
+        console.log("Starting authorization process...");
+
         const tokens = {
           accessToken: credentials.access_token,
           refreshToken: credentials.refresh_token
-        }
-
-
-        const apiEndpoint =
-          "http://139.84.166.124:8060/user-service/karyakarta/data";
+        };
 
         if (!tokens.accessToken) {
+          console.error("Authorization failed: Missing access token");
           throw new Error("Access token is not available");
         }
         if (!tokens.refreshToken) {
+          console.error("Authorization failed: Missing refresh token");
           throw new Error("Refresh token is not available");
         }
+
+        const apiEndpoint = "https://api.servizing.app/user-service/karyakarta/data";
+        console.log("Making API request to:", apiEndpoint);
 
         const res = await fetch(apiEndpoint, {
           method: "POST",
@@ -98,27 +108,24 @@ export const config = {
             Authorization: `Bearer ${tokens.accessToken}`,
           },
         });
-
+        console.log("Received API response, status:", res.status);
 
         const userData = await res.json();
-        console.log("++++++++++++++++++++++++++++++++++++++::userData::+++++++++++++++++++++++++++++++++++++++++++");
-        console.log(userData);
+        console.log("User data from API:", userData);
 
         if (!res.ok) {
-          throw new Error(userData.error.message)
+          console.error("API request failed:", userData.error?.message);
+          throw new Error(userData.error.message);
         }
 
-        console.log("**************************************************************");
-        console.log("refresh token : ");
-        console.log(tokens.refreshToken);
-
+        console.log("Processing user data...");
         const expiration = new Date();
         expiration.setHours(expiration.getHours() + 1);
+        console.log("Calculated token expiration:", expiration.toISOString());
 
         const premise = userData.data[0].premise_id;
         const sub_premise = userData.data[0].sub_premise_id;
         const user = {
-          //isAdmin: true, 
           security_guard_id: userData.data[0].security_guard_id,
           security_guard_fcmid: userData.data[0].security_guard_fcmid,
           primary_premise_id: premise,
@@ -129,7 +136,6 @@ export const config = {
           primary_premise_name: userData.data[0].premise_name,
           registration_reference: userData.data[0].registration_reference,
           registration_status: userData.data[0].registration_status,
-
           name: userData.data[0].name,
           role: userData.data[0].association_type,
           admin_email: userData.data[0].email,
@@ -140,12 +146,9 @@ export const config = {
           exp: expiration.toISOString(),
         };
 
-        console.log("**************************************************************")
-        console.log("user object")
-        console.log(user)
-
         if (res.ok && user) {
           const prefix = process.env.NODE_ENV === "production" ? "__Pro-" : "";
+          console.log("Setting refresh token cookie with prefix:", prefix);
           try {
             cookies().set({
               name: `${prefix}xxx.refresh-token`,
@@ -154,13 +157,16 @@ export const config = {
               sameSite: "strict",
               secure: false,
             } as any);
+            console.log("Refresh token cookie set successfully");
           } catch (error) {
-            console.error("Error setting cookie:", error);
+            console.error("Failed to set refresh token cookie:", error);
           }
 
+          console.log("Authorization successful, returning user");
           return user;
         }
-        return null
+        console.log("Authorization failed, returning null");
+        return null;
       }
     })
   ],
@@ -171,8 +177,10 @@ export const config = {
 
   callbacks: {
     async jwt({ token, user, account, trigger, session }) {
-      // If there's a user and account, we populate the token with the user details
+      console.log("JWT callback triggered");
+
       if (account && user) {
+        console.log("Populating token with user data...");
         token.id = user.id;
         token.name = user.name;
         token.accessToken = user.accessToken;
@@ -185,19 +193,17 @@ export const config = {
         token.registration_status = user.registration_status;
         token.registration_reference = user.registration_reference;
         token.admin_email = user.admin_email;
-        token.role = user.role; // the user role
+        token.role = user.role;
         token.primary_premise_id = user.primary_premise_id;
         token.sub_premise_id = user.sub_premise_id;
         token.premise_unit_id = user.premise_unit_id;
         token.primary_premise_name = user.primary_premise_name;
         token.premises_associated_with = user.premises_associated_with;
 
-
-        console.log("**************************************************************")
-        console.log("token")
-        console.log(token)
-        // Decoding the access token
+        console.log("Decoding access token...");
         const decodedAccessToken = JSON.parse(Buffer.from(user.accessToken.split(".")[1], "base64").toString());
+        console.log("Decoded access token:", decodedAccessToken);
+
         if (decodedAccessToken) {
           token.email = decodedAccessToken["email"];
           token.userId = decodedAccessToken["sub"];
@@ -207,42 +213,32 @@ export const config = {
         }
       }
 
-      // If the session is being updated, we update the token accordingly
       if (trigger === 'update' && session) {
+        console.log("Updating token with session data...");
         token.primary_premise_id = session.primary_premise_id ?? token.primary_premise_id;
         token.primary_premise_name = session.primary_premise_name ?? token.primary_premise_name;
         token.premise_unit_id = session.premise_unit_id ?? token.premise_unit_id;
         token.sub_premise_id = session.sub_premise_id ?? token.sub_premise_id;
         token.role = session.role ?? token.role;
+        console.log("Token after session update:", token);
       }
 
-      // If the token is not expired, return the current token
-      if (token.accessTokenExpires && Date.now() < Number(token.accessTokenExpires)) {
-        return token;
+      if (token.accessTokenExpires && (Date.now() < Number(token.accessTokenExpires))) {
+        console.log("Access token is still valid, expires at:", new Date(Number(token.accessTokenExpires)));
+        const { refreshToken, ...rest } = token;
+        console.log("Returning valid token without refresh token:", rest);
+        return rest;
       }
 
-      if (isRefreshing) {
-        // console.log("Refresh token request is already in progress. Returning the ongoing promise.");
-        return refreshTokenPromise!;
-      }
-      // Log that we're starting the refresh process
-      // console.log("Starting refresh token process...");
-
-      // Start the refresh process
-      isRefreshing = true;
-      refreshTokenPromise = refreshAccessToken(token)
-        .finally(() => {
-          isRefreshing = false;  // Reset the flag after refresh attempt is finished
-        });
-
-
-      return refreshTokenPromise;
+      console.log("Access token expired, initiating refresh...");
+      const refreshedToken = await refreshAccessToken(token);
+      console.log("Token after refresh attempt:", refreshedToken);
+      return refreshedToken;
     },
 
     async session({ session, token }) {
-      console.log("**************************************************************")
-      console.log("token object while puting refresh token in mysession")
-      console.log(token)
+      console.log("Session callback triggered");
+
       const mySession = {
         ...session,
         user: {
@@ -265,32 +261,36 @@ export const config = {
           premises_associated_with: token.premises_associated_with as string[],
         },
         error: token.error,
-      }
-      console.log("**************************************************************")
-      console.log("mySession object")
-      console.log(mySession)
+      };
+      console.log("Constructed session object:", mySession);
       return mySession;
     },
 
     authorized({ request, auth }) {
+      console.log("Authorized callback triggered");
+      console.log("Request URL:", request.nextUrl.pathname);
+      console.log("Auth status:", !!auth);
 
-      const { pathname } = request.nextUrl
-      // get the route name from the url such as "/about"
-      const searchTerm = request.nextUrl.pathname.split("/").slice(0, 2).join("/")
+      const { pathname } = request.nextUrl;
+      const searchTerm = request.nextUrl.pathname.split("/").slice(0, 2).join("/");
+      console.log("Checking route:", searchTerm);
 
       if (privateRoutes.includes(searchTerm)) {
-        return !!auth
-        // if the pathname starts with one of the routes below and the user is already logged in, forward the user to the home page
+        console.log("Private route detected, auth required");
+        return !!auth;
       } else if (pathname.startsWith("/login") || pathname.startsWith("/forgot-password") || pathname.startsWith("/signup")) {
-        const isLoggedIn = !!auth
+        const isLoggedIn = !!auth;
+        console.log("Public auth route detected, isLoggedIn:", isLoggedIn);
         if (isLoggedIn) {
-          return Response.redirect(new URL("/menu", request.nextUrl))
+          console.log("User is logged in, redirecting to /menu");
+          return Response.redirect(new URL("/menu", request.nextUrl));
         }
-        return true
+        console.log("Allowing access to public auth route");
+        return true;
       }
-      return true
+      console.log("Allowing access to public route");
+      return true;
     },
-
   },
   debug: process.env.NODE_ENV === "production",
 } satisfies NextAuthConfig;

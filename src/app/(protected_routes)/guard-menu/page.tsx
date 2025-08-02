@@ -1,7 +1,6 @@
 'use client'
 import QuickActions from './QuickActions'
 import VisitorEntry from './VisitorEntry'
-import GuestList from './GuestList'
 import { useSession } from 'next-auth/react'
 import Preference from './preference'
 import { useLayoutEffect, useEffect, useState } from 'react'
@@ -10,6 +9,7 @@ import { Router } from 'lucide-react'
 import { useRouter } from 'next/navigation';
 import PendingVisitorList from './PendingVisitorList';
 import { useContext } from 'react';
+import VisitorsList from './VisitorsList'
 
 const KeypadScreen = () => {
 
@@ -51,8 +51,8 @@ const KeypadScreen = () => {
     <div className="relative w-full text-gray-800 font-medium pb-6">
       <VisitorEntry />
       {/* <GuestList /> */}
-      <PendingVisitorList socketMessages={socketMessages} />;
-      <QuickActions />
+      <VisitorsList />;
+      {/* <QuickActions /> */}
     </div>
   )
 }

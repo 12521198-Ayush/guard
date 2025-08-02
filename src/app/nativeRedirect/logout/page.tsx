@@ -1,11 +1,22 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Swal from "sweetalert2";
+import { useEffect } from "react";
 
 const Page = () => {
   const router = useRouter();
+
+  useEffect(() => {
+    const hasRefreshed = sessionStorage.getItem("hasRefreshed");
+
+    if (!hasRefreshed) {
+      sessionStorage.setItem("hasRefreshed", "true");
+      window.location.reload(); // Only reload once
+    } else {
+      sessionStorage.removeItem("hasRefreshed"); // Clear it for future visits
+    }
+  }, []);
+
   return <div>You have been logged out</div>;
 };
 

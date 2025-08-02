@@ -20,7 +20,7 @@ export default function SocketClient() {
     const security_guard_id = `${premise}[${subpremise}]${session.user.phone}`;
 
     if (!socket || !socket.connected) {
-      socket = io("http://139.84.166.124:4561", {
+      socket = io("https://api.servizing.app:4561", {
         query: { userId: security_guard_id },
         reconnection: true,
         reconnectionAttempts: Infinity,

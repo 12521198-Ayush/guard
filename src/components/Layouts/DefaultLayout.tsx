@@ -1,69 +1,119 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { signOut } from 'next-auth/react';
-import HeaderBar from './HeaderBar';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Typography,
   IconButton,
-  CircularProgress,
-  Button,
-  Divider,
-  Chip,
+  Slide
 } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
+import {
+  motion,
+  AnimatePresence
+} from 'framer-motion';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { Snackbar, Alert, Slide } from '@mui/material';
-import VisitorDrawer from './VisitorDrawer';
-import { useSession } from 'next-auth/react';
 import {
-  Grid3x3,
-  RefreshCcw,
-  Users,
-  Bell,
+  ScanLine,
+  Search,
+  FileClock,
+  ShieldCheck,
+  Briefcase,
+  IdCard,
+  UploadCloud,
+  Settings,
   User,
-  Package,
-  Car,
-  MoreHorizontal,
   ScanQrCode,
   LogOut,
   DoorOpen
-} from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import Swal from "sweetalert2";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import HeaderBar from './HeaderBar';
+import { signOut } from 'next-auth/react';
 
-const drawerHeight = 0.7; // 60% of screen height
-//@ts-ignore
-const mockFetchVisitors = async () => {
-  return [
-    { id: 1, name: 'Ayush', flat: 'A-203', status: 'pending' },
-    { id: 2, name: 'Ankit', flat: 'B-101', status: 'pending' },
-    { id: 3, name: 'Gaurav', flat: 'B-101', status: 'pending' },
-    { id: 4, name: 'Hritik', flat: 'B-101', status: 'pending' },
-    { id: 5, name: 'Saurabh', flat: 'B-101', status: 'pending' },
-    { id: 6, name: 'Nobita', flat: 'B-101', status: 'pending' },
-    { id: 7, name: 'Shinchan', flat: 'B-101', status: 'pending' },
-  ];
-};
+const drawerHeight = 0.8; // 80% of screen height
 
 function SlideDown(props: any) {
   return <Slide {...props} direction="down" />;
 }
-export default function DefaultLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
+
+export default function NewLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [dragY, setDragY] = useState(0);
-  const [visitors, setVisitors] = useState([
-    { id: 1, name: 'John Doe' },
-    { id: 2, name: 'Alice Smith' },
-    { id: 3, name: 'Bob Johnson' },
-  ]);
-  const [currentVisitorIndex, setCurrentVisitorIndex] = useState(0);
-  const [currentVisitor, setCurrentVisitor] = useState<string | null>(null);
+  const name = "Ayush Sharma";
+  const initials = name.split(' ').map(n => n[0]).join('');
   const { data: session } = useSession();
+
+  const drawerOptions = [
+    {
+      key: 'pub-sub-scan',
+      label: 'Pub Sub Scan',
+      about: 'Scan and publish entries for verification.',
+      icon: <ScanLine className="h-6 w-6 text-blue-600" />,
+      route: '/pub-sub-scan',
+      color: 'from-blue-100 to-blue-50',
+    },
+    {
+      key: 'search-vehicle',
+      label: 'Search Vehicle',
+      about: 'Search vehicle details using plate or tags.',
+      icon: <Search className="h-6 w-6 text-green-600" />,
+      route: '/search-vehicle',
+      color: 'from-green-100 to-green-50',
+    },
+    {
+      key: 'helpers-logs',
+      label: 'Helpers Logs',
+      about: 'Track entry and exit logs of helpers.',
+      icon: <FileClock className="h-6 w-6 text-purple-600" />,
+      route: '/helpers-logs',
+      color: 'from-purple-100 to-purple-50',
+    },
+    {
+      key: 'verify-luggage',
+      label: 'Verify Luggage',
+      about: 'Confirm and verify visitor luggage.',
+      icon: <ShieldCheck className="h-6 w-6 text-orange-600" />,
+      route: '/verify-luggage',
+      color: 'from-orange-100 to-orange-50',
+    },
+    {
+      key: 'helper-employment',
+      label: 'Helper Employment',
+      about: 'Manage helper employment records.',
+      icon: <Briefcase className="h-6 w-6 text-yellow-600" />,
+      route: '/helper-employment',
+      color: 'from-yellow-100 to-yellow-50',
+    },
+    {
+      key: 'idcard-tagger',
+      label: 'IdCard Tagger',
+      about: 'Tag ID cards for verification and entry.',
+      icon: <IdCard className="h-6 w-6 text-indigo-600" />,
+      route: '/idcard-tagger',
+      color: 'from-indigo-100 to-indigo-50', // visually close to Pub Sub Scan
+    },
+    {
+      key: 'sync-attendance',
+      label: 'Sync Attendance',
+      about: 'Sync attendance data across devices.',
+      icon: <UploadCloud className="h-6 w-6 text-teal-600" />,
+      route: '/sync-attendance',
+      color: 'from-teal-100 to-teal-50',
+    },
+    {
+      key: 'settings',
+      label: 'More Setting',
+      about: 'Manage app preferences and settings.',
+      icon: <Settings className="h-6 w-6 text-slate-600" />,
+      route: '/settings',
+      color: 'from-slate-100 to-slate-50',
+    },
+  ];
+
+
 
   const logout = useCallback(() => {
     console.log("logout callback");
@@ -95,31 +145,27 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
     setConfirmVisible(true); // show your modal instead of Swal
   };
 
+  const [filteredDrawerOptions, setFilteredDrawerOptions] = useState(drawerOptions);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   useEffect(() => {
-    if (visitors.length === 0) return;
-    const interval = setInterval(() => {
-      const visitor = visitors[currentVisitorIndex];
-      setCurrentVisitor(visitor.name);
-      setCurrentVisitorIndex((prev) => (prev + 1) % visitors.length);
-    }, 5000);
+    const storedDrawer = JSON.parse(localStorage.getItem('drawer_items') || '[]');
 
-    return () => clearInterval(interval);
-  }, [visitors, currentVisitorIndex]);
-
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const data = await mockFetchVisitors();
-      setVisitors(data);
-      setLoading(false);
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
+    if (storedDrawer.length > 0) {
+      const storedKeys = storedDrawer.map((item: any) => item.key);
+      const filtered = drawerOptions.filter((option) =>
+        storedKeys.includes(option.key)
+      );
+      setFilteredDrawerOptions(filtered);
+    } else {
+      setFilteredDrawerOptions(drawerOptions);
+    }
   }, []);
+
+  const handleMenuClickAndOpenModal = () => {
+    setModalOpen(true);
+  };
 
   const startScan = () => {
     // Android
@@ -137,29 +183,18 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
       console.error('QR Scan interface not available')
     }
   }
-  //@ts-ignore
-  function onVoiceInputResult(text) {
-    console.log("Recognized:", text);
-    //@ts-ignore
-    document.getElementById("inputField").value = text;
-  }
-
-  function startVoice() {
-    //@ts-ignore
-    AndroidInterface.startVoiceInput();
-  }
 
   return (
     <>
       <HeaderBar logoutConfirm={logoutConfirm} />
-      <Box sx={{ pb: open ? `${drawerHeight * 100}vh` : 12 }}>
+
+      <Box sx={{ pb: open ? '50vh' : 0 }}>
         <Box component="main">{children}</Box>
       </Box>
 
-
-      {/* Bottom bar */}
+      {/* Bottom Navigation Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-10">
-        <div className="relative bg-white shadow-xl rounded-t-2xl px-4 pt-3 pb-6">
+        <div className="relative px-4 pt-3 pb-6 rounded-t-2xl shadow-[0_-6px_16px_rgba(0,0,0,0.08)] bg-white">
           {/* Swipe-up Button */}
           <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-20">
             <AnimatePresence>
@@ -179,7 +214,7 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
             </AnimatePresence>
           </div>
 
-          {/* Navigation Icons */}
+          {/* Bottom Nav Icons */}
           <div className="grid grid-cols-4 gap-1 items-center text-xs text-gray-700">
             <div onClick={startScan} className="flex flex-col items-center space-y-1">
               <ScanQrCode className="h-6 w-6 text-indigo-500" />
@@ -189,7 +224,7 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
               <User className="h-6 w-6 text-green-500" />
               <span className="font-medium">Manual Entry</span>
             </div>
-            <div onClick={startVoice} className="flex flex-col items-center space-y-1">
+            <div onClick={startScan} className="flex flex-col items-center space-y-1">
               <LogOut className="h-6 w-6 text-orange-500" />
               <span className="font-medium">Scan Exit</span>
             </div>
@@ -200,6 +235,87 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
           </div>
         </div>
       </div>
+
+      {/* Animated Bottom Drawer */}
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* Blur Background */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-[1200] bg-black/20 backdrop-blur-sm"
+              onClick={() => setOpen(false)}
+            />
+
+            {/* Drawer Content */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: dragY }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100) {
+                  setOpen(false);
+                } else {
+                  setDragY(0);
+                }
+              }}
+              style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: '#fefefe',
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+                boxShadow: '0 -2px 10px rgba(0,0,0,0.15)',
+                zIndex: 1301,
+                padding: '16px',
+                overflowY: 'auto',
+                maxHeight: '90vh',
+                height: 'auto',
+              }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                <IconButton onClick={() => setOpen(false)}>
+                  <KeyboardArrowDownIcon />
+                </IconButton>
+              </Box>
+
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
+                Quick Action Tools
+              </Typography>
+
+              <Box className="grid grid-cols-1 gap-4 mt-4">
+                {filteredDrawerOptions.map((option) => (
+                  <div
+                    key={option.key}
+                    onClick={() => {
+                      router.push(option.route);
+                      setOpen(false);
+                    }}
+                    className={`rounded-xl p-4 bg-gradient-to-br ${option.color} cursor-pointer transition hover:scale-[1.02] shadow-sm`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      {option.icon}
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-gray-800">{option.label}</span>
+                        <span className="text-xs text-gray-600">{option.about}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </Box>
+            </motion.div>
+
+          </>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {confirmVisible && (
@@ -238,16 +354,6 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
           </motion.div>
         )}
       </AnimatePresence>
-
-
-      <VisitorDrawer
-        open={open}
-        setOpen={setOpen}
-        //@ts-ignore
-        visitors={visitors}
-        loading={loading}
-      />
-
     </>
   );
 }

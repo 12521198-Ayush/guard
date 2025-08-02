@@ -118,13 +118,7 @@ export default function PendingVisitorList({ socketMessages }: { socketMessages:
 
   return (
     <div className="p-4">
-      <h2 className="text-lg font-semibold mb-3 text-gray-900">Visitor List</h2>
-
-      {/* <div className="bg-black text-green-400 text-xs p-2 rounded mb-4 max-h-40 overflow-y-auto font-mono">
-        {debugLog.map((log, idx) => (
-          <div key={idx}>{log}</div>
-        ))}
-      </div> */}
+     
 
       <div className="grid gap-4">
         {visitorList.length === 0 && (
@@ -171,15 +165,23 @@ export default function PendingVisitorList({ socketMessages }: { socketMessages:
             </div>
           </motion.div>
         ))}
-        <div className="flex justify-center pt-4">
+        {/* <div className="flex justify-center pt-4">
           <button
             onClick={() => router.push('/visitors-list')}
             className="px-5 py-2.5 rounded-full bg-blue-500 text-white text-sm font-medium shadow-md hover:bg-blue-600 active:scale-95 transition-transform duration-200 ease-out"
           >
             See List
           </button>
-
         </div>
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={() => router.push('/ls')}
+            className="px-5 py-2.5 rounded-full bg-blue-500 text-white text-sm font-medium shadow-md hover:bg-blue-600 active:scale-95 transition-transform duration-200 ease-out"
+          >
+            local storage
+          </button>
+
+        </div> */}
       </div>
 
       <Drawer

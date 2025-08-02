@@ -21,7 +21,7 @@ export default async function RootLayout({
       <body suppressHydrationWarning={true}>
         <AuthProvider session={session}>
           <Providers>
-            <SocketClient /> {/* 👈 Socket auto-connect */}
+            {/* <SocketClient />  */}
             {children}
           </Providers>
         </AuthProvider>

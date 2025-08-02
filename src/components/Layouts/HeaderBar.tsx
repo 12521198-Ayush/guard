@@ -7,7 +7,7 @@ import { LogOut } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const STATIC_AVATAR =
-    'https://cdn1.iconfinder.com/data/icons/professions-filled-line/160/21-512.png';
+    'https://img.icons8.com/3d-fluency/50/worker-male.png';
 
 export default function HeaderBar({ logoutConfirm }: { logoutConfirm: () => void }) {
     const { data: session } = useSession();
