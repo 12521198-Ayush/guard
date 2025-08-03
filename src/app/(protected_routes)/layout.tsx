@@ -43,7 +43,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     const guardId = localStorage.getItem('security_guard_id') || '';
     setGaurdId(guardId);
 
-    console.log("🔐 security_guard_id:", guardId);
+    // console.log("🔐 security_guard_id:", guardId);
 
     if (!socket || !socket.connected) {
       socket = io("https://api.servizing.app:4561", {
@@ -55,12 +55,12 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       });
 
       socket.on("connect", () => {
-        console.log("✅ Socket connected:", socket?.id);
+        // console.log("✅ Socket connected:", socket?.id);
         setConnectionStatus("connected");
       });
 
       socket.on("disconnect", (reason) => {
-        console.warn("❌ Socket disconnected:", reason);
+        // console.warn("❌ Socket disconnected:", reason);
         setConnectionStatus("disconnected");
       });
 
@@ -70,17 +70,17 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       // });
 
       socket.on("reconnect_attempt", (attempt) => {
-        console.log(`🔁 Reconnect attempt ${attempt}`);
+        // console.log(`🔁 Reconnect attempt ${attempt}`);
         setConnectionStatus("reconnecting");
       });
 
       socket.on("reconnect", (attempt) => {
-        console.log(`✅ Reconnected after ${attempt} attempts`);
+        // console.log(`✅ Reconnected after ${attempt} attempts`);
         setConnectionStatus("connected");
       });
 
       socket.on("new_message", (msg) => {
-        console.log("📥 New message received:", msg);
+        // console.log("📥 New message received:", msg);
         setSocketMessages((prev) => [...prev, msg]);
 
         // Optional: Broadcast to window
@@ -90,7 +90,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     }
 
     return () => {
-      console.log("🔌 Disconnecting socket...");
+      // console.log("🔌 Disconnecting socket...");
       socket?.disconnect();
       socket = null;
     };

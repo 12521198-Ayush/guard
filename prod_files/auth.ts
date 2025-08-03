@@ -153,13 +153,13 @@ export const config = {
                     //   });
                     try {
                         cookies().set({
-                            name: `${prefix}xxx.refresh-token`,
+                            name: `${prefix}xxx.guard-refresh`,
                             value: user.refreshToken,
                             httpOnly: true,
                             sameSite: "strict",
                             secure: false,
                         } as any);
-                        console.log("Cookie set successfully:", `${prefix}xxx.refresh-token`);
+                        console.log("Cookie set successfully:", `${prefix}xxx.guard-refresh`);
                     } catch (error) {
                         console.error("Error setting cookie:", error);
                     }

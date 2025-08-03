@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Box,
   Typography,
@@ -31,20 +31,17 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import HeaderBar from './HeaderBar';
 import { signOut } from 'next-auth/react';
-
-const drawerHeight = 0.8; // 80% of screen height
-
-function SlideDown(props: any) {
-  return <Slide {...props} direction="down" />;
-}
+import axios from 'axios';
+import { message } from 'antd';
+import { createPortal } from 'react-dom';
+import confetti from 'canvas-confetti';
 
 export default function NewLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [dragY, setDragY] = useState(0);
-  const name = "Ayush Sharma";
-  const initials = name.split(' ').map(n => n[0]).join('');
   const { data: session } = useSession();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const drawerOptions = [
     {
@@ -113,8 +110,6 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
     },
   ];
 
-
-
   const logout = useCallback(() => {
     console.log("logout callback");
 
@@ -147,7 +142,10 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
 
   const [filteredDrawerOptions, setFilteredDrawerOptions] = useState(drawerOptions);
   const [modalOpen, setModalOpen] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [denied, setDenied] = useState(true);
+
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  const [guestInfo, setGuestInfo] = useState<{ name: any; unit: any } | null>(null);
 
   useEffect(() => {
     const storedDrawer = JSON.parse(localStorage.getItem('drawer_items') || '[]');
@@ -163,26 +161,148 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const handleMenuClickAndOpenModal = () => {
-    setModalOpen(true);
-  };
+
+
+  useEffect(() => {
+    message.info("inside to play audio")
+    if (showGuestModal && guestInfo) {
+      message.info("testingg")
+      const isAllowed = !!guestInfo.unit || 'test';
+      const audioUrl = isAllowed
+        ? "https://karyakarta.servizing.app/entry-granted.mp3"
+        : "https://karyakarta.servizing.app/entry-denied.mp3";
+
+      console.error(isAllowed)
+      console.error(audioUrl)
+      console.error(showGuestModal)
+      console.error(guestInfo)
+
+      if (audioRef.current) {
+        audioRef.current.src = audioUrl;
+        audioRef.current.play().catch((err) => {
+          console.warn("🔇 Failed to auto-play:", err);
+        });
+      }
+
+      // Optional: Android vibration
+      if (!isAllowed && navigator.vibrate) {
+        navigator.vibrate([300, 100, 300]);
+      }
+    } 
+  }, [showGuestModal, guestInfo, denied]);
+
+
+  useEffect(() => {
+    // @ts-ignore
+    window.handleQRResult = async function (scannedResult: string) {
+      const premise_id =
+        localStorage.getItem('selected_premise_id') ||
+        'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af';
+
+      console.log('📷 Scanned:', scannedResult);
+      const payload = { premise_id, scannedResult };
+      console.info('Payload:', JSON.stringify(payload));
+
+      try {
+        if (scannedResult.startsWith('[maid]') || scannedResult.startsWith('[staff]')) {
+          const qr_code = scannedResult;
+          const res = await axios.post('https://api.servizing.app/staff-service/verify/qr', {
+            premise_id,
+            qr_code,
+          });
+
+          const staffData = res.data.data;
+          if (staffData) {
+            const encoded = encodeURIComponent(JSON.stringify(staffData));
+            router.push(`/staff-details?data=${encoded}`);
+          }
+          message.success('QR checked');
+        } else if (scannedResult.startsWith('guest_')) {
+          const invite_code = scannedResult;
+          try {
+            const res = await axios.post(
+              'https://api.servizing.app/vms-service/preinvite/list',
+              { premise_id, invite_code }
+            );
+
+            const staffData = res.data?.data?.[0];
+
+            if (staffData) {
+              const hasAccess = !!staffData.premise_unit_id;
+
+              setGuestInfo({
+                name: hasAccess ? staffData.contact_name : 'Unknown Guest',
+                unit: hasAccess ? staffData.premise_unit_id : null,
+              });
+
+              setShowGuestModal(true);
+
+              // 🔊 Play audio
+              const audio = new Audio(hasAccess
+                ? '/sounds/entry-granted.mp3'
+                : '/sounds/access-denied.mp3');
+              audio.volume = 1.0;
+              audio.play();
+
+              // 📱 Vibration on denied
+              if (!hasAccess && navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]);
+              }
+
+              // 🎉 Confetti on allowed
+              if (hasAccess) {
+                confetti({
+                  particleCount: 150,
+                  spread: 100,
+                  origin: { y: 0.6 },
+                });
+              }
+
+              if (!hasAccess) {
+                message.info("Guest not allowed for entry");
+              }
+            } else {
+              setDenied(false);
+              message.error("going to play audio")
+              message.error("❌ Invalid or expired guest QR");
+            }
+          } catch (error) {
+            console.error("❌ Guest QR Fetch Error:", error);
+            message.error("Server error while checking guest QR");
+          }
+        } else {
+          console.info('⚠️ Unknown QR Format:', scannedResult);
+        }
+      } catch (error) {
+        console.info('❌ QR API Error:', error);
+      }
+    };
+
+    return () => {
+      // Cleanup
+      // @ts-ignore
+      window.handleQRResult = null;
+    };
+  }, [router]);
 
   const startScan = () => {
+    if (typeof window === 'undefined') return;
+
     // Android
-    // @ts-ignore
+    //@ts-ignore
     if (window.AndroidInterface?.startQRScan) {
-      // @ts-ignore
-      window.AndroidInterface.startQRScan()
+      //@ts-ignore
+      window.AndroidInterface.startQRScan();
     }
     // iOS
-    // @ts-ignore
+    //@ts-ignore
     else if (window.webkit?.messageHandlers?.startQRScan) {
-      // @ts-ignore
-      window.webkit.messageHandlers.startQRScan.postMessage(null)
+      //@ts-ignore
+      window.webkit.messageHandlers.startQRScan.postMessage(null);
     } else {
-      console.error('QR Scan interface not available')
+      console.error('QR Scan interface not available');
     }
-  }
+  };
 
   return (
     <>
@@ -235,6 +355,52 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
+
+      {showGuestModal && guestInfo &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
+
+            {/* 🎵 Hidden audio player */}
+            <audio ref={audioRef} style={{ display: "none" }} />
+
+            <div className="bg-white rounded-3xl shadow-2xl p-6 mx-4 max-w-sm w-full text-center animate-fadeInUp">
+              <motion.div
+                className={`text-5xl mb-4 ${guestInfo.unit ? 'text-green-500' : 'text-red-500'}`}
+                initial={{ scale: 0 }}
+                animate={{ scale: [1.5, 1], rotate: [0, 10, -10, 0] }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                {guestInfo.unit ? '✅' : '❌'}
+              </motion.div>
+
+              <h2 className="text-xl font-bold text-gray-800">
+                {guestInfo.unit ? 'Guest Allowed' : 'Access Denied'}
+              </h2>
+
+              <p className="text-gray-600 mt-2">
+                <strong>{guestInfo.name}</strong>{' '}
+                {guestInfo.unit ? (
+                  <>is allowed to enter <span className="font-semibold text-green-600">{guestInfo.unit}</span></>
+                ) : (
+                  <>is not allowed for entry</>
+                )}
+              </p>
+
+              <button
+                className="mt-6 bg-blue-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-700 transition"
+                onClick={() => setShowGuestModal(false)}
+              >
+                OK
+              </button>
+            </div>
+          </div>,
+          document.body
+        )
+      }
+
+
+
+
 
       {/* Animated Bottom Drawer */}
       <AnimatePresence>

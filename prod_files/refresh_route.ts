@@ -5,7 +5,7 @@ export async function POST(request: Request) {
     const body = await request.json()
 
     const prefix = process.env.NODE_ENV === "production" ? "__Pro-" : ""
-    const refreshToken = cookies().get(`${prefix}xxx.refresh-token`)?.value
+    const refreshToken = cookies().get(`${prefix}xxx.guard-refresh`)?.value
     const payload = {token: refreshToken};
 
     const res = await fetch(

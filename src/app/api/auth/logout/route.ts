@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     console.log(body);
 
     const prefix = process.env.NODE_ENV === "production" ? "__Pro-" : ""
-    const refreshToken = cookies().get(`${prefix}xxx.refresh-token`)?.value
+    const refreshToken = cookies().get(`${prefix}xxx.guard-refresh`)?.value
     const data = {token: refreshToken};
     console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
     console.log(data);

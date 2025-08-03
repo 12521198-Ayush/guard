@@ -4,72 +4,71 @@ import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PRIVATE_ROUTES as privateRoutes } from "@/constants/ROUTES"
 import { signOut } from 'next-auth/react';
-import { getRefreshToken } from './getRefreshToken'; 
+import { getRefreshToken } from './getRefreshToken';
 
 // @ts-ignore
 
-async function refreshAccessToken(token: any) {
-  console.log("🔄 Initiating token refresh process...");
-
+async function refreshAccessToken(token) {
+  console.log("Starting refreshAccessToken with token:", token);
   try {
-    console.log("📡 Sending refresh token request to API...");
-    const res = await fetch(`https://resident.servizing.app/api/auth/refresh`, {
+    const refreshCookieName = `${process.env.NODE_ENV === "production" ? "__Pro-" : ""}xxx.guard-refresh`;
+    console.log("refreshCookieName", refreshCookieName);
+    const refreshTokenCookie = cookies().get(refreshCookieName)?.value;
+    console.log("refreshTokenCookie", refreshTokenCookie);
+
+    if (!refreshTokenCookie) {
+      console.error("Refresh token cookie not found");
+      throw new Error("Missing refresh token");
+    }
+    console.log("Fetching new token from /api/auth/refresh");
+    const payload = {refreshTokenCookie};
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/refresh`, {
       method: "POST",
-      headers: headers(),
-      body: JSON.stringify({ userID: token.userId })
-    });
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    })
 
-    console.log("📨 Received response from refresh API");
-    const { success, status, data } = await res.json();
-    console.log("📊 Refresh API response:", { success, status, data });
+    const { success, status, data } = await res.json()
+    console.log("Refresh response:", { success, status, data });
 
-    if (!success || status === 422 || status === 401) {
-      console.error("❌ Token refresh failed - API returned unsuccessful or invalid status");
-      throw new Error(`Token refresh failed (status ${status})`);
+    if (!success) {
+      console.log("Token refresh failed!");
+      throw data
     }
 
-    if (data?.error) {
-      console.error("❌ Token refresh failed - Error in response data:", data.error);
+    if (status === 422 || status === 401) {
+      console.log("Token refresh error with status:", status);
+      throw new Error("The token could not be refreshed", status);
+    }
+
+    if (data.error) {
+      console.log("Token refresh error:", data.error);
       throw new Error(data.error);
     }
 
-    const accessToken = data?.data?.accessToken;
-    const refreshToken = data?.data?.refreshToken ?? token.refreshToken;
-    const idToken = data?.data?.idToken;
+    console.log("Token refreshed successfully");
+    console.log("Decoding new access token");
+    const decodedAccessToken = JSON.parse(Buffer.from(data.data.accessToken.split(".")[1], "base64").toString())
+    console.log("Decoded access token:", decodedAccessToken);
 
-    if (!accessToken) {
-      console.error("❌ Token refresh failed - Missing accessToken in response");
-      throw new Error("Access token is missing in refresh response");
-    }
-
-    console.log("🔓 Decoding new access token...");
-    const decodedAccessToken = JSON.parse(
-      Buffer.from(accessToken.split(".")[1], "base64").toString()
-    );
-    console.log("🔍 Decoded access token:", decodedAccessToken);
-
-    const refreshedToken = {
+    return {
       ...token,
-      accessToken,
-      refreshToken,
-      idToken,
+      accessToken: data.data.accessToken,
+      refreshToken: data.data.refreshToken ?? token.refreshToken,
+      idToken: data.data.idToken,
       accessTokenExpires: decodedAccessToken["exp"] * 1000,
       error: "",
-    };
-
-    console.log("✅ Returning refreshed token:", refreshedToken);
-    return refreshedToken;
+    }
   } catch (error) {
-    console.error("🚨 Error during token refresh:", error);
-    const errorToken = {
+    console.log("Error in refreshAccessToken:", error);
+    return {
       ...token,
       error: "RefreshAccessTokenError",
-    };
-    console.log("⚠️ Returning token with error state:", errorToken);
-    return errorToken;
+    }
   }
 }
-
 
 export const config = {
   trustHost: true,
@@ -151,11 +150,13 @@ export const config = {
           console.log("Setting refresh token cookie with prefix:", prefix);
           try {
             cookies().set({
-              name: `${prefix}xxx.refresh-token`,
+              name: `${prefix}xxx.guard-refresh`,
               value: user.refreshToken,
               httpOnly: true,
-              sameSite: "strict",
-              secure: false,
+              sameSite: "lax",
+              secure: true,
+              domain: ".servizing.app",
+              path: "/",
             } as any);
             console.log("Refresh token cookie set successfully");
           } catch (error) {
