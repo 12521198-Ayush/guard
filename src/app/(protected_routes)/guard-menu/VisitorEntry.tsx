@@ -11,10 +11,12 @@ const VisitorEntry = () => {
     const [showOtpScreen, setShowOtpScreen] = useState(false)
     const [showFormDrawer, setShowFormDrawer] = useState(false)
     const router = useRouter();
+    const [resultData, setResultData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const premise_id = localStorage.getItem('selected_premise_id');
 
-    const premise_id = 'c319f4c3-c3ac-cd2e-fc4f-b6fa9f1625af'
 
-    const isValidOtp = (val: string) => /^\d{6}$/.test(val)
+    const isValidOtp = (val: string) => /^\d{7}$/.test(val)
     const isValidPhone = (val: string) => /^\d{10}$/.test(val)
 
     const handleSubmit = async () => {
@@ -24,7 +26,7 @@ const VisitorEntry = () => {
             setShowOtpScreen(true);
         } else if (isValidPhone(trimmed)) {
             try {
-                const res = await axios.post(process.env.NEXT_PUBLIC_API_BASE_URL+'/vms-service/mobile/fetch', {
+                const res = await axios.post(process.env.NEXT_PUBLIC_API_BASE_URL + '/vms-service/mobile/fetch', {
                     mobile: trimmed,
                     premise_id,
                 });
@@ -41,13 +43,61 @@ const VisitorEntry = () => {
             }
         }
     };
-    
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value.replace(/\D/g, '')
         if (val.length <= 10) setInput(val)
     }
 
-    const displayLength = input.length > 6 ? 10 : 6
+    const otpSubmission = async (otp: any) => {
+        try {
+            const res = await axios.post('https://api.servizing.app/vms-service/preinvite/list', {
+                premise_id,
+                invite_code: otp,
+            });
+
+            const data = res.data?.data?.[0];
+
+            // ❌ Deny entry if no valid data is returned
+            if (!data || !data.contact_name || !data.premise_unit_id) {
+                //@ts-ignore
+                if (typeof window !== 'undefined' && window.AndroidInterface) {
+                    //@ts-ignore
+                    window.AndroidInterface.speakText("Entry Denied. Invalid Passcode.");
+                }
+                alert("Invalid or expired passcode. Entry denied.");
+                return;
+            }
+
+            // ✅ Allow entry if valid data exists
+            //@ts-ignore
+            if (typeof window !== 'undefined' && window.AndroidInterface) {
+                //@ts-ignore
+                window.AndroidInterface.speakText("Passcode Entry Allowed");
+            }
+
+            setResultData({
+                title: 'Guest Entry',
+                name: data.contact_name,
+                mobile: data.contact_number,
+                image: data.signed_url,
+                unit: data.premise_unit_id,
+            });
+
+        } catch (err) {
+            console.error("OTP submission failed:", err);
+            //@ts-ignore
+
+            if (typeof window !== 'undefined' && window.AndroidInterface) {
+                //@ts-ignore
+                window.AndroidInterface.speakText("Entry Denied. Please try again.");
+            }
+            alert("Error verifying passcode. Please check your internet connection or try again.");
+        }
+    }
+
+
+    const displayLength = input.length > 7 ? 10 : 7
 
     return (
         <div className="mt-6 px-4 relative">
@@ -67,8 +117,9 @@ const VisitorEntry = () => {
                         <button
                             className="p-1 rounded-full bg-gray-100"
                             onClick={() => {
-                                setShowOtpScreen(false)
-                                setInput('')
+                                setShowOtpScreen(false);
+                                setInput('');
+                                setIsLoading(false); // Reset loader if going back
                             }}
                         >
                             <ChevronDown className="w-5 h-5 text-gray-600 rotate-90" />
@@ -77,14 +128,26 @@ const VisitorEntry = () => {
                     </h2>
                     <div className="bg-white rounded-2xl shadow-md p-4 space-y-4">
                         <p className="text-sm text-gray-600">
-                            A 6-digit OTP was submitted: <strong>{input}</strong>
+                            A 7-digit OTP was submitted: <strong>{input}</strong>
                         </p>
-                        <button
-                            className="w-full bg-green-600 text-white py-2 rounded-xl font-medium text-sm"
-                            onClick={() => console.log('OTP Confirmed:', input)}
-                        >
-                            Confirm & Proceed
-                        </button>
+
+                        {isLoading ? (
+                            <div className="w-full flex justify-center">
+                                <div className="animate-spin h-6 w-6 border-4 border-green-600 border-t-transparent rounded-full" />
+                            </div>
+                        ) : (
+                            <button
+                                className="w-full bg-green-600 text-white py-2 rounded-xl font-medium text-sm"
+                                onClick={() => {
+                                    setIsLoading(true);
+                                    setTimeout(() => {
+                                        otpSubmission(input);
+                                    }, 1000);
+                                }}
+                            >
+                                Confirm & Proceed
+                            </button>
+                        )}
                     </div>
                 </>
             ) : (
@@ -143,7 +206,7 @@ const VisitorEntry = () => {
             )}
 
             {/* Bottom Drawer for Prefilled Form */}
-            
+
         </div>
     )
 }
