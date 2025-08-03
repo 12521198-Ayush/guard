@@ -5,6 +5,7 @@ import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import { signOut } from 'next-auth/react';
+import { useWebViewAuth } from "@/hooks/useWebViewAuth";
 
 let socket: Socket | null = null;
 type ConnectionState = 'connected' | 'disconnected' | 'reconnecting' | 'error';
@@ -14,7 +15,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const [security_guard_id, setGaurdId] = useState('');
   const [socketMessages, setSocketMessages] = useState<any[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionState>('disconnected');
-
+  useWebViewAuth();
   let phone = '9999999999';
 
 
@@ -110,10 +111,10 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         <div className="fixed top-3 left-8 z-50 flex items-center space-x-2 rounded-full px-3 py-1 pr-4">
           <span
             className={`h-3 w-3 rounded-full animate-pulse ${connectionStatus === 'connected'
-                ? 'bg-green-500'
-                : connectionStatus === 'reconnecting'
-                  ? 'bg-yellow-500'
-                  : 'bg-rose-500'
+              ? 'bg-green-500'
+              : connectionStatus === 'reconnecting'
+                ? 'bg-yellow-500'
+                : 'bg-rose-500'
               }
               `}
           />

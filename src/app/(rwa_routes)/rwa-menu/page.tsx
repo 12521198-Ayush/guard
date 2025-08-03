@@ -100,7 +100,7 @@ const Page = () => {
 
     const accessToken = session?.user?.accessToken || undefined
 
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/logout`, {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/logout`, {
       method: "POST",
       body: JSON.stringify({ accessToken })
     })

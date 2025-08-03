@@ -21,7 +21,7 @@ async function refreshAccessToken(token) {
       throw new Error("Missing refresh token");
     }
     console.log("Fetching new token from /api/auth/refresh");
-    const payload = {refreshTokenCookie};
+    const payload = { refreshTokenCookie };
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/refresh`, {
       method: "POST",
       headers: {
@@ -224,7 +224,7 @@ export const config = {
         console.log("Token after session update:", token);
       }
 
-      if (token.accessTokenExpires && (Date.now() < Number(token.accessTokenExpires))) {
+      if (token.accessTokenExpires && (Date.now() < Number(token.accessTokenExpires) - 15 * 1000)) {
         console.log("Access token is still valid, expires at:", new Date(Number(token.accessTokenExpires)));
         const { refreshToken, ...rest } = token;
         console.log("Returning valid token without refresh token:", rest);
