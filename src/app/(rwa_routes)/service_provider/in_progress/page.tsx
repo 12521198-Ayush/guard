@@ -32,6 +32,7 @@ export default function InProgressTickets() {
   
   const [ticketDetails, setTicketDetails] = useState<any>(null);
   const [availableVendors, setavailableVendors] = useState<any[]>([]);
+  const [specificVendors, setSpecificVendors] = useState<any[]>([]);
   
   const handleAssignment = async (selectedVendor: any) => {
 
@@ -87,13 +88,13 @@ export default function InProgressTickets() {
 
   const fetchTickets = async () => {
 
-    const service_type = session?.user?.skill || undefined;
+    const service_type = session?.user?.skill && session.user.skill !== "RWA Support" ? session.user.skill : undefined;
 
     const res = await axios.post(process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/list', {
       premise_id: session?.user?.primary_premise_id,
-      //sub_premise_id: session?.user?.sub_premise_id,
-      //servicetype: service_type,
-      //order_status: 'open',
+      sub_premise_id: session?.user?.sub_premise_id,
+      servicetype: service_type,
+      order_status: 'open',
     });
 
     const pendingData = res.data.data.array;
@@ -173,6 +174,9 @@ export default function InProgressTickets() {
                       setShowTimeline(false);
                       setShowStatusChange(false);
                       setNewStauts("");
+                      setSpecificVendors(availableVendors.filter(
+                        person => person.skill?.toLowerCase() === ticket.servicetype.toLowerCase()
+                      ));
                     }}
                     className="!p-2 border border-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition"
                   >
@@ -280,7 +284,7 @@ export default function InProgressTickets() {
         { (showTimeline==true) && <TicketTimeline ticket={ticketDetails} /> }
         { showAssign && (
           <AssignVendor
-            availableVendors={availableVendors}
+            availableVendors={specificVendors}
             handleAssignment={handleAssignment}
           /> 
         )}

@@ -75,7 +75,7 @@ const AssignVendor = ({ availableVendors, handleAssignment }: AssignVendorFormPr
                 </div>            
 
                 {/* Vendor dropdown */}
-                {availableVendors.length > 0 && (
+                {availableVendors.length > 0 ? (
                     <FormControl fullWidth margin="normal">
                         <InputLabel id="Vendor-select-label">Select</InputLabel>
                         <Select
@@ -91,18 +91,24 @@ const AssignVendor = ({ availableVendors, handleAssignment }: AssignVendorFormPr
                         ))}
                         </Select>
                     </FormControl>
+                ): (
+                    <div className="text-center space-y-1">
+                    <p className="text-red font-semibold text-xl mt-2">No vendors available</p>
+                    </div>
                 )}
 
                 {/* Submit Button */}
-                <motion.button
-                    type="submit"
-                    whileTap={{ scale: 0.97 }}
-                    initial={{ scale: 1 }}
-                    whileHover={{ scale: 1.05 }}
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out"
-                >
-                Assign
-                </motion.button>
+                {availableVendors.length > 0 && (
+                    <motion.button
+                        type="submit"
+                        whileTap={{ scale: 0.97 }}
+                        initial={{ scale: 1 }}
+                        whileHover={{ scale: 1.05 }}
+                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out"
+                    >
+                    Assign
+                    </motion.button>
+                )}
             </motion.form>
 
         </Box>

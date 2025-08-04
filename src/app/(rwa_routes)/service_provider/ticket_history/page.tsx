@@ -15,12 +15,14 @@ export default function InProgressTickets() {
   const [ticketDetails, setTicketDetails] = useState<any>(null);
   
   const fetchTickets = async () => {
-    const service_type = session?.user?.skill || undefined;
+
+    const service_type = session?.user?.skill && session.user.skill !== "RWA Support" ? session.user.skill : undefined;
+    
     const res = await axios.post(process.env.NEXT_PUBLIC_API_BASE_URL+'/order-service/list', {
       premise_id: session?.user?.primary_premise_id,
-      //sub_premise_id: session?.user?.sub_premise_id,
-      //servicetype: service_type,
-      //order_status: 'open',
+      sub_premise_id: session?.user?.sub_premise_id,
+      servicetype: service_type,
+      order_status: 'close',
     });
 
     const pendingData = res.data.data.array;

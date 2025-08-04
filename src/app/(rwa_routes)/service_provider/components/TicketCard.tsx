@@ -151,14 +151,18 @@ const TicketCard = ({
                 )}
 
                 <div className="flex-1">
-                    <div className="flex justify-left w-full items-start">
+                    <div className="flex justify-between items-start w-full gap-2">
                         {/* Order Description */}
-                        <p className="text-base text-gray-700 mb-0 leading-snug">
-                            {ticket.order_description}
-                        </p>
-                        <p>
-                        
-                        </p>                     
+                        <div className="flex-1 min-w-0">
+                            <p className="text-base text-gray-700 mb-0 leading-snug truncate">
+                                {ticket.order_description}
+                            </p>
+                        </div>
+
+                        {/* Service Type */}
+                        <div className="shrink-0 bg-blue-100 text-blue-500 border border-blue-300 text-xs px-2 py-0.5 rounded-md whitespace-nowrap">
+                            {ticket.servicetype}
+                        </div>
                     </div>
 
                     {/* Status Label (if enabled) */}
