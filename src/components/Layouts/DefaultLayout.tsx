@@ -52,62 +52,62 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
       route: '/pub-sub-scan',
       color: 'from-blue-100 to-blue-50',
     },
-    {
-      key: 'search-vehicle',
-      label: 'Search Vehicle',
-      about: 'Search vehicle details using plate or tags.',
-      icon: <Search className="h-6 w-6 text-green-600" />,
-      route: '/search-vehicle',
-      color: 'from-green-100 to-green-50',
-    },
-    {
-      key: 'helpers-logs',
-      label: 'Helpers Logs',
-      about: 'Track entry and exit logs of helpers.',
-      icon: <FileClock className="h-6 w-6 text-purple-600" />,
-      route: '/helpers-logs',
-      color: 'from-purple-100 to-purple-50',
-    },
-    {
-      key: 'verify-luggage',
-      label: 'Verify Luggage',
-      about: 'Confirm and verify visitor luggage.',
-      icon: <ShieldCheck className="h-6 w-6 text-orange-600" />,
-      route: '/verify-luggage',
-      color: 'from-orange-100 to-orange-50',
-    },
-    {
-      key: 'helper-employment',
-      label: 'Helper Employment',
-      about: 'Manage helper employment records.',
-      icon: <Briefcase className="h-6 w-6 text-yellow-600" />,
-      route: '/helper-employment',
-      color: 'from-yellow-100 to-yellow-50',
-    },
-    {
-      key: 'idcard-tagger',
-      label: 'IdCard Tagger',
-      about: 'Tag ID cards for verification and entry.',
-      icon: <IdCard className="h-6 w-6 text-indigo-600" />,
-      route: '/idcard-tagger',
-      color: 'from-indigo-100 to-indigo-50', // visually close to Pub Sub Scan
-    },
-    {
-      key: 'sync-attendance',
-      label: 'Sync Attendance',
-      about: 'Sync attendance data across devices.',
-      icon: <UploadCloud className="h-6 w-6 text-teal-600" />,
-      route: '/sync-attendance',
-      color: 'from-teal-100 to-teal-50',
-    },
-    {
-      key: 'settings',
-      label: 'More Setting',
-      about: 'Manage app preferences and settings.',
-      icon: <Settings className="h-6 w-6 text-slate-600" />,
-      route: '/settings',
-      color: 'from-slate-100 to-slate-50',
-    },
+    // {
+    //   key: 'search-vehicle',
+    //   label: 'Search Vehicle',
+    //   about: 'Search vehicle details using plate or tags.',
+    //   icon: <Search className="h-6 w-6 text-green-600" />,
+    //   route: '/search-vehicle',
+    //   color: 'from-green-100 to-green-50',
+    // },
+    // {
+    //   key: 'helpers-logs',
+    //   label: 'Helpers Logs',
+    //   about: 'Track entry and exit logs of helpers.',
+    //   icon: <FileClock className="h-6 w-6 text-purple-600" />,
+    //   route: '/helpers-logs',
+    //   color: 'from-purple-100 to-purple-50',
+    // },
+    // {
+    //   key: 'verify-luggage',
+    //   label: 'Verify Luggage',
+    //   about: 'Confirm and verify visitor luggage.',
+    //   icon: <ShieldCheck className="h-6 w-6 text-orange-600" />,
+    //   route: '/verify-luggage',
+    //   color: 'from-orange-100 to-orange-50',
+    // },
+    // {
+    //   key: 'helper-employment',
+    //   label: 'Helper Employment',
+    //   about: 'Manage helper employment records.',
+    //   icon: <Briefcase className="h-6 w-6 text-yellow-600" />,
+    //   route: '/helper-employment',
+    //   color: 'from-yellow-100 to-yellow-50',
+    // },
+    // {
+    //   key: 'idcard-tagger',
+    //   label: 'IdCard Tagger',
+    //   about: 'Tag ID cards for verification and entry.',
+    //   icon: <IdCard className="h-6 w-6 text-indigo-600" />,
+    //   route: '/idcard-tagger',
+    //   color: 'from-indigo-100 to-indigo-50', 
+    // },
+    // {
+    //   key: 'sync-attendance',
+    //   label: 'Sync Attendance',
+    //   about: 'Sync attendance data across devices.',
+    //   icon: <UploadCloud className="h-6 w-6 text-teal-600" />,
+    //   route: '/sync-attendance',
+    //   color: 'from-teal-100 to-teal-50',
+    // },
+    // {
+    //   key: 'settings',
+    //   label: 'More Setting',
+    //   about: 'Manage app preferences and settings.',
+    //   icon: <Settings className="h-6 w-6 text-slate-600" />,
+    //   route: '/settings',
+    //   color: 'from-slate-100 to-slate-50',
+    // },
   ];
 
   const logout = useCallback(() => {
@@ -137,15 +137,10 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
   };
 
   const logoutConfirm = () => {
-    setConfirmVisible(true); // show your modal instead of Swal
+    setConfirmVisible(true);
   };
 
   const [filteredDrawerOptions, setFilteredDrawerOptions] = useState(drawerOptions);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [denied, setDenied] = useState(true);
-
-  const [showGuestModal, setShowGuestModal] = useState(false);
-  const [guestInfo, setGuestInfo] = useState<{ name: any; unit: any } | null>(null);
 
   useEffect(() => {
     const storedDrawer = JSON.parse(localStorage.getItem('drawer_items') || '[]');
@@ -161,8 +156,12 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const startScan = () => {
+  const startScanEntry = () => {
     router.push('/scan-entry');
+  }
+
+    const startScanExit = () => {
+    router.push('/scan-exit');
   }
 
 
@@ -199,7 +198,7 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
 
           {/* Bottom Nav Icons */}
           <div className="grid grid-cols-4 gap-1 items-center text-xs text-gray-700">
-            <div onClick={startScan} className="flex flex-col items-center space-y-1">
+            <div onClick={startScanEntry} className="flex flex-col items-center space-y-1">
               <ScanQrCode className="h-6 w-6 text-indigo-500" />
               <span className="font-medium">Scan Entry</span>
             </div>
@@ -207,7 +206,7 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
               <User className="h-6 w-6 text-green-500" />
               <span className="font-medium">Manual Entry</span>
             </div>
-            <div onClick={startScan} className="flex flex-col items-center space-y-1">
+            <div onClick={startScanExit} className="flex flex-col items-center space-y-1">
               <LogOut className="h-6 w-6 text-orange-500" />
               <span className="font-medium">Scan Exit</span>
             </div>
@@ -218,52 +217,6 @@ export default function NewLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
-
-      {showGuestModal && guestInfo &&
-        createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/30">
-
-            {/* 🎵 Hidden audio player */}
-            <audio ref={audioRef} style={{ display: "none" }} />
-
-            <div className="bg-white rounded-3xl shadow-2xl p-6 mx-4 max-w-sm w-full text-center animate-fadeInUp">
-              <motion.div
-                className={`text-5xl mb-4 ${guestInfo.unit ? 'text-green-500' : 'text-red-500'}`}
-                initial={{ scale: 0 }}
-                animate={{ scale: [1.5, 1], rotate: [0, 10, -10, 0] }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                {guestInfo.unit ? '✅' : '❌'}
-              </motion.div>
-
-              <h2 className="text-xl font-bold text-gray-800">
-                {guestInfo.unit ? 'Guest Allowed' : 'Access Denied'}
-              </h2>
-
-              <p className="text-gray-600 mt-2">
-                <strong>{guestInfo.name}</strong>{' '}
-                {guestInfo.unit ? (
-                  <>is allowed to enter <span className="font-semibold text-green-600">{guestInfo.unit}</span></>
-                ) : (
-                  <>is not allowed for entry</>
-                )}
-              </p>
-
-              <button
-                className="mt-6 bg-blue-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-700 transition"
-                onClick={() => setShowGuestModal(false)}
-              >
-                OK
-              </button>
-            </div>
-          </div>,
-          document.body
-        )
-      }
-
-
-
-
 
       {/* Animated Bottom Drawer */}
       <AnimatePresence>

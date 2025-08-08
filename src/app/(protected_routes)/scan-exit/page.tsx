@@ -38,15 +38,15 @@ export default function ScanEntry() {
 
                 if (isResident) {
                     //@ts-ignore
-                    window.AndroidInterface.speakText("Resident Entry Allowed");
+                    window.AndroidInterface.speakText("Resident Exit Allowed");
                 } else {
                     const role = isGuest ? "Guest" : "Staff";
                     //@ts-ignore
-                    window.AndroidInterface.speakText(`${role} ${name}, Entry Allowed`);
+                    window.AndroidInterface.speakText(`${role} ${name}, Exit Allowed`);
                 }
             } else if (errorMsg) {
                 //@ts-ignore
-                window.AndroidInterface.speakText("Entry Denied");
+                window.AndroidInterface.speakText("Exit Denied");
             }
         }
     }, [resultData, errorMsg]);
@@ -64,7 +64,7 @@ export default function ScanEntry() {
 
         try {
             let res;
-            const scan_type = "entry";
+            const scan_type = "exit";
             const scan_location = localStorage.getItem("selected_subpremise_name");
             const maidpayload = {
                 premise_id,
@@ -83,11 +83,11 @@ export default function ScanEntry() {
                 console.log("maidpayload", JSON.stringify(maidpayload));
 
                 const data = res.data?.data;
-                console.log("daata from api", JSON.stringify(data))
-                if (!data) throw new Error('Entry Denied');
+                console.log("data from api", JSON.stringify(data))
+                if (!data) throw new Error('Exit Denied');
 
                 setResultData({
-                    title: 'Staff / Maid Entry',
+                    title: 'Staff / Maid Exit',
                     name: data.name,
                     mobile: data.mobile,
                     image: data.signed_url,
@@ -102,10 +102,10 @@ export default function ScanEntry() {
                     scan_location
                 });
                 const data = res.data?.data?.[0];
-                if (!data) throw new Error('Entry Denied');
+                if (!data) throw new Error('Exit Denied');
 
                 setResultData({
-                    title: 'Guest Entry',
+                    title: 'Guest Exit',
                     name: data.contact_name,
                     mobile: data.contact_number,
                     image: data.signed_url,
@@ -120,10 +120,10 @@ export default function ScanEntry() {
                     scan_location
                 });
                 const data = res.data?.data;
-                if (!data) throw new Error('Entry Denied');
+                if (!data) throw new Error('Exit Denied');
 
                 setResultData({
-                    title: 'Resident Entry',
+                    title: 'Resident Exit',
                     name: data.mobile,
                     mobile: data.mobile,
                     image: null,
@@ -134,7 +134,7 @@ export default function ScanEntry() {
             setModalOpen(true);
         } catch (err) {
             console.error('Scan failed:', JSON.stringify(err));
-            setErrorMsg(' Entry Denied');
+            setErrorMsg(' Exit Denied');
             setModalOpen(true);
         } finally {
             setLoading(false);
@@ -223,7 +223,7 @@ export default function ScanEntry() {
                         </Typography>
                     ) : resultData ? (
                         <>
-                            {resultData.image && resultData.title !== 'Guest Entry' ? (
+                            {resultData.image && resultData.title !== 'Guest Exit' ? (
                                 <img
                                     src={resultData.image}
                                     alt="Profile"
